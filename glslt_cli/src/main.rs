@@ -48,7 +48,7 @@ fn main(opts: Opts) -> anyhow::Result<()> {
     // Write output
     if let Some(path) = opts.output {
         use std::io::Write;
-        write!(std::fs::File::open(path)?, "{}", s)?;
+        write!(std::fs::File::create(path)?, "{}", s)?;
     } else {
         print!("{}", s);
     }
