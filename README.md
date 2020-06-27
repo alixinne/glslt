@@ -1,5 +1,7 @@
 # glslt
 
+[![Build Status](https://travis-ci.com/vtavernier/glslt.svg?branch=master)](https://travis-ci.com/vtavernier/glslt) [![Build status](https://ci.appveyor.com/api/projects/status/uimwa630f4v8t096/branch/master?svg=true)](https://ci.appveyor.com/project/vtavernier/glslt/branch/master) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/vtavernier/glslt) ![GitHub](https://img.shields.io/github/license/vtavernier/glslt)
+
 `glslt` is a prototype language for adding template functions to the GLSL
 language.
 
@@ -87,9 +89,9 @@ functions. This code can be directly used in an OpenGL application.
 
 ## Features
 
-[x] Template function parameters
-[ ] Preserve comments in original source
-[ ] Include support
+- [ ] Include support
+- [ ] Preserve comments in original source
+- [x] Template function parameters
 
 ## Limitations
 

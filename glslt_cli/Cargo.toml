@@ -3,6 +3,9 @@ name = "glslt_cli"
 version = "0.1.0"
 authors = ["Vincent Tavernier <vince.tavernier@gmail.com>"]
 edition = "2018"
+license = "MIT"
+homepage = "https://github.com/vtavernier/glslt"
+repository = "https://github.com/vtavernier/glslt.git"
 
 [[bin]]
 name = "glsltcc"

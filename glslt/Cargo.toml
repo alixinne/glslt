@@ -3,6 +3,9 @@ name = "glslt"
 version = "0.1.0"
 authors = ["Vincent Tavernier <vince.tavernier@gmail.com>"]
 edition = "2018"
+license = "MIT"
+homepage = "https://github.com/vtavernier/glslt"
+repository = "https://github.com/vtavernier/glslt.git"
 
 [dependencies]
 glsl = { git = "https://github.com/vtavernier/glsl", branch = "dev" }
