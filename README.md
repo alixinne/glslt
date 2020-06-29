@@ -111,13 +111,12 @@ void main() {
 Note how the template function calls have been replaced by regular GLSL
 functions. This code can be directly used in an OpenGL application.
 
-### Non-capturing lambda template function parameters
+### Lambda template function parameters
 
-`glslt` also supports *non-capturing lambda template function parameters*.
-Instead of passing a function name as a parameter to the templated function,
-you may pass an expression. Currently, this expression has to be non-capturing,
-meaning it cannot use local variables or parameters from the calling functions.
-Here is an example:
+`glslt` also supports *lambda template function parameters*. Instead of passing
+a function name as a parameter to the templated function, you may pass an
+expression. This expression may capture local variables and parameters, which
+will be taken into account when instantiating the template. Here is an example:
 
 ```glsl
 float sdf3d(in vec3 p);
@@ -156,11 +155,48 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 }
 ```
 
-### Capturing lambda template function parameters
+Since captures are supported, this example may have been written with the
+sphere diameter being a parameter:
 
-Capturing local variables and parameters from the calling function in the
-lambda expressions is not yet supported. Implementing this feature is currently
-blocked by https://github.com/phaazon/glsl/issues/72.
+```glsl
+float sdf3d(in vec3 p);
+
+float sdSphere(vec3 p, float r) {
+    return length(p) - r;
+}
+
+float opElongate(in sdf3d primitive, in vec3 p, in vec3 h) {
+    vec3 q = p - clamp(p, -h, h);
+    return primitive(q);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    float sz = 5.;
+    fragColor = vec4(vec3(opElongate(sdSphere(_1, sz), vec3(fragCoord, 0.), vec3(1., 2., 3.))), 1.0);
+    //                                            ^^
+    // Using a local variable in the template argument
+}
+```
+
+The variable is properly captured in the generated code:
+
+```glsl
+float sdSphere(vec3 p, float r) {
+    return length(p) - r;
+}
+
+// __lp2 is the captured variable input
+float __opElongate_d9170f(in vec3 p, in vec3 h, float __lp2) {
+    vec3 q = p - clamp(p, -h, h);
+    return sdSphere(q, __lp2);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    float sz = 5.;
+    fragColor = vec4(vec3(__opElongate_d9170f(vec3(fragCoord, 0.), vec3(1., 2., 3.), sz)), 1.);
+    //                                                            Captured variable: ^^
+}
+```
 
 ### Support for include directives
 
@@ -179,8 +215,7 @@ which rely on included files to generate valid syntax are not supported.
 - [x] Include support
 - [ ] Preserve comments in original source
 - [ ] Report position in compiler errors
-- [ ] Capturing lambda template function parameters
-- [x] Non-capturing lambda template function parameters
+- [x] Lambda template function parameters
 - [x] Static template function parameters
 
 ## Limitations

@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use glsl::syntax::*;
+use glsl::visitor::*;
 
 use super::instantiate::InstantiateTemplate;
 use super::template::{TemplateDefinition, TryTemplate};
@@ -83,16 +84,62 @@ impl Context {
         Ok(())
     }
 
-    pub fn transform_call(&mut self, fun: &mut Identifier, args: &mut Vec<Expr>) -> Result<()> {
+    pub fn transform_call(
+        &mut self,
+        fun: &mut Identifier,
+        args: &mut Vec<Expr>,
+        symbol_table: &HashMap<String, super::instantiate::DeclaredSymbol>,
+    ) -> Result<()> {
         if let Some(template) = self.declared_templates.get(&fun.0) {
             // We found a template whose name matches the identifier
             // Thus, transform the function call
 
             // Extract arguments
-            let template_parameters = template.extract_template_parameters(args)?;
+            let mut template_parameters = template.extract_template_parameters(args)?;
 
             // Generate name
             let template_name = template.generate_id(&template_parameters);
+
+            // Extract the set of captured variables
+            struct Capturer<'ds> {
+                st: &'ds HashMap<String, super::instantiate::DeclaredSymbol>,
+                captured: HashMap<String, &'ds super::instantiate::DeclaredSymbol>,
+            }
+
+            impl Visitor for Capturer<'_> {
+                fn visit_expr(&mut self, e: &mut Expr) -> Visit {
+                    match e {
+                        Expr::Variable(ident) => {
+                            // This is a variable. If it's in the symbol table, it needs to be
+                            // captured and renamed
+
+                            if let Some(sb) = self.st.get(ident.0.as_str()) {
+                                // Add it to the list of captured variables
+                                self.captured.insert(ident.0.clone(), sb);
+                                // Rename the reference
+                                *ident = sb.gen_id.clone();
+                            }
+                        }
+                        _ => {}
+                    }
+
+                    Visit::Children
+                }
+            }
+
+            // Visit the input expressions
+            let mut capturer = Capturer {
+                st: symbol_table,
+                captured: HashMap::new(),
+            };
+
+            for tp in &mut template_parameters {
+                tp.visit(&mut capturer);
+            }
+
+            // Extract the list of captured variables ordered by symbol_id
+            let mut extra_parameters: Vec<_> = capturer.captured.into_iter().collect();
+            extra_parameters.sort_by_key(|ep| ep.1.symbol_id);
 
             // Instantiate the template if needed
             if !self.instantiated_templates.contains(&template_name) {
@@ -103,6 +150,7 @@ impl Context {
                             &template_name,
                             &template_parameters,
                             &self.known_functions,
+                            &extra_parameters,
                         ),
                     ));
 
@@ -112,6 +160,11 @@ impl Context {
 
             // The identifier should be replaced by the mangled name
             fun.0 = template_name;
+
+            // Add the captured parameters to the end of the call
+            for ep in extra_parameters.into_iter() {
+                args.push(Expr::Variable(Identifier::new(ep.0).unwrap()));
+            }
         }
 
         Ok(())

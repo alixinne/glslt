@@ -62,7 +62,7 @@ checksum = "8f5f3913fa0bfe7ee1fd8248b6b9f42a5af4b9d65ec2dd2c3c26132b950ecfc2"
 [[package]]
 name = "glsl"
 version = "4.1.0"
-source = "git+https://github.com/vtavernier/glsl?branch=dev#c4c83c64b61f9ca5c3afe3108d99ee064faa5a2a"
+source = "git+https://github.com/vtavernier/glsl?branch=dev#7cf4e0c7743537bb8e7ded7d10366b7047ff1a23"
 dependencies = [
  "lazy_static",
  "nom",

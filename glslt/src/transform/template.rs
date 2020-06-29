@@ -5,6 +5,7 @@ use glsl::visitor::*;
 
 use crate::{Error, Result};
 
+#[derive(Debug)]
 struct TemplateParameter {
     /// Name of the function pointer type
     typename: String,
@@ -14,6 +15,7 @@ struct TemplateParameter {
     index: usize,
 }
 
+#[derive(Debug)]
 pub struct TemplateDefinition {
     /// AST for the partially instantiated template definition.
     ///
@@ -87,6 +89,7 @@ impl TemplateDefinition {
         name: &str,
         parameters: &Vec<Expr>,
         known_functions: &HashSet<String>,
+        extra_parameters: &Vec<(String, &super::instantiate::DeclaredSymbol)>,
     ) -> FunctionDefinition {
         // Clone the AST
         let mut ast = self.ast.clone();
@@ -148,6 +151,22 @@ impl TemplateDefinition {
 
         // Change the name
         ast.prototype.name.0 = name.to_string();
+
+        // Add the extra parameters
+        for ep in extra_parameters {
+            ast.prototype
+                .parameters
+                .push(FunctionParameterDeclaration::Named(
+                    None,
+                    FunctionParameterDeclarator {
+                        ty: ep.1.decl_type.clone(),
+                        ident: ArrayedIdentifier {
+                            ident: ep.1.gen_id.clone(),
+                            array_spec: ep.1.array.clone(),
+                        },
+                    },
+                ));
+        }
 
         ast
     }
