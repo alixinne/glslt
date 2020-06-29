@@ -9,6 +9,27 @@ Although they are not strictly needed for basic shading operations, they are of
 particular interest for designing reusable GLSL components which agree on
 common interfaces, as function pointers (or callbacks) would provide.
 
+## Installation
+
+Check out the [releases](https://github.com/vtavernier/glslt/releases) for
+pre-compiled binaries for stable versions.
+
+Alternatively, you may compile `glslt` from source, assuming you have the
+[Rust](https://rustup.rs/) compiler installed:
+
+```bash
+# Fetch the source
+git clone https://github.com/vtavernier/glslt.git
+cd glslt
+
+# Run the program directly
+cargo run -- test.glsl
+
+# Or, install the glsltcc binary permanently
+cargo install --release --force .
+glsltcc test.glsl
+```
+
 ## Usage
 
 ### Static template function parameters
