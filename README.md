@@ -169,6 +169,8 @@ as C preprocessors: double-quoted paths will be looked up from the current file
 being parsed, and then fallback to the system include paths. Angle-quoted paths
 will be looked up from the system include paths.
 
+All files are only included once, as if they all started with `#pragma once`.
+
 **Warning**: since include directives are processed at the AST level, shaders
 which rely on included files to generate valid syntax are not supported.
 
@@ -176,6 +178,7 @@ which rely on included files to generate valid syntax are not supported.
 
 - [x] Include support
 - [ ] Preserve comments in original source
+- [ ] Report position in compiler errors
 - [ ] Capturing lambda template function parameters
 - [x] Non-capturing lambda template function parameters
 - [x] Static template function parameters
