@@ -70,7 +70,7 @@ dependencies = [
 
 [[package]]
 name = "glslt"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "glsl",
  "rust-crypto",
@@ -79,7 +79,7 @@ dependencies = [
 
 [[package]]
 name = "glslt_cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "glslt",
