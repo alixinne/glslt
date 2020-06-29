@@ -14,6 +14,12 @@ fn parse_file(
 ) -> Result<()> {
     let canonical_path = std::fs::canonicalize(path)?;
 
+    // Get the parent directory of the current file
+    let base_path = canonical_path
+        .parent()
+        .expect("failed to find current directory")
+        .to_owned();
+
     // We've seen this path now
     seen_files.insert(canonical_path.clone());
 
@@ -35,9 +41,8 @@ fn parse_file(
                         }
                         Path::Relative(path) => {
                             let path = PathBuf::from(path);
-                            let dot = PathBuf::from(".");
 
-                            std::iter::once(&dot)
+                            std::iter::once(&base_path)
                                 .chain(include.iter())
                                 .find_map(|dir| std::fs::canonicalize(dir.join(&path)).ok())
                         }
