@@ -57,24 +57,78 @@ struct TemplateDefinition {
     parameters: Vec<TemplateParameter>,
 }
 
+fn arg_instantiate(tgt: &mut Expr, source_parameters: &Vec<Expr>) {
+    // Declare the visitor for the substitution
+    struct V<'s> {
+        subs: HashMap<String, &'s Expr>,
+    }
+
+    impl Visitor for V<'_> {
+        fn visit_expr(&mut self, e: &mut Expr) -> Visit {
+            match e {
+                Expr::Variable(ident) => {
+                    if let Some(repl) = self.subs.get(ident.0.as_str()) {
+                        *e = (*repl).clone();
+                    }
+                }
+                _ => {}
+            }
+
+            Visit::Children
+        }
+    }
+
+    // Perform substitutions
+    let mut subs = HashMap::new();
+    for (id, value) in source_parameters.iter().enumerate() {
+        subs.insert(format!("_{}", id + 1), value);
+    }
+
+    tgt.visit(&mut V { subs });
+}
+
 impl TemplateDefinition {
-    pub fn instantiate(&self, name: &str, parameters: &Vec<String>) -> FunctionDefinition {
+    pub fn instantiate(
+        &self,
+        name: &str,
+        parameters: &Vec<Expr>,
+        known_functions: &HashSet<String>,
+    ) -> FunctionDefinition {
         // Clone the AST
         let mut ast = self.ast.clone();
 
         // Declare the visitor for the substitution
         struct V<'s> {
-            subs: HashMap<&'s str, &'s str>,
+            subs: HashMap<&'s str, &'s Expr>,
+            known_functions: &'s HashSet<String>,
         }
 
         impl Visitor for V<'_> {
             fn visit_expr(&mut self, e: &mut Expr) -> Visit {
                 match e {
-                    Expr::FunCall(fun, _) => {
+                    Expr::FunCall(fun, src_args) => {
                         // Only consider raw identifiers for function names
                         if let FunIdentifier::Identifier(ident) = fun {
-                            if let Some(res) = self.subs.get(ident.0.as_str()) {
-                                ident.0 = res.to_string();
+                            if let Some(arg) = self.subs.get(ident.0.as_str()) {
+                                // This is the name of a function to be templated
+
+                                // If the substitution is a function name, just replace it and pass
+                                // argument as-is.
+                                //
+                                // Else, replace the entire function call with the templated
+                                // expression
+                                match arg {
+                                    Expr::Variable(arg_ident)
+                                        if self.known_functions.contains(arg_ident.0.as_str()) =>
+                                    {
+                                        ident.0 = arg_ident.0.clone();
+                                    }
+                                    other => {
+                                        let mut res = (*other).clone();
+                                        arg_instantiate(&mut res, &src_args);
+                                        *e = res;
+                                    }
+                                }
                             }
                         }
                     }
@@ -89,11 +143,14 @@ impl TemplateDefinition {
         let mut subs = HashMap::new();
         for (param, value) in self.parameters.iter().zip(parameters.iter()) {
             if let Some(ps) = &param.symbol {
-                subs.insert(ps.as_str(), value.as_str());
+                subs.insert(ps.as_str(), value);
             }
         }
 
-        ast.visit(&mut V { subs });
+        ast.visit(&mut V {
+            subs,
+            known_functions,
+        });
 
         // Change the name
         ast.prototype.name.0 = name.to_string();
@@ -101,7 +158,7 @@ impl TemplateDefinition {
         ast
     }
 
-    pub fn extract_template_parameters(&self, args: &mut Vec<Expr>) -> Result<Vec<String>> {
+    pub fn extract_template_parameters(&self, args: &mut Vec<Expr>) -> Result<Vec<Expr>> {
         let mut idx = 0;
         let mut it = self.parameters.iter();
         let mut current = it.next();
@@ -128,16 +185,7 @@ impl TemplateDefinition {
         args.extend(other.into_iter());
 
         // Return template args with their values
-        res.into_iter()
-            .enumerate()
-            .map(|(id, r)| match r {
-                Expr::Variable(ident) => Ok(ident.0.clone()),
-                _ => Err(Error::InvalidTemplateParameter {
-                    index: self.parameters[id].index,
-                    name: self.ast.prototype.name.0.clone(),
-                }),
-            })
-            .collect()
+        Ok(res)
     }
 }
 
@@ -204,7 +252,30 @@ struct InstantiateTemplate<'c> {
     declared_templates: &'c mut HashMap<String, TemplateDefinition>,
     instantiated_templates: &'c mut HashSet<String>,
     external_declarations: &'c mut Vec<ExternalDeclaration>,
+    known_functions: &'c mut HashSet<String>,
     error: Option<Error>,
+}
+
+fn expr_vec_to_id(exprs: &Vec<Expr>) -> String {
+    let mut sbuf = String::new();
+
+    // Transpile all expressions into the string buffer
+    for expr in exprs {
+        glsl::transpiler::glsl::show_expr(
+            &mut sbuf,
+            expr,
+            &mut glsl::transpiler::glsl::FormattingState::default(),
+        ).unwrap();
+    }
+
+    // Compute it's SHA-1
+    use crypto::digest::Digest;
+    use crypto::sha1::Sha1;
+
+    let mut hasher = Sha1::new();
+    hasher.input_str(&sbuf);
+
+    hasher.result_str()[0..6].to_string()
 }
 
 impl InstantiateTemplate<'_> {
@@ -215,6 +286,9 @@ impl InstantiateTemplate<'_> {
         if let Some(error) = self.error.take() {
             return Err(error);
         }
+
+        // We discovered a new function
+        self.known_functions.insert(def.prototype.name.0.clone());
 
         // Add the definition to the declarations
         self.external_declarations
@@ -232,16 +306,15 @@ impl InstantiateTemplate<'_> {
             let template_parameters = template.extract_template_parameters(args)?;
 
             // Generate name
-            let mut template_name = vec!["_", template.ast.prototype.name.0.as_str()];
-            template_name.extend(template_parameters.iter().map(|s| s.as_str()));
-            let template_name = template_name[..].join("_");
+            let args_id = expr_vec_to_id(&template_parameters);
+            let template_name = ["_", template.ast.prototype.name.0.as_str(), &args_id].join("_");
 
             // Instantiate the template if needed
             if !self.instantiated_templates.contains(&template_name) {
                 // Instantiate the template and add it to the declarations before us
                 self.external_declarations
                     .push(ExternalDeclaration::FunctionDefinition(
-                        template.instantiate(&template_name, &template_parameters),
+                        template.instantiate(&template_name, &template_parameters, self.known_functions),
                     ));
 
                 // Take note we instantiated the template
@@ -281,6 +354,7 @@ pub fn transform<'a>(
     let mut declared_pointer_types = HashMap::new();
     let mut declared_templates = HashMap::new();
     let mut instantiated_templates = HashSet::new();
+    let mut known_functions = HashSet::new();
 
     for (_id, ast) in asts.enumerate() {
         // We clone all declarations since they all have somewhere to go
@@ -320,10 +394,13 @@ pub fn transform<'a>(
                         TryTemplate::Function(def) => {
                             // No template parameter, it's a "regular" function so it has to be
                             // processed to instantiate parameters
+                            //
+                            // TODO: Recursive template instantiation?
                             InstantiateTemplate {
                                 instantiated_templates: &mut instantiated_templates,
                                 external_declarations: &mut external_declarations,
                                 declared_templates: &mut declared_templates,
+                                known_functions: &mut known_functions,
                                 error: None,
                             }
                             .instantiate(def)?;

@@ -11,8 +11,11 @@ common interfaces, as function pointers (or callbacks) would provide.
 
 ## Usage
 
-Currently `glslt` supports only template function parameters: passing functions
-as parameters to other functions. Here is an example:
+### Static template function parameters
+
+`glslt` supports *static template function parameters*. This means, passing the
+name of an already-declared function as a parameter for a templated function.
+Here is an example:
 
 ```glsl
 // A pointer to a function that has no args and returns an int
@@ -71,27 +74,80 @@ int fnReturnsTwo() {
     return 2;
 }
 
-int __fnTemplate_fnReturnsOne() {
+int __fnTemplate_dd5173() {
     return fnReturnsOne();
 }
 
-int __fnTemplate_fnReturnsTwo() {
+int __fnTemplate_4314fd() {
     return fnReturnsTwo();
 }
 
 void main() {
-    gl_FragColor = vec4(__fnTemplate_fnReturnsOne(), __fnTemplate_fnReturnsTwo(), 0., 1.);
+    gl_FragColor = vec4(__fnTemplate_dd5173(), __fnTemplate_4314fd(), 0., 1.);
 }
 ```
 
 Note how the template function calls have been replaced by regular GLSL
 functions. This code can be directly used in an OpenGL application.
 
+### Non-capturing lambda template function parameters
+
+`glslt` also supports *non-capturing lambda template function parameters*.
+Instead of passing a function name as a parameter to the templated function,
+you may pass an expression. Currently, this expression has to be non-capturing,
+meaning it cannot use local variables or parameters from the calling functions.
+Here is an example:
+
+```glsl
+float sdf3d(in vec3 p);
+
+float sdSphere(vec3 p, float r) {
+    return length(p) - r;
+}
+
+float opElongate(in sdf3d primitive, in vec3 p, in vec3 h) {
+    vec3 q = p - clamp(p, -h, h);
+    return primitive(q);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    fragColor = vec4(vec3(opElongate(sdSphere(_1, 4.), vec3(fragCoord, 0.), vec3(1., 2., 3.))), 1.0);
+}
+```
+
+Note how instead of just passing `sdSphere` as a template parameter, we pass
+`sdSphere(_1, 4.)`. This translates to calling `sdSphere` with the first
+parameter given by the template function `opElongate`, while the second
+parameter is the constant `4.`. This results in the following code:
+
+```glsl
+float sdSphere(vec3 p, float r) {
+    return length(p) - r;
+}
+
+float __opElongate_d20939(in vec3 p, in vec3 h) {
+    vec3 q = p - clamp(p, -h, h);
+    return sdSphere(q, 4.);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    fragColor = vec4(vec3(__opElongate_d20939(vec3(fragCoord, 0.), vec3(1., 2., 3.))), 1.);
+}
+```
+
+### Capturing lambda template function parameters
+
+Capturing local variables and parameters from the calling function in the
+lambda expressions is not yet supported. Implementing this feature is currently
+blocked by https://github.com/phaazon/glsl/issues/72.
+
 ## Features
 
 - [ ] Include support
 - [ ] Preserve comments in original source
-- [x] Template function parameters
+- [ ] Capturing lambda template function parameters
+- [x] Non-capturing lambda template function parameters
+- [x] Static template function parameters
 
 ## Limitations
 
