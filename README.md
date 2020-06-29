@@ -54,10 +54,10 @@ templates are *instantiated* with their actual template parameters. This is
 where this tool comes in:
 
 ```bash
-# Assuming you installed the pre-built glslcc binary, if running from source use `cargo run --` instead.
+# Assuming you installed the pre-built glsltcc binary, if running from source use `cargo run --` instead.
 #
 # test.glsl is our input example, output.glsl is the generated code.
-glslcc -o output.glsl test.glsl
+glsltcc -o output.glsl test.glsl
 ```
 
 The resulting code will look like this:
