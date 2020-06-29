@@ -162,9 +162,19 @@ Capturing local variables and parameters from the calling function in the
 lambda expressions is not yet supported. Implementing this feature is currently
 blocked by https://github.com/phaazon/glsl/issues/72.
 
+### Support for include directives
+
+`#include` directives are supported and will be processed, using the same rules
+as C preprocessors: double-quoted paths will be looked up from the current file
+being parsed, and then fallback to the system include paths. Angle-quoted paths
+will be looked up from the system include paths.
+
+**Warning**: since include directives are processed at the AST level, shaders
+which rely on included files to generate valid syntax are not supported.
+
 ## Features
 
-- [ ] Include support
+- [x] Include support
 - [ ] Preserve comments in original source
 - [ ] Capturing lambda template function parameters
 - [x] Non-capturing lambda template function parameters

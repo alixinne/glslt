@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use rayon::prelude::*;
 use structopt::StructOpt;
 
 use glslt::glsl;
@@ -14,28 +13,19 @@ struct Opts {
     /// Output file (defaults to stdout)
     #[structopt(short, long)]
     output: Option<PathBuf>,
-}
 
-struct ParsedInput<'p> {
-    srcpath: &'p PathBuf,
-    ast: glsl::syntax::TranslationUnit,
-}
-
-fn parse_input(pb: &PathBuf) -> anyhow::Result<ParsedInput> {
-    Ok(ParsedInput {
-        srcpath: pb,
-        ast: glslt::parse(&std::fs::read_to_string(pb)?)?,
-    })
+    /// System include paths
+    #[structopt(short = "I")]
+    include: Vec<PathBuf>,
 }
 
 #[paw::main]
 fn main(opts: Opts) -> anyhow::Result<()> {
     // Parse input files in parallel
-    let parsed_files: Result<Vec<_>, _> = opts.input.par_iter().map(parse_input).collect();
-    let parsed_files = parsed_files?;
+    let tu = glslt::parse_files(&opts.input, &opts.include)?;
 
     // Process the input
-    let processed_input = glslt::transform(parsed_files.iter().map(|pi| &pi.ast))?;
+    let processed_input = glslt::transform(std::iter::once(&tu))?;
 
     // Transpile
     let mut s = String::new();
