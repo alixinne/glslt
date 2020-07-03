@@ -8,7 +8,7 @@ use glsl::visitor::*;
 use crate::{Error, Result};
 
 /// Function parameter of a template
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct TemplateParameter {
     /// Name of the function pointer type
     typename: String,
@@ -19,7 +19,7 @@ struct TemplateParameter {
 }
 
 /// Definition of a template function
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TemplateDefinition {
     /// AST for the partially instantiated template definition.
     ///

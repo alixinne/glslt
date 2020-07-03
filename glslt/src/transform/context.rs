@@ -8,7 +8,7 @@ use super::template::{TemplateDefinition, TryTemplate};
 use crate::{Error, Result};
 
 /// GLSLT template definition context
-#[derive(Default)]
+#[derive(Default, Debug, Clone)]
 pub struct Context {
     /// Known pointer types
     declared_pointer_types: HashMap<String, FunctionPrototype>,
