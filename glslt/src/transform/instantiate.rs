@@ -44,7 +44,7 @@ impl<'c, 'd> InstantiateTemplate<'c, 'd> {
     }
 
     fn new_gen_id(&self) -> Identifier {
-        Identifier::new(format!("__lp{}", self.symbol_table.len())).unwrap()
+        Identifier::new(format!("_glslt_lp{}", self.symbol_table.len())).unwrap()
     }
 }
 

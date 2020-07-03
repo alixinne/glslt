@@ -95,16 +95,16 @@ int fnReturnsTwo() {
     return 2;
 }
 
-int __fnTemplate_dd5173() {
+int _glslt_fnTemplate_dd5173() {
     return fnReturnsOne();
 }
 
-int __fnTemplate_4314fd() {
+int _glslt_fnTemplate_4314fd() {
     return fnReturnsTwo();
 }
 
 void main() {
-    gl_FragColor = vec4(__fnTemplate_dd5173(), __fnTemplate_4314fd(), 0., 1.);
+    gl_FragColor = vec4(_glslt_fnTemplate_dd5173(), _glslt_fnTemplate_4314fd(), 0., 1.);
 }
 ```
 
@@ -145,13 +145,13 @@ float sdSphere(vec3 p, float r) {
     return length(p) - r;
 }
 
-float __opElongate_d20939(in vec3 p, in vec3 h) {
+float _glslt_opElongate_d20939(in vec3 p, in vec3 h) {
     vec3 q = p - clamp(p, -h, h);
     return sdSphere(q, 4.);
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-    fragColor = vec4(vec3(__opElongate_d20939(vec3(fragCoord, 0.), vec3(1., 2., 3.))), 1.);
+    fragColor = vec4(vec3(_glslt_opElongate_d20939(vec3(fragCoord, 0.), vec3(1., 2., 3.))), 1.);
 }
 ```
 
@@ -185,16 +185,16 @@ float sdSphere(vec3 p, float r) {
     return length(p) - r;
 }
 
-// __lp2 is the captured variable input
-float __opElongate_d9170f(in vec3 p, in vec3 h, float __lp2) {
+// _glslt_lp2 is the captured variable input
+float _glslt_opElongate_d9170f(in vec3 p, in vec3 h, float _glslt_lp2) {
     vec3 q = p - clamp(p, -h, h);
-    return sdSphere(q, __lp2);
+    return sdSphere(q, _glslt_lp2);
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float sz = 5.;
-    fragColor = vec4(vec3(__opElongate_d9170f(vec3(fragCoord, 0.), vec3(1., 2., 3.), sz)), 1.);
-    //                                                            Captured variable: ^^
+    fragColor = vec4(vec3(_glslt_opElongate_d9170f(vec3(fragCoord, 0.), vec3(1., 2., 3.), sz)), 1.);
+    //                                                                 Captured variable: ^^
 }
 ```
 

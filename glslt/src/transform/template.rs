@@ -80,7 +80,7 @@ fn expr_vec_to_id(exprs: &Vec<Expr>) -> String {
 impl TemplateDefinition {
     pub fn generate_id(&self, args: &Vec<Expr>) -> String {
         let args_id = expr_vec_to_id(&args);
-        ["_", self.ast.prototype.name.0.as_str(), &args_id].join("_")
+        ["_glslt", self.ast.prototype.name.0.as_str(), &args_id].join("_")
     }
 
     pub fn instantiate(
