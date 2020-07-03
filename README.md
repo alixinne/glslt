@@ -198,6 +198,51 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 }
 ```
 
+#### Named placeholders
+
+When passing a lambda expression to a template function, you may use the
+unnamed placeholders `_1`, `_2`, etc. to refer to the first, second, etc.
+arguments to the template function call. You may also use the parameter names
+as declared in the function prototype. The previous example could be written as
+follows:
+
+```glsl
+// In sdf3d template parameters, `p` is the first parameter name
+float sdf3d(in vec3 p);
+
+float sdSphere(vec3 p, float r) {
+    return length(p) - r;
+}
+
+float opElongate(in sdf3d primitive, in vec3 p, in vec3 h) {
+    vec3 q = p - clamp(p, -h, h);
+    return primitive(q);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    fragColor = vec4(vec3(opElongate(sdSphere(_p, 1.0), vec3(fragCoord, 0.), vec3(1., 2., 3.))), 1.0);
+    //                                        ^^
+    // Named placeholder parameter in a template instead of _1
+}
+```
+
+The generated code will look like this:
+
+```glsl
+float sdSphere(vec3 p, float r) {
+    return length(p) - r;
+}
+
+float _glslt_opElongate_784a47(in vec3 p, in vec3 h) {
+    vec3 q = p - clamp(p, -h, h);
+    return sdSphere(q, 1.);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    fragColor = vec4(vec3(_glslt_opElongate_784a47(vec3(fragCoord, 0.), vec3(1., 2., 3.))), 1.);
+}
+```
+
 ### Support for include directives
 
 `#include` directives are supported and will be processed, using the same rules

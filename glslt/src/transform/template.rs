@@ -29,7 +29,7 @@ pub struct TemplateDefinition {
     parameters: Vec<TemplateParameter>,
 }
 
-fn arg_instantiate(tgt: &mut Expr, source_parameters: &Vec<Expr>) {
+fn arg_instantiate(tgt: &mut Expr, source_parameters: &Vec<Expr>, prototype: &FunctionPrototype) {
     // Declare the visitor for the substitution
     struct V<'s> {
         subs: HashMap<String, &'s Expr>,
@@ -54,6 +54,10 @@ fn arg_instantiate(tgt: &mut Expr, source_parameters: &Vec<Expr>) {
     let mut subs = HashMap::new();
     for (id, value) in source_parameters.iter().enumerate() {
         subs.insert(format!("_{}", id + 1), value);
+
+        if let FunctionParameterDeclaration::Named(_, p) = &prototype.parameters[id] {
+            subs.insert(format!("_{}", p.ident.ident.0), value);
+        }
     }
 
     tgt.visit(&mut V { subs });
@@ -88,6 +92,7 @@ impl TemplateDefinition {
         name: &str,
         parameters: &Vec<Expr>,
         known_functions: &HashSet<String>,
+        prototypes: &HashMap<String, FunctionPrototype>,
         extra_parameters: &Vec<(String, &super::instantiate::DeclaredSymbol)>,
     ) -> FunctionDefinition {
         // Clone the AST
@@ -97,6 +102,8 @@ impl TemplateDefinition {
         struct V<'s> {
             subs: HashMap<&'s str, &'s Expr>,
             known_functions: &'s HashSet<String>,
+            prototypes: &'s HashMap<String, FunctionPrototype>,
+            template_parameters: HashMap<&'s str, &'s TemplateParameter>,
         }
 
         impl Visitor for V<'_> {
@@ -121,7 +128,20 @@ impl TemplateDefinition {
                                     }
                                     other => {
                                         let mut res = (*other).clone();
-                                        arg_instantiate(&mut res, &src_args);
+                                        arg_instantiate(
+                                            &mut res,
+                                            &src_args,
+                                            &self
+                                                .prototypes
+                                                .get(
+                                                    self.template_parameters
+                                                        .get(ident.0.as_str())
+                                                        .unwrap()
+                                                        .typename
+                                                        .as_str(),
+                                                )
+                                                .unwrap(),
+                                        );
                                         *e = res;
                                     }
                                 }
@@ -137,15 +157,20 @@ impl TemplateDefinition {
 
         // Perform substitutions
         let mut subs = HashMap::new();
-        for (param, value) in self.parameters.iter().zip(parameters.iter()) {
+        let mut template_parameters = HashMap::new();
+
+        for (id, (param, value)) in self.parameters.iter().zip(parameters.iter()).enumerate() {
             if let Some(ps) = &param.symbol {
                 subs.insert(ps.as_str(), value);
+                template_parameters.insert(ps.as_str(), &self.parameters[id]);
             }
         }
 
         ast.visit(&mut V {
             subs,
             known_functions,
+            prototypes,
+            template_parameters,
         });
 
         // Change the name

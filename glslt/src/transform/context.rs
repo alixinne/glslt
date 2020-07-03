@@ -195,6 +195,7 @@ impl<'c> TransformContext<'c> {
                             &template_name,
                             &template_parameters,
                             &self.known_functions,
+                            &self.ctx.declared_pointer_types,
                             &extra_parameters,
                         ),
                     ));
