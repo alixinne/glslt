@@ -6,5 +6,5 @@ pub use error::*;
 mod parse;
 pub use parse::*;
 
-mod transform;
+pub mod transform;
 pub use transform::transform;

@@ -77,6 +77,12 @@ fn parse_file(
     Ok(())
 }
 
+/// Parse a set of files into a single translation unit
+///
+/// # Parameters
+///
+/// * `pb`: list of paths to concatenate
+/// * `include`: list of include directories for system include resolution
 pub fn parse_files(pb: &Vec<PathBuf>, include: &Vec<PathBuf>) -> Result<TranslationUnit> {
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();

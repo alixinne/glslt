@@ -5,7 +5,7 @@ use glsl::visitor::*;
 
 use crate::{Error, Result};
 
-use super::context::Context;
+use super::context::TransformContext;
 
 #[derive(Debug)]
 pub struct DeclaredSymbol {
@@ -15,14 +15,14 @@ pub struct DeclaredSymbol {
     pub array: Option<ArraySpecifier>,
 }
 
-pub struct InstantiateTemplate<'c> {
-    ctx: &'c mut Context,
+pub struct InstantiateTemplate<'c, 'd> {
+    ctx: &'c mut TransformContext<'d>,
     error: Option<Error>,
     symbol_table: HashMap<String, DeclaredSymbol>,
 }
 
-impl<'c> InstantiateTemplate<'c> {
-    pub fn new(ctx: &'c mut Context) -> Self {
+impl<'c, 'd> InstantiateTemplate<'c, 'd> {
+    pub fn new(ctx: &'c mut TransformContext<'d>) -> Self {
         Self {
             ctx,
             error: None,
@@ -48,7 +48,7 @@ impl<'c> InstantiateTemplate<'c> {
     }
 }
 
-impl Visitor for InstantiateTemplate<'_> {
+impl Visitor for InstantiateTemplate<'_, '_> {
     fn visit_function_parameter_declarator(
         &mut self,
         p: &mut FunctionParameterDeclarator,

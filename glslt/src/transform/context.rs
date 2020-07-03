@@ -7,12 +7,14 @@ use super::instantiate::InstantiateTemplate;
 use super::template::{TemplateDefinition, TryTemplate};
 use crate::{Error, Result};
 
+/// GLSLT template definition context
 #[derive(Default)]
 pub struct Context {
+    /// Known pointer types
     declared_pointer_types: HashMap<String, FunctionPrototype>,
+    /// Known GLSLT template functions
     declared_templates: HashMap<String, TemplateDefinition>,
-    external_declarations: Vec<ExternalDeclaration>,
-    instantiated_templates: HashSet<String>,
+    /// Identifiers of function declarations
     known_functions: HashSet<String>,
 }
 
@@ -32,21 +34,21 @@ impl Context {
         Ok(())
     }
 
-    fn parse_declaration(&mut self, decl: Declaration) -> Result<()> {
+    fn parse_declaration(&mut self, decl: Declaration) -> Result<Option<ExternalDeclaration>> {
         match decl {
             Declaration::FunctionPrototype(prototype) => {
                 // A function prototype is what we'll call a function pointer type
                 self.parse_function_prototype(prototype)?;
+                Ok(None)
             }
-            other => self
-                .external_declarations
-                .push(ExternalDeclaration::Declaration(other)),
+            other => Ok(Some(ExternalDeclaration::Declaration(other))),
         }
-
-        Ok(())
     }
 
-    fn parse_function_definition(&mut self, def: FunctionDefinition) -> Result<()> {
+    fn parse_function_definition(
+        &mut self,
+        def: FunctionDefinition,
+    ) -> Result<Option<FunctionDefinition>> {
         // A function definition is a template if any of its arguments is a pointer
         let name = def.prototype.name.0.clone();
         let template =
@@ -56,41 +58,84 @@ impl Context {
             TryTemplate::Template(template) => {
                 // We found a template parameter, so it's a template function
                 self.declared_templates.insert(name, template);
+                Ok(None)
             }
-            TryTemplate::Function(def) => {
-                // No template parameter, it's a "regular" function so it has to be
-                // processed to instantiate parameters
-                //
-                // TODO: Recursive template instantiation?
-                InstantiateTemplate::new(self).instantiate(def)?;
-            }
+            TryTemplate::Function(def) => Ok(Some(def)),
         }
-
-        Ok(())
     }
 
-    pub fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()> {
+    /// Parse a top-level declaration from a GLSLT shader.
+    ///
+    /// If the declaration is a GLSLT definition, it will not be returned and stored as part of the
+    /// context for future template instantiations.
+    ///
+    /// # Parameters
+    ///
+    /// * `extdecl`: declaration to parse
+    ///
+    /// # Returns
+    ///
+    /// `Ok(None)` if the declaration was parsed as a template or GLSLT definition. `Ok(Some(...))`
+    /// if this declaration is not a template or needs to be instantiated in a context
+    pub fn parse_external_declaration(
+        &mut self,
+        extdecl: ExternalDeclaration,
+    ) -> Result<Option<ExternalDeclaration>> {
         match extdecl {
-            ExternalDeclaration::Declaration(decl) => {
-                self.parse_declaration(decl)?;
-            }
-            ExternalDeclaration::FunctionDefinition(def) => {
-                self.parse_function_definition(def)?;
-            }
+            ExternalDeclaration::Declaration(decl) => self.parse_declaration(decl),
+            ExternalDeclaration::FunctionDefinition(def) => Ok(self
+                .parse_function_definition(def)?
+                .map(|d| ExternalDeclaration::FunctionDefinition(d))),
             // Just forward the others
-            other => self.external_declarations.push(other),
+            other => Ok(Some(other)),
         }
-
-        Ok(())
     }
 
-    pub fn transform_call(
+    /// Register a function name within the context.
+    ///
+    /// This is required until a proper symbol table is added in order to differentiate variables
+    /// from function names when instantiating templates.
+    ///
+    /// # Parameters
+    ///
+    /// * `def`: function definition to register
+    pub fn push_function_declaration(&mut self, def: &FunctionDefinition) {
+        // We discovered a new function
+        self.known_functions.insert(def.prototype.name.0.clone());
+    }
+}
+
+/// GLSLT template instantiation context
+pub struct TransformContext<'c> {
+    /// Template definition context
+    ctx: &'c mut Context,
+    /// Identifiers of already instantiated templates
+    instantiated_templates: HashSet<String>,
+    /// Result of external declarations copied from input and generated through instantiation
+    external_declarations: Vec<ExternalDeclaration>,
+    /// Identifiers of function declarations
+    known_functions: HashSet<String>,
+}
+
+impl<'c> TransformContext<'c> {
+    pub fn new(ctx: &'c mut Context) -> Self {
+        let known_functions = ctx.known_functions.clone();
+
+        Self {
+            ctx,
+            instantiated_templates: HashSet::new(),
+            external_declarations: Vec::new(),
+            known_functions,
+        }
+    }
+
+    pub(crate) fn transform_call(
         &mut self,
         fun: &mut Identifier,
         args: &mut Vec<Expr>,
         symbol_table: &HashMap<String, super::instantiate::DeclaredSymbol>,
     ) -> Result<()> {
-        if let Some(template) = self.declared_templates.get(&fun.0) {
+        if let Some(template) = self.ctx.declared_templates.get(&fun.0) {
             // We found a template whose name matches the identifier
             // Thus, transform the function call
 
@@ -170,8 +215,24 @@ impl Context {
         Ok(())
     }
 
+    pub fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()> {
+        if let Some(extdecl) = self.ctx.parse_external_declaration(extdecl)? {
+            match extdecl {
+                ExternalDeclaration::FunctionDefinition(def) => {
+                    // No template parameter, it's a "regular" function so it has to be
+                    // processed to instantiate parameters
+                    //
+                    // TODO: Recursive template instantiation?
+                    InstantiateTemplate::new(self).instantiate(def)?;
+                }
+                other => self.external_declarations.push(other),
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn push_function_declaration(&mut self, def: FunctionDefinition) {
-        // We discovered a new function
         self.known_functions.insert(def.prototype.name.0.clone());
 
         // Add the definition to the declarations
@@ -184,5 +245,9 @@ impl Context {
             NonEmpty::from_non_empty_iter(self.external_declarations.into_iter())
                 .ok_or_else(|| Error::EmptyInput)?,
         ))
+    }
+
+    pub fn into_declarations(self) -> Result<Vec<ExternalDeclaration>> {
+        Ok(self.external_declarations)
     }
 }

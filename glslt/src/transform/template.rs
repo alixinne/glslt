@@ -1,3 +1,5 @@
+//! Definitions of template function abstractrepresentations
+
 use std::collections::{HashMap, HashSet};
 
 use glsl::syntax::*;
@@ -5,6 +7,7 @@ use glsl::visitor::*;
 
 use crate::{Error, Result};
 
+/// Function parameter of a template
 #[derive(Debug)]
 struct TemplateParameter {
     /// Name of the function pointer type
@@ -15,6 +18,7 @@ struct TemplateParameter {
     index: usize,
 }
 
+/// Definition of a template function
 #[derive(Debug)]
 pub struct TemplateDefinition {
     /// AST for the partially instantiated template definition.
@@ -202,11 +206,30 @@ impl TemplateDefinition {
     }
 }
 
+/// Result of parsing a function definition
 pub enum TryTemplate {
+    /// GLSLT template function
     Template(TemplateDefinition),
+    /// GLSL function
     Function(FunctionDefinition),
 }
 
+/// Try parsing a function definition as a template
+///
+/// # Parameters
+///
+/// * `def`: function definition to parse
+/// * `declared_pointer_types`: map of known function pointer types
+///
+/// # Returns
+///
+/// A [TryTemplate] structure which either represents a regular function when no template
+/// parameters are present, or a template function if it will have to be instantiated into an
+/// actual GLSL function.
+///
+/// # Errors
+///
+/// See [crate::Error] for potential template declaration errors.
 pub fn parse_definition_as_template(
     mut def: FunctionDefinition,
     declared_pointer_types: &HashMap<String, FunctionPrototype>,
