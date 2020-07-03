@@ -11,4 +11,4 @@ repository = "https://github.com/vtavernier/glslt.git"
 glsl = { git = "https://github.com/vtavernier/glsl", branch = "dev" }
 
 thiserror = "1.0"
-rust-crypto = "0.2.36"
+sha-1 = "0.9"

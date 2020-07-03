@@ -73,13 +73,8 @@ fn expr_vec_to_id(exprs: &Vec<Expr>) -> String {
     }
 
     // Compute it's SHA-1
-    use crypto::digest::Digest;
-    use crypto::sha1::Sha1;
-
-    let mut hasher = Sha1::new();
-    hasher.input_str(&sbuf);
-
-    hasher.result_str()[0..6].to_string()
+    use sha1::{Digest, Sha1};
+    format!("{:x}", Sha1::digest(&sbuf.as_bytes()))[0..6].to_string()
 }
 
 impl TemplateDefinition {
