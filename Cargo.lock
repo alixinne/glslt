@@ -98,7 +98,7 @@ dependencies = [
 
 [[package]]
 name = "glslt"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "glsl",
  "sha-1",
@@ -107,7 +107,7 @@ dependencies = [
 
 [[package]]
 name = "glslt_cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "glslt",
