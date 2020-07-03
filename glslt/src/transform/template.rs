@@ -177,11 +177,9 @@ impl TemplateDefinition {
 
         let (res, other): (Vec<_>, Vec<_>) = args.drain(0..args.len()).partition(|_| {
             let res = if let Some(c) = current {
-                if c.index == idx {
-                    true
-                } else if c.index < idx {
+                if c.index <= idx {
                     current = it.next();
-                    c.index == idx
+                    true
                 } else {
                     false
                 }
