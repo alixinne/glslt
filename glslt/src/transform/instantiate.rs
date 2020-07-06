@@ -5,7 +5,7 @@ use glsl::visitor::*;
 
 use crate::{Error, Result};
 
-use super::Unit;
+use super::TransformUnit;
 
 #[derive(Debug)]
 pub struct DeclaredSymbol {
@@ -16,13 +16,13 @@ pub struct DeclaredSymbol {
 }
 
 pub struct InstantiateTemplate<'c, 'd> {
-    ctx: &'c mut Unit<'d>,
+    ctx: &'c mut dyn TransformUnit<'d>,
     error: Option<Error>,
     symbol_table: HashMap<String, DeclaredSymbol>,
 }
 
 impl<'c, 'd> InstantiateTemplate<'c, 'd> {
-    pub fn new(ctx: &'c mut Unit<'d>) -> Self {
+    pub fn new(ctx: &'c mut dyn TransformUnit<'d>) -> Self {
         Self {
             ctx,
             error: None,

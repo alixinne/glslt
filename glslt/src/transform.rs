@@ -11,6 +11,9 @@ mod instantiate;
 
 pub mod template;
 
+mod transform_unit;
+pub use transform_unit::*;
+
 mod unit;
 pub use unit::*;
 

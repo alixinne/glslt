@@ -4,7 +4,7 @@ use glsl::syntax::*;
 use glsl::visitor::*;
 
 use super::instantiate::InstantiateTemplate;
-use super::Context;
+use super::{Context, TransformUnit};
 
 use crate::{Error, Result};
 
@@ -32,7 +32,37 @@ impl<'c> Unit<'c> {
         }
     }
 
-    pub(crate) fn transform_call(
+    pub fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()> {
+        if let Some(extdecl) = self.ctx.parse_external_declaration(extdecl)? {
+            match extdecl {
+                ExternalDeclaration::FunctionDefinition(def) => {
+                    // No template parameter, it's a "regular" function so it has to be
+                    // processed to instantiate parameters
+                    //
+                    // TODO: Recursive template instantiation?
+                    InstantiateTemplate::new(self).instantiate(def)?;
+                }
+                other => self.external_declarations.push(other),
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn into_translation_unit(self) -> Result<TranslationUnit> {
+        Ok(TranslationUnit(
+            NonEmpty::from_non_empty_iter(self.external_declarations.into_iter())
+                .ok_or_else(|| Error::EmptyInput)?,
+        ))
+    }
+
+    pub fn into_declarations(self) -> Result<Vec<ExternalDeclaration>> {
+        Ok(self.external_declarations)
+    }
+}
+
+impl<'c> TransformUnit<'c> for Unit<'c> {
+    fn transform_call(
         &mut self,
         fun: &mut Identifier,
         args: &mut Vec<Expr>,
@@ -119,39 +149,11 @@ impl<'c> Unit<'c> {
         Ok(())
     }
 
-    pub fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()> {
-        if let Some(extdecl) = self.ctx.parse_external_declaration(extdecl)? {
-            match extdecl {
-                ExternalDeclaration::FunctionDefinition(def) => {
-                    // No template parameter, it's a "regular" function so it has to be
-                    // processed to instantiate parameters
-                    //
-                    // TODO: Recursive template instantiation?
-                    InstantiateTemplate::new(self).instantiate(def)?;
-                }
-                other => self.external_declarations.push(other),
-            }
-        }
-
-        Ok(())
-    }
-
-    pub fn push_function_declaration(&mut self, def: FunctionDefinition) {
+    fn push_function_declaration(&mut self, def: FunctionDefinition) {
         self.known_functions.insert(def.prototype.name.0.clone());
 
         // Add the definition to the declarations
         self.external_declarations
             .push(ExternalDeclaration::FunctionDefinition(def));
-    }
-
-    pub fn into_translation_unit(self) -> Result<TranslationUnit> {
-        Ok(TranslationUnit(
-            NonEmpty::from_non_empty_iter(self.external_declarations.into_iter())
-                .ok_or_else(|| Error::EmptyInput)?,
-        ))
-    }
-
-    pub fn into_declarations(self) -> Result<Vec<ExternalDeclaration>> {
-        Ok(self.external_declarations)
     }
 }
