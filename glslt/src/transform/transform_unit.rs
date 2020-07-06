@@ -1,16 +1,21 @@
-use std::collections::HashMap;
+use std::collections::HashSet;
 
 use glsl::syntax::*;
+
+use super::Context;
 
 use crate::Result;
 
 pub trait TransformUnit<'c> {
+    fn ctx(&self) -> &Context;
+
+    fn known_functions(&self) -> &HashSet<String>;
+
+    fn template_instance_declared(&self, template_name: &str) -> bool;
+
+    fn register_template_instance<'s>(&mut self, template_name: &str, instance: FunctionDefinition);
+
     fn push_function_declaration(&mut self, def: FunctionDefinition);
 
-    fn transform_call(
-        &mut self,
-        fun: &mut Identifier,
-        args: &mut Vec<Expr>,
-        symbol_table: &HashMap<String, super::instantiate::DeclaredSymbol>,
-    ) -> Result<()>;
+    fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()>;
 }

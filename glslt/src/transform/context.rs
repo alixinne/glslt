@@ -25,6 +25,8 @@ impl Context {
                 previous,
             ));
         } else {
+            info!("declared pointer: {}", prototype.name.0);
+
             self.declared_pointer_types
                 .insert(prototype.name.0.clone(), prototype);
         }
@@ -54,6 +56,8 @@ impl Context {
 
         match template {
             TryTemplate::Template(template) => {
+                info!("declared template: {}", template.ast.prototype.name.0);
+
                 // We found a template parameter, so it's a template function
                 self.declared_templates.insert(name, template);
                 Ok(None)
@@ -65,6 +69,11 @@ impl Context {
     /// Get the list of defined function identifiers in this context
     pub fn known_functions(&self) -> &HashSet<String> {
         &self.known_functions
+    }
+
+    /// Get the list of defined function identifiers in this context
+    pub fn known_functions_mut(&mut self) -> &mut HashSet<String> {
+        &mut self.known_functions
     }
 
     /// Get the list of defined templates in this context

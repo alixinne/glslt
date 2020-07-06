@@ -255,6 +255,28 @@ All files are only included once, as if they all started with `#pragma once`.
 **Warning**: since include directives are processed at the AST level, shaders
 which rely on included files to generate valid syntax are not supported.
 
+### Minifying mode
+
+In its default mode, the GLSLT compiler will copy all input declarations to its
+output (except function prototypes) and insert instantiated templates right
+before they are used.
+
+However, if you are using the GLSLT compiler with a large template library,
+this will generate a lot of unused code. By using the `-K, --keep-fns` argument
+to the `glsltcc` command, GLSLT switches to the minifying mode. In this mode,
+only the functions, types, globals and `#define` directives that are transitive
+dependencies of the functions specified by the `-K` argument are kept.
+
+Note that in this mode, no preprocessor directives (outside of `#define` and
+their use) are supported. `#version`, `#extension` and precision specifiers
+will be included at the top of the generated code.
+
+As an example, compiling the previous example with `glsltcc -KsdSphere` will
+only return the code for the sdSphere function, since it has no dependencies.
+
+This mode hasn't been tested throughly yet, so some types of declarations may
+not be supported.
+
 ## Features
 
 - [x] Include support

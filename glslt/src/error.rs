@@ -25,6 +25,11 @@ pub enum Error {
     /// Unresolved include directive
     #[error("unresolved include: {0:?}")]
     UnresolvedInclude(glsl::syntax::Path),
+    /// Unsupported preprocessor directive in minifying mode
+    #[error("unsupported preprocessor directive in minifying mode: {0:?}")]
+    UnsupportedPreprocessor(Preprocessor),
+    #[error("unsupported declarator list in minifying mode: {0:?}")]
+    UnsupportedIDL(InitDeclaratorList),
 }
 
 /// GLSLT Result

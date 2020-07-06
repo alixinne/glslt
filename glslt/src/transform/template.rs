@@ -24,7 +24,7 @@ pub struct TemplateDefinition {
     /// AST for the partially instantiated template definition.
     ///
     /// This has to be cloned and visited to replace the template parameters.
-    ast: FunctionDefinition,
+    pub(crate) ast: FunctionDefinition,
     /// List of template parameters
     parameters: Vec<TemplateParameter>,
 }

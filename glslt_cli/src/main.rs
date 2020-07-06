@@ -17,6 +17,10 @@ struct Opts {
     /// System include paths
     #[structopt(short = "I")]
     include: Vec<PathBuf>,
+
+    /// List of symbols to keep for minifying mode
+    #[structopt(short = "K", long)]
+    keep_fns: Vec<String>,
 }
 
 #[paw::main]
@@ -25,7 +29,11 @@ fn main(opts: Opts) -> anyhow::Result<()> {
     let tu = glslt::parse_files(&opts.input, &opts.include)?;
 
     // Process the input
-    let processed_input = glslt::transform(std::iter::once(&tu))?;
+    let processed_input = if opts.keep_fns.is_empty() {
+        glslt::transform(std::iter::once(&tu))?
+    } else {
+        glslt::transform_min(std::iter::once(&tu), opts.keep_fns.iter().map(|it| it.as_str()))?
+    };
 
     // Transpile
     let mut s = String::new();
