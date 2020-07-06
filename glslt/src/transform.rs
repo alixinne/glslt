@@ -11,6 +11,9 @@ mod instantiate;
 
 pub mod template;
 
+mod unit;
+pub use unit::*;
+
 /// Transform a GLSLT AST to an instantiated GLSL AST
 ///
 /// # Parameters
@@ -24,7 +27,7 @@ pub fn transform<'a>(
     asts: impl std::iter::Iterator<Item = &'a TranslationUnit>,
 ) -> Result<TranslationUnit> {
     let mut ctx = Context::default();
-    let mut inst = TransformContext::new(&mut ctx);
+    let mut inst = Unit::new(&mut ctx);
 
     for (_id, ast) in asts.enumerate() {
         // We clone all declarations since they all have somewhere to go
