@@ -33,6 +33,15 @@ impl MinUnit {
         }
     }
 
+    pub fn iter_functions<'a>(&'a self) -> impl Iterator<Item = &'a FunctionDefinition> {
+        self.external_declarations
+            .values()
+            .filter_map(|ed| match ed {
+                ExternalDeclaration::FunctionDefinition(fd) => Some(fd),
+                _ => None,
+            })
+    }
+
     pub fn into_translation_unit<'a>(
         self,
         wanted: impl std::iter::Iterator<Item = &'a str>,
