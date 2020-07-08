@@ -1,6 +1,6 @@
 # [glslt](https://github.com/vtavernier/glslt)
 
-[![Build Status](https://travis-ci.com/vtavernier/glslt.svg?branch=master)](https://travis-ci.com/vtavernier/glslt) [![Build status](https://ci.appveyor.com/api/projects/status/uimwa630f4v8t096/branch/master?svg=true)](https://ci.appveyor.com/project/vtavernier/glslt/branch/master) [![GitHub release](https://img.shields.io/github/v/release/vtavernier/glslt)](https://github.com/vtavernier/glslt/releases) [![License](https://img.shields.io/github/license/vtavernier/glslt)](LICENSE)
+[![Build Status](https://travis-ci.com/vtavernier/glslt.svg?branch=master)](https://travis-ci.com/vtavernier/glslt) [![GitHub release](https://img.shields.io/github/v/release/vtavernier/glslt)](https://github.com/vtavernier/glslt/releases) [![License](https://img.shields.io/github/license/vtavernier/glslt)](LICENSE)
 
 `glslt` is a prototype language for adding template functions to the GLSL
 language.
@@ -316,6 +316,22 @@ not be supported.
 - [ ] Report position in compiler errors
 - [x] Lambda template function parameters
 - [x] Static template function parameters
+
+## Bindings
+
+### Rust
+
+Since this tool is developed in Rust, the *native* bindings are exposed as the
+`glslt` Rust crate and can be used directly by client code.
+
+### Python
+
+The main library exposes a native Python 3 module using
+[pyo3](https://pyo3.rs/). Use [maturin](https://github.com/PyO3/maturin) to
+build and develop the Python module, inside a virtualenv.
+
+In order to build the Python package, you have to enable the `python` feature
+and have `python3-dev` installed.
 
 ## Limitations
 

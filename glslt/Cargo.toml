@@ -6,6 +6,10 @@ edition = "2018"
 license = "MIT"
 homepage = "https://github.com/vtavernier/glslt"
 repository = "https://github.com/vtavernier/glslt.git"
+readme = "README.md"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 glsl = { git = "https://github.com/vtavernier/glsl", branch = "dev" }
@@ -16,3 +20,11 @@ lazy_static = "1.4"
 petgraph = "0.5"
 bimap = "0.4"
 log = "0.4.8"
+
+[dependencies.pyo3]
+version = "0.11"
+features = [ "extension-module" ]
+optional = true
+
+[features]
+python = ["pyo3"]

@@ -1,5 +1,2 @@
 [workspace]
-members = [
-  "glslt",
-  "glslt_cli",
-]
+members = [ "glslt", "glslt_cli" ]

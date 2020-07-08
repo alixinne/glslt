@@ -8,6 +8,7 @@ use super::{Context, TransformUnit};
 use crate::{Error, Result};
 
 /// GLSLT template instantiation context
+#[derive(Default, Debug, Clone)]
 pub struct Unit {
     /// Template definition context
     ctx: Context,

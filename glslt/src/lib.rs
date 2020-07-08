@@ -3,6 +3,8 @@ extern crate log;
 
 pub use glsl;
 
+pub mod api;
+
 mod error;
 pub use error::*;
 
