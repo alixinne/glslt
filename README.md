@@ -243,6 +243,17 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 }
 ```
 
+### Nested lambda expressions
+
+Nested lambda expressions are supported, however due to the syntax being used,
+we have to make a decision on how to resolve the anonymous placeholders to
+their corresponding lambda. The current algorithm transforms innermost lambdas
+first, so the placeholders will resolve to the most nested expression first.
+
+This may be circumvented by using named placeholders (as long as there is no
+conflict) since undefined identifiers are passed as-is to the other passes of
+the transformation algorithm, and thus, to outer lambdas.
+
 ### Support for include directives
 
 `#include` directives are supported and will be processed, using the same rules
