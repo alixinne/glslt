@@ -222,6 +222,11 @@ impl Visitor for InstantiateTemplate<'_, '_> {
     fn visit_expr(&mut self, e: &mut Expr) -> Visit {
         match e {
             Expr::FunCall(fun, args) => {
+                // First visit the arguments to transform inner lambdas first
+                for arg in args.iter_mut() {
+                    arg.visit(self);
+                }
+
                 // Only consider raw identifiers for function names
                 if let FunIdentifier::Identifier(ident) = fun {
                     if BUILTIN_FUNCTION_NAMES
@@ -235,6 +240,9 @@ impl Visitor for InstantiateTemplate<'_, '_> {
                         }
                     }
                 }
+
+                // We already visited arguments in pre-order
+                return Visit::Parent;
             }
             _ => {}
         }
