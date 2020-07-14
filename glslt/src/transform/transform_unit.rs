@@ -6,7 +6,7 @@ use super::Context;
 
 use crate::Result;
 
-pub trait TransformUnit<'c> {
+pub trait TransformUnit {
     fn ctx(&self) -> &Context;
 
     fn known_functions(&self) -> &HashSet<String>;

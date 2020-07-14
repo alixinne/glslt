@@ -20,7 +20,7 @@ pub use transform_unit::*;
 mod unit;
 pub use unit::*;
 
-fn transform_unit<'a, 'c, T: TransformUnit<'c>>(
+fn transform_unit<'a, T: TransformUnit>(
     asts: impl std::iter::Iterator<Item = &'a TranslationUnit>,
     inst: &mut T,
 ) -> Result<()> {
@@ -46,8 +46,7 @@ fn transform_unit<'a, 'c, T: TransformUnit<'c>>(
 pub fn transform<'a>(
     asts: impl std::iter::Iterator<Item = &'a TranslationUnit>,
 ) -> Result<TranslationUnit> {
-    let mut ctx = Context::default();
-    let mut inst = Unit::new(&mut ctx);
+    let mut inst = Unit::new();
 
     transform_unit(asts, &mut inst)?;
 
@@ -69,7 +68,7 @@ pub fn transform_min<'a>(
     asts: impl std::iter::Iterator<Item = &'a TranslationUnit>,
     wanted: impl std::iter::Iterator<Item = &'a str>,
 ) -> Result<TranslationUnit> {
-    let mut inst = MinUnit::default();
+    let mut inst = MinUnit::new();
 
     transform_unit(asts, &mut inst)?;
 

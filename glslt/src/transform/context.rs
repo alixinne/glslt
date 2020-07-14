@@ -17,6 +17,10 @@ pub struct Context {
 }
 
 impl Context {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     fn parse_function_prototype(&mut self, prototype: FunctionPrototype) -> Result<()> {
         if let Some(previous) = self.declared_pointer_types.get(&prototype.name.0) {
             // Since function pointer types are raw identifiers, they have to be unique

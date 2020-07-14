@@ -8,26 +8,29 @@ use super::{Context, TransformUnit};
 use crate::{Error, Result};
 
 /// GLSLT template instantiation context
-pub struct Unit<'c> {
+pub struct Unit {
     /// Template definition context
-    ctx: &'c mut Context,
+    ctx: Context,
     /// Identifiers of already instantiated templates
     instantiated_templates: HashSet<String>,
     /// Result of external declarations copied from input and generated through instantiation
     external_declarations: Vec<ExternalDeclaration>,
-    /// Identifiers of function declarations
-    known_functions: HashSet<String>,
 }
 
-impl<'c> Unit<'c> {
-    pub fn new(ctx: &'c mut Context) -> Self {
-        let known_functions = ctx.known_functions().clone();
+impl Unit {
+    pub fn new() -> Self {
+        Self {
+            ctx: Context::new(),
+            instantiated_templates: HashSet::new(),
+            external_declarations: Vec::new(),
+        }
+    }
 
+    pub fn with_context(ctx: Context) -> Self {
         Self {
             ctx,
             instantiated_templates: HashSet::new(),
             external_declarations: Vec::new(),
-            known_functions,
         }
     }
 
@@ -39,13 +42,13 @@ impl<'c> Unit<'c> {
     }
 }
 
-impl<'c> TransformUnit<'c> for Unit<'c> {
+impl TransformUnit for Unit {
     fn ctx(&self) -> &Context {
         &self.ctx
     }
 
     fn known_functions(&self) -> &HashSet<String> {
-        &self.known_functions
+        self.ctx.known_functions()
     }
 
     fn template_instance_declared(&self, template_name: &str) -> bool {
@@ -66,7 +69,7 @@ impl<'c> TransformUnit<'c> for Unit<'c> {
     }
 
     fn push_function_declaration(&mut self, def: FunctionDefinition) {
-        self.known_functions.insert(def.prototype.name.0.clone());
+        self.ctx.known_functions_mut().insert(def.prototype.name.0.clone());
 
         // Add the definition to the declarations
         self.external_declarations

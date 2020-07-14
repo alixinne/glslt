@@ -53,14 +53,14 @@ pub struct DeclaredSymbol {
     pub array: Option<ArraySpecifier>,
 }
 
-pub struct InstantiateTemplate<'c, 'd> {
-    unit: &'c mut dyn TransformUnit<'d>,
+pub struct InstantiateTemplate<'c> {
+    unit: &'c mut dyn TransformUnit,
     error: Option<Error>,
     symbol_table: HashMap<String, DeclaredSymbol>,
 }
 
-impl<'c, 'd> InstantiateTemplate<'c, 'd> {
-    pub fn new(unit: &'c mut dyn TransformUnit<'d>) -> Self {
+impl<'c> InstantiateTemplate<'c> {
+    pub fn new(unit: &'c mut dyn TransformUnit) -> Self {
         Self {
             unit,
             error: None,
@@ -172,7 +172,7 @@ impl<'c, 'd> InstantiateTemplate<'c, 'd> {
     }
 }
 
-impl Visitor for InstantiateTemplate<'_, '_> {
+impl Visitor for InstantiateTemplate<'_> {
     fn visit_function_parameter_declarator(
         &mut self,
         p: &mut FunctionParameterDeclarator,

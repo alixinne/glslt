@@ -26,7 +26,11 @@ pub struct MinUnit {
 }
 
 impl MinUnit {
-    pub fn new(ctx: Context) -> Self {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_context(ctx: Context) -> Self {
         Self {
             ctx,
             ..Default::default()
@@ -165,7 +169,7 @@ impl MinUnit {
     }
 }
 
-impl<'c> TransformUnit<'c> for MinUnit {
+impl TransformUnit for MinUnit {
     fn ctx(&self) -> &Context {
         &self.ctx
     }
