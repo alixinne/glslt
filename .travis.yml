@@ -4,6 +4,8 @@ services: docker
 env:
   global:
     - CRATE_NAME=glslt
+    # GH_TOKEN
+    - secure: "MiUjcxR5oMScpT50ulEP5kPHxxmywFTdrOwr84JUm11zYgJU0m5lu0P9GSdRbvtFfN2dMvVIilgETexKaeOI/m24AxrKG4VUKAkb7CgUlaFdP1LwP38OdjEGYHjaieb0M1RbOuPshbkgT9kSOftne8rn278YLDuE2E72B2VojtsRja8cW2koLyuUPIPXchtfrATQaTPGKproBAOLgmCio2R7tWDLNIHUSMNb2tnyGKLxiWUh7OYPA3ybzZfoyzsUe7n4AwfjiS1hCNoxq96O+kDW5XNNCTQ5dvPjLIwiOcZwFtj20Kfh7J4ItUz0hG5Q6nsv3F7VGaZdloS4wlN188AMHAan98i3iUQ+L/z7fAOhO+LhexvrE0seUVc6zKMX81PNn1gE8TUjwS95MfXW9VDM0eFPHG17TyLaF3e983GlD2guWvNYSqSR4SqmAhBWcSdi9gXdTejPsjfJyAlET7Bg1YChjpPOmIbi6q9Wfn6oj9O+PPbK1HFnDyMU8sBBVuaWnR4nwr6I4oewX/L/b8U33bjExgvRE4MfxOBvgLjIuLsHN/jxyeTCfc9SYsLyadlUu/9gUWkcJeKWR+uuu1mE4kiJ7mxoqEWPoZxJrepltj6gzoDlVtSxG2t5LS11DwjGRO1wDGwBWKt3P7AQNuHT3cV9Yuj5W1aTyGSCnE0="
 
 jobs:
   include:
@@ -50,6 +52,21 @@ script:
   # Only test the main library (testing is broken when pyo3 is involved)
   - $CARGO build --target $TARGET --release
 
+after_success: |
+  if [[ $TRAVIS_BRANCH == master ]] && \
+     [ $TRAVIS_PULL_REQUEST = false ] && \
+     [ $TRAVIS_OS_NAME = linux ] && \
+     [ $TARGET = x86_64-unknown-linux-gnu ]; then
+      set -e
+      mkdir dist
+      cargo doc --no-deps
+      mv target/doc dist
+      pip install --user ghp-import
+      ghp-import -n dist
+      git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+      set +e
+  fi
+
 before_deploy:
   - |
     case $TRAVIS_OS_NAME in
@@ -82,7 +99,7 @@ before_deploy:
 
 deploy:
   api_key:
-    secure: "h1/dxtxmGHEIrZz/fJnU6s6T/ZaqP7xogWg0CexYzOcaC5/40d8MyuAGQKGN4VqwSZYCchP/s3cxlWth/lcLfCPyDd7j+ZDcpwQukvXfO/0HMU0337hapE4KYNFqY5FZY58xZsRwvhHGXmT6fOSiXLNSEgOKHZwR+wX6w7ICiDFiJhPjbFbk1rIDMZ/5S5hygLY3TgisvP40TbdgvP8EDwjaYqpAM7Iz1lrsJaeKPws2+ToioJ1iAUBbdeUQpb8mZh/iVRX33aJ669LsMriW2yy1sW30KL10MOnEvBa8JjvviNl9kiSS6m4mFh3cH2Fn6JW0F6DgBKQvPq8hfxOIwH6mW/O3m70kxHYgJ2aqK5xmzeIJSKzY5+qfUddVDfb5QGNvgTVp2FU96ikX+R+K465AxgEvypznRcTJROclvZcmgmioTL+GDcAhjzpYe4dQUHj1xOYMVph5tsegEtgl4uNPq+proypMUCr8Kynn6hYKJ2SJqXlvv1l92xrNfi5Ak9IyEJ9DVEMF1bPsJLcDoy9CZhI3e5ujRFGwSUM3360Az3hXlGKOBPtJ//EwR6gmMMRATge9X0f+TipgJLSrGtA8X38tpwZGgfNbsMF60QJzniRJOKKXdkyb1brFfV57AIjz1UI90nYSMr5y2JLmFyHRLpv9VI9PM+7b5HdK7yw="
+    secure: "Ci+wjjq5Wq1PXofKpy5VyQT+nolqHuk/7UKaR7+rrFrIort7PAnnQoQbBpW6ijnWjvvz9yw+wVKFye0iH194Ko73E28UrRybf0ofvZzSfnUQJdWn7XvKemt4vIth0br76Kc/uE77aYmWpJbnTgpnKAOV4D5eRHlV5nfIpA5hH4DTZGarwN7pG8gVugVCP8M0bZ9NeuRL3rq7Sg6tplXSinnUfxFUg97VWmJBQCGv8ZMvg/FfOop/pu/AxoJwZOFFsVHbS0TRSs9DPBGJnf2DBsjmBAdC2mmnHeTVo1Ses4cuJ6hSpn79AW+tGwLzwz8ongW/LTBDnZRO1O4N38dnF8i4TIuy+wrCE2fywzN80ML0+IzNOhhuDMaznScgxUffw9O15om7Cr7ZA9LVrINFUEUnm6TVd4wOEBwpXPZTnXmdbwDD7LkMLjEpGW5+dOluTixyl9skNwxeD2/xDbsvPEX0b9TwgOyO5B5ZcpxbscXj02/H1/bpdEEXzDdHAU/n5dZUy2kdz5WWmj1o7OIKhrIClqTV1C6EkYAl9Y7C+WtH/m77D4IMU+JYGY9pmxfXQHT3/D0B9yPpwmxI+UA3pmmmXyYWq1LMvy1UDyS7bvfv03RGLU2femordfWBk7PO/Oulh+xWxMkFLvHDIl0NSKI7mQhNRAqA6R0UgGdhUVM="
   file_glob: true
   file: target/wheels/*
   on:
