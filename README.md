@@ -331,7 +331,8 @@ The main library exposes a native Python 3 module using
 build and develop the Python module, inside a virtualenv.
 
 In order to build the Python package, you have to enable the `python` feature
-and have `python3-dev` installed.
+and have `python3-dev` installed. See the documentation for [glslt](glslt/) for
+an example.
 
 ## Limitations
 
