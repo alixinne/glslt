@@ -12,7 +12,7 @@ name = "glsltcc"
 path = "src/main.rs"
 
 [dependencies]
-glslt = { path = "../glslt" }
+glslt = "=0.4.0"
 
 anyhow = "1.0"
 paw = "1.0"

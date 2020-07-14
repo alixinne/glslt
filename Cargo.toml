@@ -1,2 +1,5 @@
 [workspace]
 members = [ "glslt", "glslt_cli" ]
+
+[patch.crates-io]
+glslt = { path = "glslt" }
