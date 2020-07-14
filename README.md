@@ -1,4 +1,4 @@
-# glslt
+# [glslt](https://github.com/vtavernier/glslt)
 
 [![Build Status](https://travis-ci.com/vtavernier/glslt.svg?branch=master)](https://travis-ci.com/vtavernier/glslt) [![Build status](https://ci.appveyor.com/api/projects/status/uimwa630f4v8t096/branch/master?svg=true)](https://ci.appveyor.com/project/vtavernier/glslt/branch/master) [![GitHub release](https://img.shields.io/github/v/release/vtavernier/glslt)](https://github.com/vtavernier/glslt/releases) [![License](https://img.shields.io/github/license/vtavernier/glslt)](LICENSE)
 
@@ -8,6 +8,27 @@ language.
 Although they are not strictly needed for basic shading operations, they are of
 particular interest for designing reusable GLSL components which agree on
 common interfaces, as function pointers (or callbacks) would provide.
+
+## Table of contents
+
+<!-- vim-markdown-toc GFM -->
+
+* [Installation](#installation)
+* [Usage](#usage)
+    * [Static template function parameters](#static-template-function-parameters)
+    * [Lambda template function parameters](#lambda-template-function-parameters)
+        * [Named placeholders](#named-placeholders)
+    * [Nested lambda expressions](#nested-lambda-expressions)
+    * [Support for include directives](#support-for-include-directives)
+    * [Minifying mode](#minifying-mode)
+* [Features](#features)
+* [Bindings](#bindings)
+    * [Rust](#rust)
+    * [Python](#python)
+* [Limitations](#limitations)
+* [Author](#author)
+
+<!-- vim-markdown-toc -->
 
 ## Installation
 
