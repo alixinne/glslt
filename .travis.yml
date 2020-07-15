@@ -10,16 +10,16 @@ env:
 jobs:
   include:
     # Linux
-    - env: TARGET=x86_64-unknown-linux-gnu PYINTERP=python3 PYPIP=pip3 CARGO=cross
+    - env: TARGET=x86_64-unknown-linux-gnu CARGO=cross
       dist: xenial
       os: linux
-    - env: TARGET=i686-unknown-linux-gnu PYINTERP=python3 PYPIP=pip3 CARGO=cross
+    - env: TARGET=i686-unknown-linux-gnu CARGO=cross
       dist: xenial
       os: linux
     # Windows
-    - env: TARGET=i686-pc-windows-msvc PYINTERP=python PYPIP=pip3 PYVERSION=3.7.3 CARGO=cargo
+    - env: TARGET=i686-pc-windows-msvc CARGO=cargo
       os: windows
-    - env: TARGET=x86_64-pc-windows-msvc PYINTERP=python PYPIP=pip3 PYVERSION=3.7.3-amd64 CARGO=cargo
+    - env: TARGET=x86_64-pc-windows-msvc CARGO=cargo
       os: windows
 
 before_install: |
@@ -32,16 +32,7 @@ before_install: |
       mkdir -p $HOME/.local/bin
       wget -qO- https://github.com/rust-embedded/cross/releases/download/v0.2.1/cross-v0.2.1-x86_64-unknown-linux-gnu.tar.gz | tar -C $HOME/.local/bin -xzv
       ;;
-    windows)
-      # Install Windows dependencies (Python)
-      export PYENV=$HOME/.pyenv/pyenv-win
-      git clone https://github.com/pyenv-win/pyenv-win.git $HOME/.pyenv || true
-      export PATH="$PYENV/bin:$PYENV/shims:$APPDATA/python/python37/Scripts:$PATH"
-      pyenv install -q $PYVERSION
-      pyenv global $PYVERSION
-      pyenv rehash
-      ;;
-    esac
+  esac
 
   # Ensure target is installed for Rust
   rustup target add $TARGET
@@ -77,10 +68,26 @@ before_deploy:
         ;;
       windows)
         set -x
-        # Install maturin for building the package
-        pip install --user -U maturin
-        # On Windows, we build native binaries using the installed interpreter
-        (cd glslt && maturin build --cargo-extra-args='--features python' --target $TARGET --release -i $(cmd //C python -c 'import sys; print(sys.executable)'))
+        # Install pyenv
+        export PYENV=$HOME/.pyenv/pyenv-win
+        git clone https://github.com/pyenv-win/pyenv-win.git $HOME/.pyenv || true
+        # Add pyenv to PATH, save this PATH as reference
+        export PATH="$PYENV/bin:$PYENV/shims:$PATH"
+        export BASE_PATH="$PATH"
+        # Build for all Python versions
+        for PYVERSION in 3.5.4 3.6.10 3.7.6 3.8.1; do
+          # Prepare environment variables
+          export SHORTPYVERSION=$(cut -d. -f1-2 --output-delimiter='' <<< $PYVERSION)
+          export PATH="$APPDATA/python/python${SHORTPYVERSION}/Scripts:$BASE_PATH"
+          # Install and select Python version
+          pyenv install $PYVERSION
+          pyenv global $PYVERSION
+          pyenv rehash
+          # Install maturin for building the package
+          pip install --user -U maturin
+          # Build native binaries using the installed interpreter
+          (cd glslt && maturin build --cargo-extra-args='--features python' --target $TARGET --release -i $(cmd //C python -c 'import sys; print(sys.executable)'))
+        done
         set +x
         ;;
     esac
