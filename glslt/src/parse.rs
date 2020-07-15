@@ -10,7 +10,7 @@ fn parse_file(
     path: &PathBuf,
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
-    include: &Vec<PathBuf>,
+    include: &[PathBuf],
 ) -> Result<()> {
     let canonical_path = std::fs::canonicalize(path)?;
 
@@ -60,7 +60,7 @@ fn parse_file(
                             }
                         }
                         None => {
-                            return Err(Error::UnresolvedInclude(inc.path.clone()));
+                            return Err(Error::UnresolvedInclude(inc.path));
                         }
                     }
                 }
@@ -83,7 +83,7 @@ fn parse_file(
 ///
 /// * `pb`: list of paths to concatenate
 /// * `include`: list of include directories for system include resolution
-pub fn parse_files(pb: &Vec<PathBuf>, include: &Vec<PathBuf>) -> Result<TranslationUnit> {
+pub fn parse_files(pb: &[PathBuf], include: &[PathBuf]) -> Result<TranslationUnit> {
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
 

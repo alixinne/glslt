@@ -27,7 +27,7 @@ pub enum Error {
         /// Name of the template parameter
         name: String,
         /// 0-based position of the parameter in the function declaration
-        index: usize
+        index: usize,
     },
     /// Unresolved include directive
     #[error("unresolved include: {0:?}")]

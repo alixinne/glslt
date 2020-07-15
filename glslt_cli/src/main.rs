@@ -15,19 +15,19 @@
 //! glsltcc 0.4.0
 //! Vincent Tavernier <vince.tavernier@gmail.com>
 //! GLSL Template compiler
-//! 
+//!
 //! USAGE:
 //!     glsltcc [OPTIONS] [--] [input]...
-//! 
+//!
 //! FLAGS:
 //!     -h, --help       Prints help information
 //!     -V, --version    Prints version information
-//! 
+//!
 //! OPTIONS:
 //!     -I <include>...                 System include paths
 //!     -K, --keep-fns <keep-fns>...    List of symbols to keep for minifying mode
 //!     -o, --output <output>           Output file (defaults to stdout)
-//! 
+//!
 //! ARGS:
 //!     <input>...    Input template files
 //! ```
@@ -77,7 +77,10 @@ fn main(opts: Opts) -> anyhow::Result<()> {
     let processed_input = if opts.keep_fns.is_empty() {
         glslt::transform(std::iter::once(&tu))?
     } else {
-        glslt::transform_min(std::iter::once(&tu), opts.keep_fns.iter().map(|it| it.as_str()))?
+        glslt::transform_min(
+            std::iter::once(&tu),
+            opts.keep_fns.iter().map(|it| it.as_str()),
+        )?
     };
 
     // Transpile

@@ -29,7 +29,7 @@ pub struct TemplateDefinition {
     parameters: Vec<TemplateParameter>,
 }
 
-fn arg_instantiate(tgt: &mut Expr, source_parameters: &Vec<Expr>, prototype: &FunctionPrototype) {
+fn arg_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &FunctionPrototype) {
     // Declare the visitor for the substitution
     struct V<'s> {
         subs: HashMap<String, &'s Expr>,
@@ -37,13 +37,10 @@ fn arg_instantiate(tgt: &mut Expr, source_parameters: &Vec<Expr>, prototype: &Fu
 
     impl Visitor for V<'_> {
         fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-            match e {
-                Expr::Variable(ident) => {
-                    if let Some(repl) = self.subs.get(ident.0.as_str()) {
-                        *e = (*repl).clone();
-                    }
+            if let Expr::Variable(ident) = e {
+                if let Some(repl) = self.subs.get(ident.0.as_str()) {
+                    *e = (*repl).clone();
                 }
-                _ => {}
             }
 
             Visit::Children
@@ -63,7 +60,7 @@ fn arg_instantiate(tgt: &mut Expr, source_parameters: &Vec<Expr>, prototype: &Fu
     tgt.visit(&mut V { subs });
 }
 
-fn expr_vec_to_id(exprs: &Vec<Expr>) -> String {
+fn expr_vec_to_id(exprs: &[Expr]) -> String {
     let mut sbuf = String::new();
 
     // Transpile all expressions into the string buffer
@@ -87,7 +84,7 @@ impl TemplateDefinition {
     /// # Parameters
     ///
     /// * `args`: list of template parameter values used in the invocation
-    pub fn generate_id(&self, args: &Vec<Expr>) -> String {
+    pub fn generate_id(&self, args: &[Expr]) -> String {
         let args_id = expr_vec_to_id(&args);
         ["_glslt", self.ast.prototype.name.0.as_str(), &args_id].join("_")
     }
@@ -104,10 +101,10 @@ impl TemplateDefinition {
     pub fn instantiate(
         &self,
         name: &str,
-        parameters: &Vec<Expr>,
+        parameters: &[Expr],
         known_functions: &HashSet<String>,
         prototypes: &HashMap<String, FunctionPrototype>,
-        extra_parameters: &Vec<(String, &super::instantiate::DeclaredSymbol)>,
+        extra_parameters: &[(String, &super::instantiate::DeclaredSymbol)],
     ) -> FunctionDefinition {
         // Clone the AST
         let mut ast = self.ast.clone();
@@ -122,47 +119,44 @@ impl TemplateDefinition {
 
         impl Visitor for V<'_> {
             fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-                match e {
-                    Expr::FunCall(fun, src_args) => {
-                        // Only consider raw identifiers for function names
-                        if let FunIdentifier::Identifier(ident) = fun {
-                            if let Some(arg) = self.subs.get(ident.0.as_str()) {
-                                // This is the name of a function to be templated
+                if let Expr::FunCall(fun, src_args) = e {
+                    // Only consider raw identifiers for function names
+                    if let FunIdentifier::Identifier(ident) = fun {
+                        if let Some(arg) = self.subs.get(ident.0.as_str()) {
+                            // This is the name of a function to be templated
 
-                                // If the substitution is a function name, just replace it and pass
-                                // argument as-is.
-                                //
-                                // Else, replace the entire function call with the templated
-                                // expression
-                                match arg {
-                                    Expr::Variable(arg_ident)
-                                        if self.known_functions.contains(arg_ident.0.as_str()) =>
-                                    {
-                                        ident.0 = arg_ident.0.clone();
-                                    }
-                                    other => {
-                                        let mut res = (*other).clone();
-                                        arg_instantiate(
-                                            &mut res,
-                                            &src_args,
-                                            &self
-                                                .prototypes
-                                                .get(
-                                                    self.template_parameters
-                                                        .get(ident.0.as_str())
-                                                        .unwrap()
-                                                        .typename
-                                                        .as_str(),
-                                                )
-                                                .unwrap(),
-                                        );
-                                        *e = res;
-                                    }
+                            // If the substitution is a function name, just replace it and pass
+                            // argument as-is.
+                            //
+                            // Else, replace the entire function call with the templated
+                            // expression
+                            match arg {
+                                Expr::Variable(arg_ident)
+                                    if self.known_functions.contains(arg_ident.0.as_str()) =>
+                                {
+                                    ident.0 = arg_ident.0.clone();
+                                }
+                                other => {
+                                    let mut res = (*other).clone();
+                                    arg_instantiate(
+                                        &mut res,
+                                        &src_args,
+                                        &self
+                                            .prototypes
+                                            .get(
+                                                self.template_parameters
+                                                    .get(ident.0.as_str())
+                                                    .unwrap()
+                                                    .typename
+                                                    .as_str(),
+                                            )
+                                            .unwrap(),
+                                    );
+                                    *e = res;
                                 }
                             }
                         }
                     }
-                    _ => {}
                 }
 
                 Visit::Children

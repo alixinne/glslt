@@ -80,7 +80,9 @@ impl TransformUnit for Unit {
     }
 
     fn push_function_declaration(&mut self, def: FunctionDefinition) {
-        self.ctx.known_functions_mut().insert(def.prototype.name.0.clone());
+        self.ctx
+            .known_functions_mut()
+            .insert(def.prototype.name.0.clone());
 
         // Add the definition to the declarations
         self.external_declarations

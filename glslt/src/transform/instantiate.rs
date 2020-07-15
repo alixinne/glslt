@@ -111,19 +111,16 @@ impl<'c> InstantiateTemplate<'c> {
 
             impl Visitor for Capturer<'_> {
                 fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-                    match e {
-                        Expr::Variable(ident) => {
-                            // This is a variable. If it's in the symbol table, it needs to be
-                            // captured and renamed
+                    if let Expr::Variable(ident) = e {
+                        // This is a variable. If it's in the symbol table, it needs to be
+                        // captured and renamed
 
-                            if let Some(sb) = self.st.get(ident.0.as_str()) {
-                                // Add it to the list of captured variables
-                                self.captured.insert(ident.0.clone(), sb);
-                                // Rename the reference
-                                *ident = sb.gen_id.clone();
-                            }
+                        if let Some(sb) = self.st.get(ident.0.as_str()) {
+                            // Add it to the list of captured variables
+                            self.captured.insert(ident.0.clone(), sb);
+                            // Rename the reference
+                            *ident = sb.gen_id.clone();
                         }
-                        _ => {}
                     }
 
                     Visit::Children
@@ -220,31 +217,28 @@ impl Visitor for InstantiateTemplate<'_> {
     }
 
     fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-        match e {
-            Expr::FunCall(fun, args) => {
-                // First visit the arguments to transform inner lambdas first
-                for arg in args.iter_mut() {
-                    arg.visit(self);
-                }
+        if let Expr::FunCall(fun, args) = e {
+            // First visit the arguments to transform inner lambdas first
+            for arg in args.iter_mut() {
+                arg.visit(self);
+            }
 
-                // Only consider raw identifiers for function names
-                if let FunIdentifier::Identifier(ident) = fun {
-                    if BUILTIN_FUNCTION_NAMES
-                        .binary_search(&ident.0.as_str())
-                        .is_err()
+            // Only consider raw identifiers for function names
+            if let FunIdentifier::Identifier(ident) = fun {
+                if BUILTIN_FUNCTION_NAMES
+                    .binary_search(&ident.0.as_str())
+                    .is_err()
+                {
+                    if let Err(error) =
+                        Self::transform_call(self.unit, ident, args, &self.symbol_table)
                     {
-                        if let Err(error) =
-                            Self::transform_call(self.unit, ident, args, &self.symbol_table)
-                        {
-                            self.error = Some(error);
-                        }
+                        self.error = Some(error);
                     }
                 }
-
-                // We already visited arguments in pre-order
-                return Visit::Parent;
             }
-            _ => {}
+
+            // We already visited arguments in pre-order
+            return Visit::Parent;
         }
 
         Visit::Children

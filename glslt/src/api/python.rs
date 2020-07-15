@@ -82,9 +82,10 @@ macro_rules! impl_unit {
 
         #[pymethods]
         impl $pyunit {
+            /// Create a new transform unit
             #[new]
             pub fn new() -> Self {
-                Self { unit: $unit::new() }
+                Self::default()
             }
 
             /// Add a translation unit's declarations to the current transform unit
@@ -98,7 +99,7 @@ macro_rules! impl_unit {
 
 /// Represents a GLSLT transform unit
 #[pyclass(name = Unit)]
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct PyUnit {
     unit: Unit,
 }
@@ -121,7 +122,7 @@ impl PyUnit {
 
 /// Represents a minifying GLSLT transform unit
 #[pyclass(name = MinUnit)]
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct PyMinUnit {
     unit: MinUnit,
 }
@@ -158,7 +159,7 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
     pub fn parse_string_py(_py: Python, source: &str) -> PyResult<PyTranslationUnit> {
         TranslationUnit::parse(source)
             .map(Into::into)
-            .map_err(|e| RuntimeError::py_err(format!("{}", e)).into())
+            .map_err(|e| RuntimeError::py_err(format!("{}", e)))
     }
 
     /// Parse a set of input files into an abstract syntax tree
@@ -175,11 +176,14 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
         include_paths: Vec<String>,
     ) -> PyResult<PyTranslationUnit> {
         crate::parse_files(
-            &files.into_iter().map(PathBuf::from).collect(),
-            &include_paths.into_iter().map(PathBuf::from).collect(),
+            &files.into_iter().map(PathBuf::from).collect::<Vec<_>>(),
+            &include_paths
+                .into_iter()
+                .map(PathBuf::from)
+                .collect::<Vec<_>>(),
         )
         .map(Into::into)
-        .map_err(|e| RuntimeError::py_err(format!("{}", e)).into())
+        .map_err(|e| RuntimeError::py_err(format!("{}", e)))
     }
 
     m.add_class::<PyTranslationUnit>()?;

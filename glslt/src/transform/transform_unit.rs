@@ -32,7 +32,7 @@ pub trait TransformUnit {
     ///
     /// * `template_name`: name of the template instantiation
     /// * `instance`: function definition corresponding to the instantiation
-    fn register_template_instance<'s>(&mut self, template_name: &str, instance: FunctionDefinition);
+    fn register_template_instance(&mut self, template_name: &str, instance: FunctionDefinition);
 
     /// Add a function declaration to the transform unit
     ///

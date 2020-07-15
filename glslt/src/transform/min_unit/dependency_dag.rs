@@ -58,10 +58,7 @@ impl DependencyDag {
             .add_edge(NodeIndex::new(scope), NodeIndex::new(dependency), ());
     }
 
-    pub fn into_dependencies(
-        mut self,
-        wanted: &Vec<ExternalIdentifier>,
-    ) -> Vec<ExternalIdentifier> {
+    pub fn into_dependencies(mut self, wanted: &[ExternalIdentifier]) -> Vec<ExternalIdentifier> {
         // Create a wanted node
         let wanted_id = self.graph.add_node(());
 

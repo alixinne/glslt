@@ -112,7 +112,7 @@ impl Context {
             ExternalDeclaration::Declaration(decl) => self.parse_declaration(decl),
             ExternalDeclaration::FunctionDefinition(def) => Ok(self
                 .parse_function_definition(def)?
-                .map(|d| ExternalDeclaration::FunctionDefinition(d))),
+                .map(ExternalDeclaration::FunctionDefinition)),
             // Just forward the others
             other => Ok(Some(other)),
         }

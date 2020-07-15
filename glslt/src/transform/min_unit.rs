@@ -44,7 +44,7 @@ impl MinUnit {
     }
 
     /// Obtain an iterator to the functions defined in the current unit
-    pub fn iter_functions<'a>(&'a self) -> impl Iterator<Item = &'a FunctionDefinition> {
+    pub fn iter_functions(&self) -> impl Iterator<Item = &'_ FunctionDefinition> {
         self.external_declarations
             .values()
             .filter_map(|ed| match ed {
@@ -69,7 +69,7 @@ impl MinUnit {
         let mut external_declarations = self.static_declarations;
 
         // TODO: Maybe wanted can include other declarations than functions?
-        let wanted = wanted
+        let wanted: Vec<_> = wanted
             .map(|id| ExternalIdentifier::FunctionDefinition(id.to_owned()))
             .collect();
 
