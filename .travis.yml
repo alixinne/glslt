@@ -17,9 +17,9 @@ jobs:
       dist: xenial
       os: linux
     # Windows
-    - env: TARGET=i686-pc-windows-msvc CARGO=cargo
+    - env: TARGET=i686-pc-windows-msvc CARGO=cargo PYVERSIONSUFFIX=
       os: windows
-    - env: TARGET=x86_64-pc-windows-msvc CARGO=cargo
+    - env: TARGET=x86_64-pc-windows-msvc CARGO=cargo PYVERSIONSUFFIX=-amd64
       os: windows
 
 before_install: |
@@ -80,8 +80,8 @@ before_deploy:
           export SHORTPYVERSION=$(cut -d. -f1-2 --output-delimiter='' <<< $PYVERSION)
           export PATH="$APPDATA/python/python${SHORTPYVERSION}/Scripts:$BASE_PATH"
           # Install and select Python version
-          pyenv install $PYVERSION
-          pyenv global $PYVERSION
+          pyenv install ${PYVERSION}${PYVERSIONSUFFIX}
+          pyenv global ${PYVERSION}${PYVERSIONSUFFIX}
           pyenv rehash
           # Install maturin for building the package
           pip install --user -U maturin
