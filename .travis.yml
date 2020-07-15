@@ -86,7 +86,7 @@ before_deploy:
           # Install maturin for building the package
           pip install --user -U maturin
           # Build native binaries using the installed interpreter
-          (cd glslt && maturin build --cargo-extra-args='--features python' --target $TARGET --release -i $(cmd //C python -c 'import sys; print(sys.executable)'))
+          (cd glslt && maturin build --strip --cargo-extra-args='--features python' --target $TARGET --release -i $(cmd //C python -c 'import sys; print(sys.executable)'))
         done
         set +x
         ;;
