@@ -33,7 +33,8 @@ common interfaces, as function pointers (or callbacks) would provide.
 ## Installation
 
 Check out the [releases](https://github.com/vtavernier/glslt/releases) for
-pre-compiled binaries for stable versions.
+pre-compiled binaries for stable versions. Installing the Python module (see
+below) also installs the corresponding `glsltcc` binary.
 
 Alternatively, you may compile `glslt` from source, assuming you have the
 [Rust](https://rustup.rs/) compiler installed:

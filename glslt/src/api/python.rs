@@ -186,6 +186,14 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
         .map_err(|e| RuntimeError::py_err(format!("{}", e)))
     }
 
+    /// glsltcc entry point
+    #[pyfn(m, "main")]
+    pub fn main_py(_py: Python) -> PyResult<()> {
+        use super::cli::*;
+
+        main(Opts::from_args()).map_err(|e| RuntimeError::py_err(format!("{}", e)))
+    }
+
     m.add_class::<PyTranslationUnit>()?;
     m.add_class::<PyUnit>()?;
     m.add_class::<PyMinUnit>()?;

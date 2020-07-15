@@ -149,8 +149,9 @@ dependencies = [
 
 [[package]]
 name = "glslt"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
+ "anyhow",
  "bimap",
  "glsl",
  "lazy_static",
@@ -158,17 +159,16 @@ dependencies = [
  "petgraph",
  "pyo3",
  "sha-1",
+ "structopt",
  "thiserror",
 ]
 
 [[package]]
 name = "glslt_cli"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "anyhow",
  "glslt",
- "paw",
- "structopt",
 ]
 
 [[package]]
@@ -345,33 +345,6 @@ checksum = "d95a7db200b97ef370c8e6de0088252f7e0dfff7d047a28528e47456c0fc98b6"
 dependencies = [
  "proc-macro-hack",
 ]
-
-[[package]]
-name = "paw"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09c0fc9b564dbc3dc2ed7c92c0c144f4de340aa94514ce2b446065417c4084e9"
-dependencies = [
- "paw-attributes",
- "paw-raw",
-]
-
-[[package]]
-name = "paw-attributes"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f35583365be5d148e959284f42526841917b7bfa09e2d1a7ad5dde2cf0eaa39"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "paw-raw"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f0b59668fe80c5afe998f0c0bf93322bf2cd66cafeeb80581f291716f3467f2"
 
 [[package]]
 name = "petgraph"

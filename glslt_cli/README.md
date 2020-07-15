@@ -14,7 +14,7 @@ Alternatively, you may compile GLSLT from source and install it using `cargo ins
 ## Command-line usage
 
 ```bash
-glsltcc 0.4.0
+glsltcc 0.4.1
 Vincent Tavernier <vince.tavernier@gmail.com>
 GLSL Template compiler
 
