@@ -190,8 +190,8 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
     #[pyfn(m, "main")]
     pub fn main_py(_py: Python) -> PyResult<()> {
         use super::cli::*;
-
-        main(Opts::from_args()).map_err(|e| RuntimeError::py_err(format!("{}", e)))
+        main(Opts::from_iter(std::env::args().skip(1)))
+            .map_err(|e| RuntimeError::py_err(format!("{}", e)))
     }
 
     m.add_class::<PyTranslationUnit>()?;

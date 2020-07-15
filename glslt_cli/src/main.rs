@@ -12,7 +12,7 @@
 //! # Command-line usage
 //!
 //! ```bash
-//! glsltcc 0.4.1
+//! glsltcc 0.4.2
 //! Vincent Tavernier <vince.tavernier@gmail.com>
 //! GLSL Template compiler
 //!
