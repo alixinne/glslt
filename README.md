@@ -1,6 +1,6 @@
 # [glslt](https://github.com/vtavernier/glslt)
 
-[![Build Status](https://travis-ci.com/vtavernier/glslt.svg?branch=master)](https://travis-ci.com/vtavernier/glslt) [![GitHub release](https://img.shields.io/github/v/release/vtavernier/glslt)](https://github.com/vtavernier/glslt/releases) [![License](https://img.shields.io/github/license/vtavernier/glslt)](LICENSE)
+[![Build Status](https://travis-ci.com/vtavernier/glslt.svg?branch=master)](https://travis-ci.com/vtavernier/glslt) [![GitHub release](https://img.shields.io/github/v/release/vtavernier/glslt)](https://github.com/vtavernier/glslt/releases) [![PyPI](https://img.shields.io/pypi/v/glslt)](https://pypi.org/project/glslt/) [![License](https://img.shields.io/github/license/vtavernier/glslt)](LICENSE)
 
 `glslt` is a prototype language for adding template functions to the GLSL
 language.
@@ -47,8 +47,25 @@ cd glslt
 cargo run -- test.glsl
 
 # Or, install the glsltcc binary permanently
-cargo install --release --force .
+cargo install --force .
 glsltcc test.glsl
+```
+
+To install the Python module for the latest stable version, you can use `pip`:
+
+```bash
+pip install glslt
+```
+
+If you downloaded the source and want to build the latest version of the Python
+module, use `maturin`:
+
+```bash
+# Install maturin (only needed once)
+pip install maturin
+
+# Assuming you are in a virtualenv
+(cd glslt && maturin develop --cargo-extra-args='--features python' -b pyo3)
 ```
 
 ## Usage
