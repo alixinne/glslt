@@ -80,7 +80,7 @@ before_deploy:
           export SHORTPYVERSION=$(cut -d. -f1-2 --output-delimiter='' <<< $PYVERSION)
           export PATH="$APPDATA/python/python${SHORTPYVERSION}/Scripts:$BASE_PATH"
           # Install and select Python version
-          pyenv install ${PYVERSION}${PYVERSIONSUFFIX}
+          pyenv install -q ${PYVERSION}${PYVERSIONSUFFIX}
           pyenv global ${PYVERSION}${PYVERSIONSUFFIX}
           pyenv rehash
           # Install maturin for building the package
