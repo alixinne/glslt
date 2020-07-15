@@ -19,6 +19,7 @@ pub struct Unit {
 }
 
 impl Unit {
+    /// Create a new transform unit
     pub fn new() -> Self {
         Self {
             ctx: Context::new(),
@@ -27,6 +28,11 @@ impl Unit {
         }
     }
 
+    /// Create a new transform unit using pre-defined templates
+    ///
+    /// # Parameters
+    ///
+    /// * `ctx`: context to pull pre-defined templates from
     pub fn with_context(ctx: Context) -> Self {
         Self {
             ctx,
@@ -35,6 +41,10 @@ impl Unit {
         }
     }
 
+    /// Transform this unit into a GLSL syntax tree
+    ///
+    /// All the declarations given as input will be included in-order in the output, with the
+    /// template instantiations interleaved when needed.
     pub fn into_translation_unit(self) -> Result<TranslationUnit> {
         Ok(TranslationUnit(
             NonEmpty::from_non_empty_iter(self.external_declarations.into_iter())

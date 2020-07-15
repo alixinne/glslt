@@ -82,11 +82,25 @@ fn expr_vec_to_id(exprs: &Vec<Expr>) -> String {
 }
 
 impl TemplateDefinition {
+    /// Generate a unique ID for the given template invocation
+    ///
+    /// # Parameters
+    ///
+    /// * `args`: list of template parameter values used in the invocation
     pub fn generate_id(&self, args: &Vec<Expr>) -> String {
         let args_id = expr_vec_to_id(&args);
         ["_glslt", self.ast.prototype.name.0.as_str(), &args_id].join("_")
     }
 
+    /// Instantiate this template definition into a GLSL function
+    ///
+    /// # Parameters
+    ///
+    /// * `name`: function name to use for the declaration of this instantiated template
+    /// * `parameters`: list of template parameters values
+    /// * `known_functions`: list of known function names used to differentiate symbols
+    /// * `prototypes`: list of declared function prototypes
+    /// * `extra_parameters`: list of captured parameters to include in the definition
     pub fn instantiate(
         &self,
         name: &str,
@@ -195,6 +209,16 @@ impl TemplateDefinition {
         ast
     }
 
+    /// Extract the template parameters from the full set of call parameters
+    ///
+    /// # Parameters
+    ///
+    /// * `args`: list of all function call arguments
+    ///
+    /// # Returns
+    ///
+    /// List of expressions to be used in the template call. `args` will contain regular arguments
+    /// to the GLSL function (which do not require a template instantiation).
     pub fn extract_template_parameters(&self, args: &mut Vec<Expr>) -> Result<Vec<Expr>> {
         let mut idx = 0;
         let mut it = self.parameters.iter();

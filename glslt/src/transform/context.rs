@@ -17,6 +17,7 @@ pub struct Context {
 }
 
 impl Context {
+    /// Create a new template definition context
     pub fn new() -> Self {
         Self::default()
     }

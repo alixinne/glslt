@@ -6,6 +6,7 @@ edition = "2018"
 license = "MIT"
 homepage = "https://github.com/vtavernier/glslt"
 repository = "https://github.com/vtavernier/glslt.git"
+readme = "README.md"
 
 [[bin]]
 name = "glsltcc"

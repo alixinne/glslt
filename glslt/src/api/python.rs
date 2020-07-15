@@ -10,6 +10,9 @@ use glsl::syntax::TranslationUnit;
 
 use crate::transform::{MinUnit, TransformUnit, Unit};
 
+/// GLSL translation unit
+///
+/// This represents the syntax tree of an entire GLSL shader stage.
 #[pyclass(name = TranslationUnit)]
 #[derive(Debug, Clone)]
 pub struct PyTranslationUnit {
@@ -93,6 +96,7 @@ macro_rules! impl_unit {
     };
 }
 
+/// Represents a GLSLT transform unit
 #[pyclass(name = Unit)]
 #[derive(Debug, Clone)]
 pub struct PyUnit {
@@ -115,6 +119,7 @@ impl PyUnit {
     }
 }
 
+/// Represents a minifying GLSLT transform unit
 #[pyclass(name = MinUnit)]
 #[derive(Debug, Clone)]
 pub struct PyMinUnit {

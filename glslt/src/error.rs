@@ -16,18 +16,26 @@ pub enum Error {
     /// Re-declaration of a function pointer type
     #[error("function pointer {name} previously declared as {previous_declaration}")]
     DuplicatePointerDefinition {
+        /// Name of the duplicated pointer definition
         name: String,
+        /// Source code of the previous declaration
         previous_declaration: String,
     },
     /// Template parameter declared with an array specifier
     #[error("template {name} parameter #{index} cannot have an array specifier")]
-    ArrayedTemplateParameter { name: String, index: usize },
+    ArrayedTemplateParameter {
+        /// Name of the template parameter
+        name: String,
+        /// 0-based position of the parameter in the function declaration
+        index: usize
+    },
     /// Unresolved include directive
     #[error("unresolved include: {0:?}")]
     UnresolvedInclude(glsl::syntax::Path),
     /// Unsupported preprocessor directive in minifying mode
     #[error("unsupported preprocessor directive in minifying mode: {0:?}")]
     UnsupportedPreprocessor(Preprocessor),
+    /// Unsupported declarator list in minifying mode
     #[error("unsupported declarator list in minifying mode: {0:?}")]
     UnsupportedIDL(InitDeclaratorList),
 }
@@ -47,7 +55,7 @@ fn prototype_to_string(prototype: &FunctionPrototype) -> String {
 }
 
 impl Error {
-    /// Create a new [Error::DuplicatePointerDefinition]
+    /// Create a new [DuplicatePointerDefinition](#variant.DuplicatePointerDefinition)
     ///
     /// # Parameters
     ///

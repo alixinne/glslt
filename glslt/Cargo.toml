@@ -9,6 +9,7 @@ repository = "https://github.com/vtavernier/glslt.git"
 readme = "README.md"
 
 [lib]
+path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]

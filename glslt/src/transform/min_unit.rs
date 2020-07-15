@@ -26,10 +26,16 @@ pub struct MinUnit {
 }
 
 impl MinUnit {
+    /// Create a new minifying transform unit
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Create a new minifying transform unit using pre-defined templates
+    ///
+    /// # Parameters
+    ///
+    /// * `ctx`: context to pull pre-defined templates from
     pub fn with_context(ctx: Context) -> Self {
         Self {
             ctx,
@@ -37,6 +43,7 @@ impl MinUnit {
         }
     }
 
+    /// Obtain an iterator to the functions defined in the current unit
     pub fn iter_functions<'a>(&'a self) -> impl Iterator<Item = &'a FunctionDefinition> {
         self.external_declarations
             .values()
@@ -46,6 +53,14 @@ impl MinUnit {
             })
     }
 
+    /// Transform this unit into a GLSL syntax tree
+    ///
+    /// Only the functions included in `wanted` and their transitive dependencies will be included
+    /// in the output.
+    ///
+    /// # Parameters
+    ///
+    /// * `wanted`: list of function names to include in the result
     pub fn into_translation_unit<'a>(
         self,
         wanted: impl std::iter::Iterator<Item = &'a str>,
