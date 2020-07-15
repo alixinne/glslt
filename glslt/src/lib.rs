@@ -10,6 +10,53 @@
 //! crate](https://github.com/phaazon/glsl) (note that the fork currently used is
 //! <https://github.com/vtavernier/glsl/tree/dev/>).
 //!
+//! ```rust
+//! use glslt::glsl::parser::Parse;
+//! use glslt::glsl::syntax::*;
+//! use glslt::transform::{Unit, TransformUnit};
+//!
+//! let glsl_src = r#"
+//! float sdf3d(in vec3 p);
+//! float colort();
+//!
+//! float sdSphere(vec3 p, float r) {
+//!     return length(p) - r;
+//! }
+//!
+//! float opElongate(in sdf3d primitive, in colort C, in vec3 p, in colort D, in vec3 h) {
+//!     vec3 q = p - clamp(p, -h, h);
+//!     return C() * primitive(q) * D();
+//! }
+//!
+//! void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+//!     float sz = 5.;
+//!     fragColor = vec4(vec3(opElongate(sdSphere(_p, sz), 1.0, vec3(fragCoord, 0.), 2.0, vec3(1., 2., 3.))), 1.0);
+//! }
+//! "#;
+//!
+//! // Parse the GLSL source code
+//! let tu = TranslationUnit::parse(glsl_src).expect("failed to parse GLSLT source");
+//!
+//! // Create the transform unit
+//! let mut unit = Unit::new();
+//!
+//! // Parse declarations
+//! for decl in (tu.0).0.into_iter() {
+//!     unit.parse_external_declaration(decl).expect("failed to parse declaration");
+//! }
+//!
+//! // Generate the result
+//! let tu = unit.into_translation_unit().expect("failed to generate output");
+//!
+//! // Transpile the syntax tree to GLSL source
+//! let mut output_src = String::new();
+//! glsl::transpiler::glsl::show_translation_unit(
+//!     &mut output_src,
+//!     &tu,
+//!     glsl::transpiler::glsl::FormattingState::default(),
+//! ).expect("failed to generate GLSL");
+//! ```
+//!
 //! ## Python library
 //!
 //! If you installed the glslt library via `pip install glslt` or `maturin
