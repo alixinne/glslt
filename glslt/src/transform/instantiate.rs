@@ -48,7 +48,7 @@ lazy_static! {
 #[derive(Debug)]
 pub struct DeclaredSymbol {
     pub symbol_id: usize,
-    pub gen_id: Identifier,
+    pub gen_id: Node<Identifier>,
     pub decl_type: TypeSpecifier,
     pub array: Option<ArraySpecifier>,
 }
@@ -68,7 +68,7 @@ impl<'c> InstantiateTemplate<'c> {
         }
     }
 
-    pub fn instantiate(mut self, mut def: FunctionDefinition) -> Result<()> {
+    pub fn instantiate(mut self, mut def: Node<FunctionDefinition>) -> Result<()> {
         // Transform definition. The visitor is responsible for instantiating templates
         def.visit(&mut self);
 
@@ -81,8 +81,11 @@ impl<'c> InstantiateTemplate<'c> {
         Ok(())
     }
 
-    fn new_gen_id(&self) -> Identifier {
-        Identifier::new(format!("_glslt_lp{}", self.symbol_table.len())).unwrap()
+    fn new_gen_id(&self) -> Node<Identifier> {
+        Node::new(
+            Identifier::new(format!("_glslt_lp{}", self.symbol_table.len())).unwrap(),
+            None,
+        )
     }
 
     fn transform_call(
@@ -159,7 +162,11 @@ impl<'c> InstantiateTemplate<'c> {
 
             // Add the captured parameters to the end of the call
             for ep in extra_parameters.into_iter() {
-                args.push(Expr::Variable(Identifier::new(ep.0).unwrap()));
+                // TODO: Preserve span information
+                args.push(Expr::Variable(Node::new(
+                    Identifier::new(ep.0).unwrap(),
+                    None,
+                )));
             }
         } else {
             debug!("no template for function call: {}", fun.0);

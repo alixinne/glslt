@@ -42,6 +42,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "bimap"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43806ad6cd3dec8ef84ac19f35a7b0075aee8c8a913ffc3a09191e6d7131e781"
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -55,6 +61,12 @@ checksum = "4152116fd6e9dadb291ae18fc1ec3575ed6d84c29642d97890f4b4a3417297e4"
 dependencies = [
  "generic-array",
 ]
+
+[[package]]
+name = "bytecount"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0017894339f586ccb943b01b9555de56770c11cda818e7e3d8bd93f4ed7f46e"
 
 [[package]]
 name = "cfg-if"
@@ -140,11 +152,13 @@ dependencies = [
 
 [[package]]
 name = "glsl"
-version = "4.1.1"
-source = "git+https://github.com/vtavernier/glsl?branch=dev#0474885f2e7617a0d52f477d9e27c93a49ffc6b6"
+version = "5.0.0"
+source = "git+https://github.com/vtavernier/glsl?branch=dev#7805450d0036cdc059d25834238b4cf91e0d8ff3"
 dependencies = [
+ "bimap 0.5.2",
  "lazy_static",
  "nom",
+ "nom_locate",
 ]
 
 [[package]]
@@ -152,7 +166,7 @@ name = "glslt"
 version = "0.4.2"
 dependencies = [
  "anyhow",
- "bimap",
+ "bimap 0.4.0",
  "glsl",
  "lazy_static",
  "log",
@@ -293,6 +307,17 @@ checksum = "ffb4262d26ed83a1c0a33a38fe2bb15797329c85770da05e6b828ddb782627af"
 dependencies = [
  "memchr",
  "version_check",
+]
+
+[[package]]
+name = "nom_locate"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e4726500a3d0297dd38edc169d919ad997a9931b4645b59ce0231e88536e213"
+dependencies = [
+ "bytecount",
+ "memchr",
+ "nom",
 ]
 
 [[package]]

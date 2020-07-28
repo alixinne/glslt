@@ -8,7 +8,7 @@ use crate::{Error, Result};
 
 fn parse_file(
     path: &PathBuf,
-    parsed_external_declarations: &mut Vec<ExternalDeclaration>,
+    parsed_external_declarations: &mut Vec<Node<ExternalDeclaration>>,
     seen_files: &mut HashSet<PathBuf>,
     include: &[PathBuf],
 ) -> Result<()> {
@@ -28,7 +28,9 @@ fn parse_file(
 
     // Extend the root TU
     for extdecl in (tu.0).0.into_iter() {
-        match extdecl {
+        let Node { contents, span_id } = extdecl;
+
+        match contents {
             ExternalDeclaration::Preprocessor(pp) => match pp {
                 Preprocessor::Include(inc) => {
                     let resolved_path = match &inc.path {
@@ -64,12 +66,11 @@ fn parse_file(
                         }
                     }
                 }
-                other => {
-                    parsed_external_declarations.push(ExternalDeclaration::Preprocessor(other))
-                }
+                other => parsed_external_declarations
+                    .push(Node::new(ExternalDeclaration::Preprocessor(other), span_id)),
             },
             other => {
-                parsed_external_declarations.push(other);
+                parsed_external_declarations.push(Node::new(other, span_id));
             }
         }
     }

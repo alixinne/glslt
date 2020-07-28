@@ -15,7 +15,7 @@ pub struct Unit {
     /// Identifiers of already instantiated templates
     instantiated_templates: HashSet<String>,
     /// Result of external declarations copied from input and generated through instantiation
-    external_declarations: Vec<ExternalDeclaration>,
+    external_declarations: Vec<Node<ExternalDeclaration>>,
 }
 
 impl Unit {
@@ -69,37 +69,39 @@ impl TransformUnit for Unit {
     fn register_template_instance<'s>(
         &mut self,
         template_name: &str,
-        instance: FunctionDefinition,
+        instance: Node<FunctionDefinition>,
     ) {
         // Instantiate the template and add it to the declarations before us
         self.external_declarations
-            .push(ExternalDeclaration::FunctionDefinition(instance));
+            .push(instance.map(ExternalDeclaration::FunctionDefinition));
 
         // Take note we instantiated the template
         self.instantiated_templates.insert(template_name.to_owned());
     }
 
-    fn push_function_declaration(&mut self, def: FunctionDefinition) {
+    fn push_function_declaration(&mut self, def: Node<FunctionDefinition>) {
         self.ctx
             .known_functions_mut()
             .insert(def.prototype.name.0.clone());
 
         // Add the definition to the declarations
         self.external_declarations
-            .push(ExternalDeclaration::FunctionDefinition(def));
+            .push(def.map(ExternalDeclaration::FunctionDefinition));
     }
 
-    fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()> {
+    fn parse_external_declaration(&mut self, extdecl: Node<ExternalDeclaration>) -> Result<()> {
         if let Some(extdecl) = self.ctx.parse_external_declaration(extdecl)? {
-            match extdecl {
+            match extdecl.contents {
                 ExternalDeclaration::FunctionDefinition(def) => {
                     // No template parameter, it's a "regular" function so it has to be
                     // processed to instantiate parameters
                     //
                     // TODO: Recursive template instantiation?
-                    InstantiateTemplate::new(self).instantiate(def)?;
+                    InstantiateTemplate::new(self).instantiate(Node::new(def, extdecl.span_id))?;
                 }
-                other => self.external_declarations.push(other),
+                other => self
+                    .external_declarations
+                    .push(Node::new(other, extdecl.span_id)),
             }
         }
 

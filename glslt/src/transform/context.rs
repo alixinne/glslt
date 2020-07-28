@@ -106,15 +106,20 @@ impl Context {
     /// if this declaration is not a template or needs to be instantiated in a context
     pub fn parse_external_declaration(
         &mut self,
-        extdecl: ExternalDeclaration,
-    ) -> Result<Option<ExternalDeclaration>> {
-        match extdecl {
-            ExternalDeclaration::Declaration(decl) => self.parse_declaration(decl),
+        extdecl: Node<ExternalDeclaration>,
+    ) -> Result<Option<Node<ExternalDeclaration>>> {
+        let span_id = extdecl.span_id;
+
+        match extdecl.contents {
+            ExternalDeclaration::Declaration(decl) => self
+                .parse_declaration(decl)
+                .map(|ed| ed.map(|ed| Node::new(ed, span_id))),
             ExternalDeclaration::FunctionDefinition(def) => Ok(self
                 .parse_function_definition(def)?
-                .map(ExternalDeclaration::FunctionDefinition)),
+                .map(ExternalDeclaration::FunctionDefinition)
+                .map(|ed| Node::new(ed, span_id))),
             // Just forward the others
-            other => Ok(Some(other)),
+            other => Ok(Some(Node::new(other, span_id))),
         }
     }
 

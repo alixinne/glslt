@@ -105,7 +105,7 @@ impl TemplateDefinition {
         known_functions: &HashSet<String>,
         prototypes: &HashMap<String, FunctionPrototype>,
         extra_parameters: &[(String, &super::instantiate::DeclaredSymbol)],
-    ) -> FunctionDefinition {
+    ) -> Node<FunctionDefinition> {
         // Clone the AST
         let mut ast = self.ast.clone();
 
@@ -200,7 +200,7 @@ impl TemplateDefinition {
                 ));
         }
 
-        ast
+        ast.into_node()
     }
 
     /// Extract the template parameters from the full set of call parameters

@@ -32,19 +32,23 @@ pub trait TransformUnit {
     ///
     /// * `template_name`: name of the template instantiation
     /// * `instance`: function definition corresponding to the instantiation
-    fn register_template_instance(&mut self, template_name: &str, instance: FunctionDefinition);
+    fn register_template_instance(
+        &mut self,
+        template_name: &str,
+        instance: Node<FunctionDefinition>,
+    );
 
     /// Add a function declaration to the transform unit
     ///
     /// # Parameters
     ///
     /// * `def`: syntax tree for the function definition
-    fn push_function_declaration(&mut self, def: FunctionDefinition);
+    fn push_function_declaration(&mut self, def: Node<FunctionDefinition>);
 
     /// Parse a GLSLT declaration and add it to the transform unit
     ///
     /// # Parameters
     ///
     /// * `extdecl`: top-level declaration to parse as GLSLT
-    fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()>;
+    fn parse_external_declaration(&mut self, extdecl: Node<ExternalDeclaration>) -> Result<()>;
 }
