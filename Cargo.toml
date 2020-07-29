@@ -2,4 +2,5 @@
 members = [ "glslt", "glslt_cli" ]
 
 [patch.crates-io]
+glsl = { git = "https://github.com/vtavernier/glsl", branch = "dev" }
 glslt = { path = "glslt" }

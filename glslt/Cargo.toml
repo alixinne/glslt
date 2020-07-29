@@ -13,7 +13,7 @@ path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-glsl = { git = "https://github.com/vtavernier/glsl", branch = "dev" }
+glsl = "5"
 
 thiserror = "1.0"
 sha-1 = "0.9"
