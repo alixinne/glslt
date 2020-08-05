@@ -1,6 +1,7 @@
 //! Definitions of template function abstractrepresentations
 
 use std::collections::{HashMap, HashSet};
+use std::num::NonZeroUsize;
 
 use glsl::syntax::*;
 use glsl::visitor::*;
@@ -27,6 +28,8 @@ pub struct TemplateDefinition {
     pub(crate) ast: FunctionDefinition,
     /// List of template parameters
     parameters: Vec<TemplateParameter>,
+    /// Declaring span id
+    pub(crate) span_id: Option<NonZeroUsize>,
 }
 
 fn arg_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &FunctionPrototype) {
@@ -79,6 +82,11 @@ fn expr_vec_to_id(exprs: &[Expr]) -> String {
 }
 
 impl TemplateDefinition {
+    /// Add span information to this template
+    pub fn with_span_id(self, span_id: Option<NonZeroUsize>) -> Self {
+        Self { span_id, ..self }
+    }
+
     /// Generate a unique ID for the given template invocation
     ///
     /// # Parameters
@@ -247,7 +255,7 @@ pub enum TryTemplate {
     /// GLSLT template function
     Template(TemplateDefinition),
     /// GLSL function
-    Function(FunctionDefinition),
+    Function(Node<FunctionDefinition>),
 }
 
 /// Try parsing a function definition as a template
@@ -267,11 +275,13 @@ pub enum TryTemplate {
 ///
 /// See [crate::Error] for potential template declaration errors.
 pub fn parse_definition_as_template(
-    mut def: FunctionDefinition,
+    def: Node<FunctionDefinition>,
     declared_pointer_types: &HashMap<String, FunctionPrototype>,
 ) -> Result<TryTemplate> {
     let mut parameters = Vec::new();
     let mut non_template_parameters = Vec::new();
+    let span_id = def.span_id;
+    let mut def = def.into_inner();
 
     for (arg_id, parameter) in def
         .prototype
@@ -311,11 +321,12 @@ pub fn parse_definition_as_template(
         .extend(non_template_parameters.into_iter());
 
     if parameters.is_empty() {
-        Ok(TryTemplate::Function(def))
+        Ok(TryTemplate::Function(Node::new(def, span_id)))
     } else {
         Ok(TryTemplate::Template(TemplateDefinition {
             ast: def,
             parameters,
+            span_id,
         }))
     }
 }

@@ -43,7 +43,7 @@ impl MinUnit {
         }
     }
 
-    /// Obtain an iterator to the functions defined in the current unit
+    /// Obtain an iterator to the functions and templates defined in the current unit
     pub fn iter_functions(&self) -> impl Iterator<Item = Node<&'_ FunctionDefinition>> {
         self.external_declarations
             .values()
@@ -51,6 +51,12 @@ impl MinUnit {
                 ExternalDeclaration::FunctionDefinition(ref fd) => Some(Node::new(fd, ed.span_id)),
                 _ => None,
             })
+            .chain(
+                self.ctx
+                    .declared_templates()
+                    .values()
+                    .map(|dt| Node::new(&dt.ast, dt.span_id)),
+            )
     }
 
     /// Transform this unit into a GLSL syntax tree

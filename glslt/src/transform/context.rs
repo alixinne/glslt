@@ -52,8 +52,8 @@ impl Context {
 
     fn parse_function_definition(
         &mut self,
-        def: FunctionDefinition,
-    ) -> Result<Option<FunctionDefinition>> {
+        def: Node<FunctionDefinition>,
+    ) -> Result<Option<Node<FunctionDefinition>>> {
         // A function definition is a template if any of its arguments is a pointer
         let name = def.prototype.name.0.clone();
         let template =
@@ -115,9 +115,13 @@ impl Context {
                 .parse_declaration(decl)
                 .map(|ed| ed.map(|ed| Node::new(ed, span_id))),
             ExternalDeclaration::FunctionDefinition(def) => Ok(self
-                .parse_function_definition(def)?
-                .map(ExternalDeclaration::FunctionDefinition)
-                .map(|ed| Node::new(ed, span_id))),
+                .parse_function_definition(Node::new(def, span_id))?
+                .map(|n| {
+                    Node::new(
+                        ExternalDeclaration::FunctionDefinition(n.into_inner()),
+                        span_id,
+                    )
+                })),
             // Just forward the others
             other => Ok(Some(Node::new(other, span_id))),
         }
