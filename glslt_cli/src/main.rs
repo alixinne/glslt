@@ -17,11 +17,13 @@
 //! GLSL Template compiler
 //!
 //! USAGE:
-//!     glsltcc [OPTIONS] [--] [input]...
+//!     glsltcc [FLAGS] [OPTIONS] [--] [input]...
 //!
 //! FLAGS:
 //!     -h, --help       Prints help information
+//!     -q, --quiet      Quiet mode
 //!     -V, --version    Prints version information
+//!     -v, --verbose    Verbose mode. Repeat to increase verbosity
 //!
 //! OPTIONS:
 //!     -I <include>...                 System include paths

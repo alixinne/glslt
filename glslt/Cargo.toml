@@ -35,9 +35,13 @@ optional = true
 version = "0.3"
 optional = true
 
+[dependencies.env_logger]
+version = "0.7"
+optional = true
+
 [features]
 python = ["pyo3", "cli"]
-cli = ["anyhow", "structopt"]
+cli = ["anyhow", "structopt", "env_logger"]
 
 [package.metadata.maturin.scripts]
 glsltcc = "glslt:main"

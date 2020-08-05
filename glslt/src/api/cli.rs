@@ -12,6 +12,14 @@ pub struct Opts {
     /// Input template files
     input: Vec<PathBuf>,
 
+    /// Quiet mode
+    #[structopt(short, long)]
+    quiet: bool,
+
+    /// Verbose mode. Repeat to increase verbosity
+    #[structopt(short, long, parse(from_occurrences))]
+    verbose: u32,
+
     /// Output file (defaults to stdout)
     #[structopt(short, long)]
     output: Option<PathBuf>,
@@ -31,6 +39,29 @@ pub struct Opts {
 ///
 /// * `opts`: command-line options
 pub fn main(opts: Opts) -> anyhow::Result<()> {
+    env_logger::Builder::from_env(
+        env_logger::Env::new()
+            .filter_or(
+                "GLSLT_LOG",
+                match opts.verbose {
+                    0 => {
+                        if opts.quiet {
+                            "error"
+                        } else {
+                            "warn"
+                        }
+                    }
+                    1 => "info",
+                    2 => "debug",
+                    _ => "trace",
+                },
+            )
+            .write_style("GLSLT_LOG_STYLE"),
+    )
+    .format_timestamp(None)
+    .try_init()
+    .ok();
+
     // Parse input files in parallel
     let tu = crate::parse_files(&opts.input, &opts.include)?;
 
