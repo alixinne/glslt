@@ -321,7 +321,7 @@ Note that in this mode, no preprocessor directives (outside of `#define` and
 their use) are supported. `#version`, `#extension` and precision specifiers
 will be included at the top of the generated code.
 
-As an example, compiling the previous example with `glsltcc -KsdSphere` will
+As an example, compiling the previous example with `glsltcc -K=sdSphere` will
 only return the code for the sdSphere function, since it has no dependencies.
 
 This mode hasn't been tested throughly yet, so some types of declarations may

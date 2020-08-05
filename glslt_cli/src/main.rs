@@ -40,7 +40,7 @@
 //!
 //! # Transform the GLSLT code in `sdf.glsl` to the output file `output.glsl`. Only keep
 //! # transitive dependencies of the `mainImage` function (minifying mode).
-//! glsltcc -o output.glsl -K mainImage sdf.glsl
+//! glsltcc -o output.glsl -K=mainImage sdf.glsl
 //! ```
 
 use glslt::api::cli::*;
