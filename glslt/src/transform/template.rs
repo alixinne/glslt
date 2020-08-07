@@ -6,17 +6,19 @@ use std::num::NonZeroUsize;
 use glsl::syntax::*;
 use glsl::visitor::*;
 
+use super::LocalScope;
+
 use crate::{Error, Result};
 
 /// Function parameter of a template
 #[derive(Debug, Clone)]
-struct TemplateParameter {
+pub struct TemplateParameter {
     /// Name of the function pointer type
-    typename: String,
+    pub typename: String,
     /// Template variable name
-    symbol: Option<String>,
+    pub symbol: Option<String>,
     /// Original parameter index
-    index: usize,
+    pub index: usize,
 }
 
 /// Definition of a template function
@@ -25,11 +27,11 @@ pub struct TemplateDefinition {
     /// AST for the partially instantiated template definition.
     ///
     /// This has to be cloned and visited to replace the template parameters.
-    pub(crate) ast: FunctionDefinition,
+    ast: FunctionDefinition,
     /// List of template parameters
     parameters: Vec<TemplateParameter>,
     /// Declaring span id
-    pub(crate) span_id: Option<NonZeroUsize>,
+    span_id: Option<NonZeroUsize>,
 }
 
 fn arg_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &FunctionPrototype) {
@@ -82,6 +84,21 @@ fn expr_vec_to_id(exprs: &[Expr]) -> String {
 }
 
 impl TemplateDefinition {
+    /// Get the AST of this template definition
+    pub fn ast(&self) -> &FunctionDefinition {
+        &self.ast
+    }
+
+    /// Get the list of parameters of this template
+    pub fn parameters(&self) -> &[TemplateParameter] {
+        &self.parameters[..]
+    }
+
+    /// Get the span id where this template was declared
+    pub fn span_id(&self) -> Option<NonZeroUsize> {
+        self.span_id
+    }
+
     /// Add span information to this template
     pub fn with_span_id(self, span_id: Option<NonZeroUsize>) -> Self {
         Self { span_id, ..self }
@@ -101,16 +118,12 @@ impl TemplateDefinition {
     ///
     /// # Parameters
     ///
-    /// * `name`: function name to use for the declaration of this instantiated template
-    /// * `parameters`: list of template parameters values
-    /// * `known_functions`: list of known function names used to differentiate symbols
-    /// * `prototypes`: list of declared function prototypes
-    /// * `extra_parameters`: list of captured parameters to include in the definition
+    /// * `scope`: local scope this template is being instantiated from
+    /// * `instantiator`: source visitor for the template instantiator
+    /// * `unit`: host transformation unit
     pub fn instantiate(
         &self,
-        name: &str,
-        parameters: &[Expr],
-        extra_parameters: &[(String, super::instantiate::DeclaredSymbol)],
+        scope: &LocalScope,
         instantiator: &mut super::instantiate::InstantiateTemplate,
         unit: &mut dyn super::TransformUnit,
     ) -> Node<FunctionDefinition> {
@@ -227,7 +240,13 @@ impl TemplateDefinition {
         let mut subs = HashMap::new();
         let mut template_parameters = HashMap::new();
 
-        for (id, (param, value)) in self.parameters.iter().zip(parameters.iter()).enumerate() {
+        // Add substitutions for the template parameters
+        for (id, (param, value)) in self
+            .parameters
+            .iter()
+            .zip(scope.template_parameters().iter())
+            .enumerate()
+        {
             if let Some(ps) = &param.symbol {
                 subs.insert(ps.as_str(), value);
                 template_parameters.insert(ps.as_str(), &self.parameters[id]);
@@ -242,19 +261,21 @@ impl TemplateDefinition {
         });
 
         // Change the name
-        ast.prototype.name.0 = name.to_string();
+        ast.prototype.name.0 = scope.name().to_owned();
 
-        // Add the extra parameters
-        for ep in extra_parameters {
+        // Add the captured parameters to the signature
+        for ep in scope.captured_parameters() {
+            let p = instantiator.get_symbol(ep).unwrap();
+
             ast.prototype
                 .parameters
                 .push(FunctionParameterDeclaration::Named(
                     None,
                     FunctionParameterDeclarator {
-                        ty: ep.1.decl_type.clone(),
+                        ty: p.decl_type.clone(),
                         ident: ArrayedIdentifier {
-                            ident: ep.1.gen_id.clone(),
-                            array_spec: ep.1.array.clone(),
+                            ident: p.gen_id.clone(),
+                            array_spec: p.array.clone(),
                         },
                     },
                 ));

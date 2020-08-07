@@ -9,6 +9,9 @@ pub use global_scope::*;
 
 mod instantiate;
 
+mod local_scope;
+pub use local_scope::*;
+
 mod min_unit;
 pub use min_unit::*;
 

@@ -55,7 +55,7 @@ impl MinUnit {
                 self.global_scope
                     .declared_templates()
                     .values()
-                    .map(|dt| Node::new(&dt.ast, dt.span_id)),
+                    .map(|dt| Node::new(dt.ast(), dt.span_id())),
             )
     }
 

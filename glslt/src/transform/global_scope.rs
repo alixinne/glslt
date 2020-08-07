@@ -62,7 +62,7 @@ impl GlobalScope {
 
         match template {
             TryTemplate::Template(template) => {
-                info!("declared template: {}", template.ast.prototype.name.0);
+                info!("declared template: {}", template.ast().prototype.name.0);
 
                 // We found a template parameter, so it's a template function
                 self.declared_templates.insert(name, Rc::new(template));

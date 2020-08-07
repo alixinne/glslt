@@ -88,6 +88,10 @@ impl InstantiateTemplate {
         Ok(())
     }
 
+    pub fn get_symbol(&self, name: &str) -> Option<&DeclaredSymbol> {
+        self.symbol_table.get(name)
+    }
+
     fn new_gen_id(&self) -> Node<Identifier> {
         Node::new(
             Identifier::new(format!("_glslt_lp{}", self.symbol_table.len())).unwrap(),
@@ -138,75 +142,45 @@ impl InstantiateTemplate {
         // We found a template whose name matches the identifier
         // Thus, transform the function call
 
-        // Extract arguments
-        let mut template_parameters = template.extract_template_parameters(args)?;
-
-        // Generate name
-        let template_name = template.generate_id(&template_parameters);
-
-        // Extract the set of captured variables
-        struct Capturer<'ds> {
-            st: &'ds HashMap<String, super::instantiate::DeclaredSymbol>,
-            captured: HashMap<String, super::instantiate::DeclaredSymbol>,
-        }
-
-        impl Visitor for Capturer<'_> {
-            fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-                if let Expr::Variable(ident) = e {
-                    // This is a variable. If it's in the symbol table, it needs to be
-                    // captured and renamed
-
-                    if let Some(sb) = self.st.get(ident.0.as_str()) {
-                        // Add it to the list of captured variables
-                        self.captured.insert(ident.0.clone(), (*sb).clone());
-                        // Rename the reference
-                        *ident = sb.gen_id.clone();
-                    }
-                }
-
-                Visit::Children
-            }
-        }
-
-        // Visit the input expressions
-        let mut capturer = Capturer {
-            st: &self.symbol_table,
-            captured: HashMap::new(),
-        };
-
-        for tp in &mut template_parameters {
-            tp.visit(&mut capturer);
-        }
-
-        // Extract the list of captured variables ordered by symbol_id
-        let mut extra_parameters: Vec<_> = capturer.captured.into_iter().collect();
-        extra_parameters.sort_by_key(|ep| ep.1.symbol_id);
+        // Create the local scope
+        let local_scope = super::LocalScope::new(template, args, &self.symbol_table)?;
 
         // Instantiate the template if needed
-        if !unit.template_instance_declared(&template_name) {
-            let template = template.instantiate(
-                &template_name,
-                &template_parameters,
-                &extra_parameters,
-                self,
-                unit,
-            );
-
-            unit.register_template_instance(&template_name, template);
+        if !unit.template_instance_declared(&local_scope.name()) {
+            let template = template.instantiate(&local_scope, self, unit);
+            unit.register_template_instance(&local_scope.name(), template);
         }
 
         // The identifier should be replaced by the mangled name
-        fun.0 = template_name;
+        fun.0 = local_scope.name().to_owned();
 
         // Add the captured parameters to the end of the call
-        for ep in extra_parameters.into_iter() {
+        for ep in local_scope.captured_parameters().into_iter() {
             // TODO: Preserve span information
             args.push(Expr::Variable(Node::new(
-                Identifier::new(ep.0).unwrap(),
+                Identifier::new(ep.clone()).unwrap(),
                 None,
             )));
         }
+
         Ok(())
+    }
+
+    fn add_declared_symbol(
+        &mut self,
+        name: String,
+        decl_type: TypeSpecifier,
+        array: Option<ArraySpecifier>,
+    ) {
+        self.symbol_table.insert(
+            name,
+            DeclaredSymbol {
+                symbol_id: self.symbol_table.len(),
+                gen_id: self.new_gen_id(),
+                decl_type,
+                array,
+            },
+        );
     }
 }
 
@@ -236,26 +210,18 @@ impl Visitor for InstantiateTemplateUnit<'_> {
 
     fn visit_init_declarator_list(&mut self, idl: &mut InitDeclaratorList) -> Visit {
         // Register all declared variables
-        self.instantiator.symbol_table.insert(
+        self.instantiator.add_declared_symbol(
             idl.head.name.as_ref().unwrap().0.clone(),
-            DeclaredSymbol {
-                symbol_id: self.instantiator.symbol_table.len(),
-                gen_id: self.instantiator.new_gen_id(),
-                decl_type: idl.head.ty.ty.clone(),
-                array: idl.head.array_specifier.clone(),
-            },
+            idl.head.ty.ty.clone(),
+            idl.head.array_specifier.clone(),
         );
 
         // Add tail
         for t in &idl.tail {
-            self.instantiator.symbol_table.insert(
+            self.instantiator.add_declared_symbol(
                 t.ident.ident.0.clone(),
-                DeclaredSymbol {
-                    symbol_id: self.instantiator.symbol_table.len(),
-                    gen_id: self.instantiator.new_gen_id(),
-                    decl_type: idl.head.ty.ty.clone(),
-                    array: idl.head.array_specifier.clone(),
-                },
+                idl.head.ty.ty.clone(),
+                idl.head.array_specifier.clone(),
             );
         }
 
