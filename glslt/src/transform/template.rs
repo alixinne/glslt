@@ -1,7 +1,6 @@
 //! Definitions of template function abstractrepresentations
 
 use std::collections::HashMap;
-use std::num::NonZeroUsize;
 
 use glsl::syntax::*;
 use glsl::visitor::*;
@@ -27,11 +26,9 @@ pub struct TemplateDefinition {
     /// AST for the partially instantiated template definition.
     ///
     /// This has to be cloned and visited to replace the template parameters.
-    ast: FunctionDefinition,
+    ast: Node<FunctionDefinition>,
     /// List of template parameters
     parameters: Vec<TemplateParameter>,
-    /// Declaring span id
-    span_id: Option<NonZeroUsize>,
 }
 
 fn arg_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &FunctionPrototype) {
@@ -85,23 +82,13 @@ fn expr_vec_to_id(exprs: &[Expr]) -> String {
 
 impl TemplateDefinition {
     /// Get the AST of this template definition
-    pub fn ast(&self) -> &FunctionDefinition {
-        &self.ast
+    pub fn ast(&self) -> Node<&FunctionDefinition> {
+        Node::new(&*self.ast, self.ast.span_id)
     }
 
     /// Get the list of parameters of this template
     pub fn parameters(&self) -> &[TemplateParameter] {
         &self.parameters[..]
-    }
-
-    /// Get the span id where this template was declared
-    pub fn span_id(&self) -> Option<NonZeroUsize> {
-        self.span_id
-    }
-
-    /// Add span information to this template
-    pub fn with_span_id(self, span_id: Option<NonZeroUsize>) -> Self {
-        Self { span_id, ..self }
     }
 
     /// Generate a unique ID for the given template invocation
@@ -281,7 +268,7 @@ impl TemplateDefinition {
                 ));
         }
 
-        ast.into_node()
+        ast
     }
 
     /// Extract the template parameters from the full set of call parameters
@@ -393,13 +380,14 @@ pub fn parse_definition_as_template(
         .parameters
         .extend(non_template_parameters.into_iter());
 
+    let def = Node::new(def, span_id);
+
     if parameters.is_empty() {
-        Ok(TryTemplate::Function(Node::new(def, span_id)))
+        Ok(TryTemplate::Function(def))
     } else {
         Ok(TryTemplate::Template(TemplateDefinition {
             ast: def,
             parameters,
-            span_id,
         }))
     }
 }
