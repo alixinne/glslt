@@ -44,5 +44,8 @@ optional = true
 python = ["pyo3", "cli"]
 cli = ["anyhow", "structopt", "env_logger"]
 
+[dev-dependencies]
+pretty_assertions = "0.6"
+
 [package.metadata.maturin.scripts]
 glsltcc = "glslt:main"
