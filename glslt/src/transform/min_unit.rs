@@ -238,7 +238,8 @@ impl TransformUnit for MinUnit {
                     // processed to instantiate parameters
                     //
                     // TODO: Recursive template instantiation?
-                    InstantiateTemplate::new(self).instantiate(Node::new(def, extdecl.span_id))?;
+                    InstantiateTemplate::new()
+                        .instantiate(self, Node::new(def, extdecl.span_id))?;
                 }
                 other => match other {
                     ExternalDeclaration::FunctionDefinition(_) => {}

@@ -1,6 +1,6 @@
 //! Definitions of template function abstractrepresentations
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::num::NonZeroUsize;
 
 use glsl::syntax::*;
@@ -110,9 +110,9 @@ impl TemplateDefinition {
         &self,
         name: &str,
         parameters: &[Expr],
-        known_functions: &HashSet<String>,
-        prototypes: &HashMap<String, FunctionPrototype>,
-        extra_parameters: &[(String, &super::instantiate::DeclaredSymbol)],
+        extra_parameters: &[(String, super::instantiate::DeclaredSymbol)],
+        instantiator: &mut super::instantiate::InstantiateTemplate,
+        unit: &mut dyn super::TransformUnit,
     ) -> Node<FunctionDefinition> {
         // Clone the AST
         let mut ast = self.ast.clone();
@@ -120,14 +120,19 @@ impl TemplateDefinition {
         // Declare the visitor for the substitution
         struct V<'s> {
             subs: HashMap<&'s str, &'s Expr>,
-            known_functions: &'s HashSet<String>,
-            prototypes: &'s HashMap<String, FunctionPrototype>,
             template_parameters: HashMap<&'s str, &'s TemplateParameter>,
+            instantiator: &'s mut super::instantiate::InstantiateTemplate,
+            unit: &'s mut dyn super::TransformUnit,
         }
 
         impl Visitor for V<'_> {
             fn visit_expr(&mut self, e: &mut Expr) -> Visit {
                 if let Expr::FunCall(fun, src_args) = e {
+                    // Transform arguments first
+                    for arg in src_args.iter_mut() {
+                        arg.visit(self);
+                    }
+
                     // Only consider raw identifiers for function names
                     if let FunIdentifier::Identifier(ident) = fun {
                         if let Some(arg) = self.subs.get(ident.0.as_str()) {
@@ -140,17 +145,24 @@ impl TemplateDefinition {
                             // expression
                             match arg {
                                 Expr::Variable(arg_ident)
-                                    if self.known_functions.contains(arg_ident.0.as_str()) =>
+                                    if self
+                                        .unit
+                                        .known_functions()
+                                        .contains(arg_ident.0.as_str()) =>
                                 {
+                                    debug!("raw function name: {:?}", arg_ident);
                                     ident.0 = arg_ident.0.clone();
                                 }
                                 other => {
+                                    debug!("lambda expression: {:?}", other);
                                     let mut res = (*other).clone();
                                     arg_instantiate(
                                         &mut res,
                                         &src_args,
                                         &self
-                                            .prototypes
+                                            .unit
+                                            .ctx()
+                                            .declared_pointer_types()
                                             .get(
                                                 self.template_parameters
                                                     .get(ident.0.as_str())
@@ -163,8 +175,48 @@ impl TemplateDefinition {
                                     *e = res;
                                 }
                             }
+                        } else {
+                            debug!("found nested template call to {:?}({:?})", ident, src_args);
+
+                            // The nested template call needs its args substitued for the input
+                            // args of the outer template
+                            for arg in src_args.iter_mut() {
+                                let lambda_expr = match &arg {
+                                    Expr::Variable(arg_ident) => {
+                                        if let Some(src_arg) = self.subs.get(arg_ident.0.as_str()) {
+                                            debug!(
+                                                "nested argument function name: {:?}",
+                                                arg_ident
+                                            );
+                                            *arg = (*src_arg).clone();
+                                            None
+                                        } else if self
+                                            .unit
+                                            .known_functions()
+                                            .contains(arg_ident.0.as_str())
+                                        {
+                                            debug!("nested raw function name: {:?}", arg_ident);
+                                            ident.0 = arg_ident.0.clone();
+                                            None
+                                        } else {
+                                            Some(arg)
+                                        }
+                                    }
+                                    _ => Some(arg),
+                                };
+
+                                if let Some(lambda) = lambda_expr {
+                                    debug!("nested lambda expression: {:?}", lambda);
+                                    // TODO: Is there really nothing to do in this case because of
+                                    // the other case being handled before?
+                                }
+                            }
+
+                            self.instantiator.visit_fun_call(fun, src_args, self.unit);
                         }
                     }
+
+                    return Visit::Parent;
                 }
 
                 Visit::Children
@@ -184,9 +236,9 @@ impl TemplateDefinition {
 
         ast.visit(&mut V {
             subs,
-            known_functions,
-            prototypes,
             template_parameters,
+            instantiator,
+            unit,
         });
 
         // Change the name

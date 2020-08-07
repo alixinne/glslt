@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::rc::Rc;
 
 use glsl::syntax::*;
 
@@ -11,7 +12,7 @@ pub struct Context {
     /// Known pointer types
     declared_pointer_types: HashMap<String, FunctionPrototype>,
     /// Known GLSLT template functions
-    declared_templates: HashMap<String, TemplateDefinition>,
+    declared_templates: HashMap<String, Rc<TemplateDefinition>>,
     /// Identifiers of function declarations
     known_functions: HashSet<String>,
 }
@@ -64,7 +65,7 @@ impl Context {
                 info!("declared template: {}", template.ast.prototype.name.0);
 
                 // We found a template parameter, so it's a template function
-                self.declared_templates.insert(name, template);
+                self.declared_templates.insert(name, Rc::new(template));
                 Ok(None)
             }
             TryTemplate::Function(def) => Ok(Some(def)),
@@ -81,8 +82,15 @@ impl Context {
         &mut self.known_functions
     }
 
+    /// Get the template corresponding to the given name
+    pub fn get_template(&self, template_name: &str) -> Option<Rc<TemplateDefinition>> {
+        self.declared_templates
+            .get(template_name)
+            .map(|v| v.clone())
+    }
+
     /// Get the list of defined templates in this context
-    pub fn declared_templates(&self) -> &HashMap<String, TemplateDefinition> {
+    pub fn declared_templates(&self) -> &HashMap<String, Rc<TemplateDefinition>> {
         &self.declared_templates
     }
 

@@ -97,7 +97,8 @@ impl TransformUnit for Unit {
                     // processed to instantiate parameters
                     //
                     // TODO: Recursive template instantiation?
-                    InstantiateTemplate::new(self).instantiate(Node::new(def, extdecl.span_id))?;
+                    InstantiateTemplate::new()
+                        .instantiate(self, Node::new(def, extdecl.span_id))?;
                 }
                 other => self
                     .external_declarations
