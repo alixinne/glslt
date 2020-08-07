@@ -161,7 +161,7 @@ impl TemplateDefinition {
                                         &src_args,
                                         &self
                                             .unit
-                                            .ctx()
+                                            .global_scope()
                                             .declared_pointer_types()
                                             .get(
                                                 self.template_parameters

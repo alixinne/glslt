@@ -115,7 +115,7 @@ impl InstantiateTemplate {
                 .binary_search(&ident.0.as_str())
                 .is_err()
             {
-                if let Some(template) = unit.ctx().get_template(&ident.0) {
+                if let Some(template) = unit.global_scope().get_template(&ident.0) {
                     if let Err(error) = self.transform_call(&*template, ident, args, unit) {
                         self.error = Some(error);
                     }

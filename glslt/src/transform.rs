@@ -4,8 +4,8 @@ use glsl::syntax::*;
 
 use crate::Result;
 
-mod context;
-pub use context::*;
+mod global_scope;
+pub use global_scope::*;
 
 mod instantiate;
 

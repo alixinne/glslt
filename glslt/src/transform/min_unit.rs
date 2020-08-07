@@ -4,7 +4,7 @@ use glsl::syntax::*;
 use glsl::visitor::*;
 
 use super::instantiate::InstantiateTemplate;
-use super::{Context, TransformUnit};
+use super::{GlobalScope, TransformUnit};
 
 use crate::{Error, Result};
 
@@ -14,8 +14,8 @@ use dependency_dag::*;
 /// Minimizing GLSLT template instantiation context
 #[derive(Default, Debug, Clone)]
 pub struct MinUnit {
-    /// Template definition context
-    ctx: Context,
+    /// Template definition global scope
+    global_scope: GlobalScope,
     /// External declaration repository
     external_declarations: HashMap<ExternalIdentifier, Node<ExternalDeclaration>>,
     /// Dependency graph, built as declarations are added to this unit
@@ -35,10 +35,10 @@ impl MinUnit {
     ///
     /// # Parameters
     ///
-    /// * `ctx`: context to pull pre-defined templates from
-    pub fn with_context(ctx: Context) -> Self {
+    /// * `global_scope`: context to pull pre-defined templates from
+    pub fn with_context(global_scope: GlobalScope) -> Self {
         Self {
-            ctx,
+            global_scope,
             ..Default::default()
         }
     }
@@ -52,7 +52,7 @@ impl MinUnit {
                 _ => None,
             })
             .chain(
-                self.ctx
+                self.global_scope
                     .declared_templates()
                     .values()
                     .map(|dt| Node::new(&dt.ast, dt.span_id)),
@@ -191,12 +191,12 @@ impl MinUnit {
 }
 
 impl TransformUnit for MinUnit {
-    fn ctx(&self) -> &Context {
-        &self.ctx
+    fn global_scope(&self) -> &GlobalScope {
+        &self.global_scope
     }
 
     fn known_functions(&self) -> &HashSet<String> {
-        self.ctx.known_functions()
+        self.global_scope.known_functions()
     }
 
     fn template_instance_declared(&self, template_name: &str) -> bool {
@@ -216,7 +216,7 @@ impl TransformUnit for MinUnit {
 
     fn push_function_declaration(&mut self, mut def: Node<FunctionDefinition>) {
         // Register the function as a known function
-        self.ctx
+        self.global_scope
             .known_functions_mut()
             .insert(def.prototype.name.0.clone());
 
@@ -231,7 +231,7 @@ impl TransformUnit for MinUnit {
     }
 
     fn parse_external_declaration(&mut self, extdecl: Node<ExternalDeclaration>) -> Result<()> {
-        if let Some(extdecl) = self.ctx.parse_external_declaration(extdecl)? {
+        if let Some(extdecl) = self.global_scope.parse_external_declaration(extdecl)? {
             match extdecl.contents {
                 ExternalDeclaration::FunctionDefinition(def) => {
                     // No template parameter, it's a "regular" function so it has to be

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use glsl::syntax::*;
 
-use super::Context;
+use super::GlobalScope;
 
 use crate::Result;
 
@@ -14,7 +14,7 @@ use crate::Result;
 /// methods are for internal operation.
 pub trait TransformUnit {
     /// Obtain a reference to the template definition context
-    fn ctx(&self) -> &Context;
+    fn global_scope(&self) -> &GlobalScope;
 
     /// Obtain a reference to the known function names list
     fn known_functions(&self) -> &HashSet<String>;

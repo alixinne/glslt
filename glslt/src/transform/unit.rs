@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use glsl::syntax::*;
 
 use super::instantiate::InstantiateTemplate;
-use super::{Context, TransformUnit};
+use super::{GlobalScope, TransformUnit};
 
 use crate::{Error, Result};
 
@@ -11,7 +11,7 @@ use crate::{Error, Result};
 #[derive(Default, Debug, Clone)]
 pub struct Unit {
     /// Template definition context
-    ctx: Context,
+    global_scope: GlobalScope,
     /// Identifiers of already instantiated templates
     instantiated_templates: HashSet<String>,
     /// Result of external declarations copied from input and generated through instantiation
@@ -22,7 +22,7 @@ impl Unit {
     /// Create a new transform unit
     pub fn new() -> Self {
         Self {
-            ctx: Context::new(),
+            global_scope: GlobalScope::new(),
             instantiated_templates: HashSet::new(),
             external_declarations: Vec::new(),
         }
@@ -32,10 +32,10 @@ impl Unit {
     ///
     /// # Parameters
     ///
-    /// * `ctx`: context to pull pre-defined templates from
-    pub fn with_context(ctx: Context) -> Self {
+    /// * `global_scope`: context to pull pre-defined templates from
+    pub fn with_context(global_scope: GlobalScope) -> Self {
         Self {
-            ctx,
+            global_scope,
             instantiated_templates: HashSet::new(),
             external_declarations: Vec::new(),
         }
@@ -54,12 +54,12 @@ impl Unit {
 }
 
 impl TransformUnit for Unit {
-    fn ctx(&self) -> &Context {
-        &self.ctx
+    fn global_scope(&self) -> &GlobalScope {
+        &self.global_scope
     }
 
     fn known_functions(&self) -> &HashSet<String> {
-        self.ctx.known_functions()
+        self.global_scope.known_functions()
     }
 
     fn template_instance_declared(&self, template_name: &str) -> bool {
@@ -80,7 +80,7 @@ impl TransformUnit for Unit {
     }
 
     fn push_function_declaration(&mut self, def: Node<FunctionDefinition>) {
-        self.ctx
+        self.global_scope
             .known_functions_mut()
             .insert(def.prototype.name.0.clone());
 
@@ -90,7 +90,7 @@ impl TransformUnit for Unit {
     }
 
     fn parse_external_declaration(&mut self, extdecl: Node<ExternalDeclaration>) -> Result<()> {
-        if let Some(extdecl) = self.ctx.parse_external_declaration(extdecl)? {
+        if let Some(extdecl) = self.global_scope.parse_external_declaration(extdecl)? {
             match extdecl.contents {
                 ExternalDeclaration::FunctionDefinition(def) => {
                     // No template parameter, it's a "regular" function so it has to be

@@ -6,9 +6,9 @@ use glsl::syntax::*;
 use super::template::{TemplateDefinition, TryTemplate};
 use crate::{Error, Result};
 
-/// GLSLT template definition context
+/// GLSLT template definition global scope
 #[derive(Default, Debug, Clone)]
-pub struct Context {
+pub struct GlobalScope {
     /// Known pointer types
     declared_pointer_types: HashMap<String, FunctionPrototype>,
     /// Known GLSLT template functions
@@ -17,8 +17,8 @@ pub struct Context {
     known_functions: HashSet<String>,
 }
 
-impl Context {
-    /// Create a new template definition context
+impl GlobalScope {
+    /// Create a new template definition global scope
     pub fn new() -> Self {
         Self::default()
     }
@@ -72,12 +72,12 @@ impl Context {
         }
     }
 
-    /// Get the list of defined function identifiers in this context
+    /// Get the list of defined function identifiers in this global scope
     pub fn known_functions(&self) -> &HashSet<String> {
         &self.known_functions
     }
 
-    /// Get the list of defined function identifiers in this context
+    /// Get the list of defined function identifiers in this global scope
     pub fn known_functions_mut(&mut self) -> &mut HashSet<String> {
         &mut self.known_functions
     }
@@ -89,12 +89,12 @@ impl Context {
             .map(|v| v.clone())
     }
 
-    /// Get the list of defined templates in this context
+    /// Get the list of defined templates in this global scope
     pub fn declared_templates(&self) -> &HashMap<String, Rc<TemplateDefinition>> {
         &self.declared_templates
     }
 
-    /// Get the list of defined pointer types in this context
+    /// Get the list of defined pointer types in this global scope
     pub fn declared_pointer_types(&self) -> &HashMap<String, FunctionPrototype> {
         &self.declared_pointer_types
     }
@@ -102,7 +102,7 @@ impl Context {
     /// Parse a top-level declaration from a GLSLT shader.
     ///
     /// If the declaration is a GLSLT definition, it will not be returned and stored as part of the
-    /// context for future template instantiations.
+    /// global scope for future template instantiations.
     ///
     /// # Parameters
     ///
@@ -111,7 +111,7 @@ impl Context {
     /// # Returns
     ///
     /// `Ok(None)` if the declaration was parsed as a template or GLSLT definition. `Ok(Some(...))`
-    /// if this declaration is not a template or needs to be instantiated in a context
+    /// if this declaration is not a template or needs to be instantiated in a global scope
     pub fn parse_external_declaration(
         &mut self,
         extdecl: Node<ExternalDeclaration>,
@@ -135,7 +135,7 @@ impl Context {
         }
     }
 
-    /// Register a function name within the context.
+    /// Register a function name within the global scope.
     ///
     /// This is required until a proper symbol table is added in order to differentiate variables
     /// from function names when instantiating templates.
