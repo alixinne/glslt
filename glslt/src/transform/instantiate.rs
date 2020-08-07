@@ -94,7 +94,7 @@ impl InstantiateTemplate {
 
     fn new_gen_id(&self) -> Node<Identifier> {
         Node::new(
-            Identifier::new(format!("_glslt_lp{}", self.symbol_table.len())).unwrap(),
+            Identifier::new(format!("{}_lp{}", crate::PREFIX, self.symbol_table.len())).unwrap(),
             None,
         )
     }

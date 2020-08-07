@@ -89,6 +89,9 @@ extern crate log;
 
 pub use glsl;
 
+/// Prefix for generated names for functions and captured parameters
+pub const PREFIX: &'static str = "_glslt";
+
 pub mod api;
 
 mod error;

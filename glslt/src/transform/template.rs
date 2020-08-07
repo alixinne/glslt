@@ -98,7 +98,7 @@ impl TemplateDefinition {
     /// * `args`: list of template parameter values used in the invocation
     pub fn generate_id(&self, args: &[Expr]) -> String {
         let args_id = expr_vec_to_id(&args);
-        ["_glslt", self.ast.prototype.name.0.as_str(), &args_id].join("_")
+        [crate::PREFIX, self.ast.prototype.name.0.as_str(), &args_id].join("_")
     }
 
     /// Instantiate this template definition into a GLSL function
