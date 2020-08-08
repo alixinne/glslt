@@ -5,18 +5,18 @@ use glsl::syntax::*;
 use crate::Result;
 
 mod global_scope;
-pub use global_scope::*;
+pub(crate) use global_scope::*;
 
 mod instantiate;
 
 mod local_scope;
-pub use local_scope::*;
+pub(crate) use local_scope::*;
 
 mod min_unit;
 pub use min_unit::*;
 
 mod scope;
-pub use scope::*;
+pub(crate) use scope::*;
 
 pub mod template;
 

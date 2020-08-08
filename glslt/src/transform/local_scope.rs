@@ -44,9 +44,9 @@ impl<'p> LocalScope<'p> {
 
         // Build lookup table
         let mut template_parameters_by_name = HashMap::with_capacity(template_parameters.len());
-        for parameter in template.parameters() {
+        for (index, parameter) in template.parameters().iter().enumerate() {
             if let Some(name) = parameter.symbol.as_ref() {
-                template_parameters_by_name.insert(name.to_owned(), parameter.index);
+                template_parameters_by_name.insert(name.to_owned(), index);
             }
         }
 
@@ -148,11 +148,16 @@ impl<'p> LocalScope<'p> {
                                 if let Some(target) =
                                     self.resolve_function_name(arg_ident.0.as_str())
                                 {
-                                    debug!("resolved raw function name {:?}", arg_ident);
-                                    ident.0 = target.clone();
+                                    debug!(
+                                        "in {}: resolved raw function name {:?}",
+                                        self.name, arg_ident
+                                    );
+
+                                    ident.0 = target;
                                 } else {
                                     debug!(
-                                        "unresolved raw function name {:?}, treating as lambda",
+                                        "in {}: unresolved raw function name {:?}, treating as lambda",
+                                        self.name,
                                         arg_ident
                                     );
                                     let mut res = arg.clone();
@@ -169,7 +174,7 @@ impl<'p> LocalScope<'p> {
                                 }
                             }
                             other => {
-                                debug!("lambda expression: {:?}", other);
+                                debug!("in {}: lambda expression: {:?}", self.name, other);
                                 let mut res = other.clone();
                                 lambda_instantiate(
                                     &mut res,
@@ -184,11 +189,17 @@ impl<'p> LocalScope<'p> {
                             }
                         }
                     } else {
-                        debug!("found nested template call to {:?}({:?})", ident, src_args);
+                        debug!(
+                            "in {}: found nested template call to {:?}({:?})",
+                            self.name, ident, src_args
+                        );
                         instantiator.visit_fun_call(fun, src_args, self as &mut dyn Scope);
                     }
                 } else {
-                    warn!("unsupported function identifier: {:?}", fun);
+                    warn!(
+                        "in {}: unsupported function identifier: {:?}",
+                        self.name, fun
+                    );
                 }
             }
             other => {
