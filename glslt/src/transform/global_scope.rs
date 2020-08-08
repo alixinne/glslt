@@ -153,9 +153,7 @@ impl Scope for GlobalScope {
     }
 
     fn get_template(&self, template_name: &str) -> Option<Rc<TemplateDefinition>> {
-        self.declared_templates
-            .get(template_name)
-            .map(|v| v.clone())
+        self.declared_templates.get(template_name).cloned()
     }
 
     fn template_instance_declared(&self, template_name: &str) -> bool {

@@ -53,6 +53,7 @@ pub struct DeclaredSymbol {
     pub array: Option<ArraySpecifier>,
 }
 
+#[derive(Default)]
 pub struct InstantiateTemplate {
     error: Option<Error>,
     symbol_table: HashMap<String, DeclaredSymbol>,
@@ -60,10 +61,7 @@ pub struct InstantiateTemplate {
 
 impl InstantiateTemplate {
     pub fn new() -> Self {
-        Self {
-            error: None,
-            symbol_table: HashMap::new(),
-        }
+        Self::default()
     }
 
     pub fn instantiate(
@@ -165,7 +163,7 @@ impl InstantiateTemplate {
         fun.0 = local_scope.name().to_owned();
 
         // Add the captured parameters to the end of the call
-        for ep in local_scope.captured_parameters().into_iter() {
+        for ep in local_scope.captured_parameters().iter() {
             // TODO: Preserve span information
             args.push(Expr::Variable(Node::new(
                 Identifier::new(ep.clone()).unwrap(),
