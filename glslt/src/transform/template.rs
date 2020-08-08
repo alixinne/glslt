@@ -31,37 +31,6 @@ pub struct TemplateDefinition {
     parameters: Vec<TemplateParameter>,
 }
 
-fn arg_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &FunctionPrototype) {
-    // Declare the visitor for the substitution
-    struct V<'s> {
-        subs: HashMap<String, &'s Expr>,
-    }
-
-    impl Visitor for V<'_> {
-        fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-            if let Expr::Variable(ident) = e {
-                if let Some(repl) = self.subs.get(ident.0.as_str()) {
-                    *e = (*repl).clone();
-                }
-            }
-
-            Visit::Children
-        }
-    }
-
-    // Perform substitutions
-    let mut subs = HashMap::new();
-    for (id, value) in source_parameters.iter().enumerate() {
-        subs.insert(format!("_{}", id + 1), value);
-
-        if let FunctionParameterDeclaration::Named(_, p) = &prototype.parameters[id] {
-            subs.insert(format!("_{}", p.ident.ident.0), value);
-        }
-    }
-
-    tgt.visit(&mut V { subs });
-}
-
 fn expr_vec_to_id(exprs: &[Expr]) -> String {
     let mut sbuf = String::new();
 
@@ -110,111 +79,30 @@ impl TemplateDefinition {
     /// * `unit`: host transformation unit
     pub fn instantiate(
         &self,
-        scope: &LocalScope,
+        scope: &mut LocalScope,
         instantiator: &mut super::instantiate::InstantiateTemplate,
-        unit: &mut dyn super::TransformUnit,
     ) -> Node<FunctionDefinition> {
         // Clone the AST
         let mut ast = self.ast.clone();
 
         // Declare the visitor for the substitution
-        struct V<'s> {
-            subs: HashMap<&'s str, &'s Expr>,
-            template_parameters: HashMap<&'s str, &'s TemplateParameter>,
+        struct V<'s, 'p> {
             instantiator: &'s mut super::instantiate::InstantiateTemplate,
-            unit: &'s mut dyn super::TransformUnit,
+            scope: &'s mut LocalScope<'p>,
+            template: &'s TemplateDefinition,
         }
 
-        impl Visitor for V<'_> {
+        impl Visitor for V<'_, '_> {
             fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-                if let Expr::FunCall(fun, src_args) = e {
+                if let Expr::FunCall(_, src_args) = e {
                     // Transform arguments first
                     for arg in src_args.iter_mut() {
                         arg.visit(self);
                     }
 
-                    // Only consider raw identifiers for function names
-                    if let FunIdentifier::Identifier(ident) = fun {
-                        if let Some(arg) = self.subs.get(ident.0.as_str()) {
-                            // This is the name of a function to be templated
-
-                            // If the substitution is a function name, just replace it and pass
-                            // argument as-is.
-                            //
-                            // Else, replace the entire function call with the templated
-                            // expression
-                            match arg {
-                                Expr::Variable(arg_ident)
-                                    if self
-                                        .unit
-                                        .known_functions()
-                                        .contains(arg_ident.0.as_str()) =>
-                                {
-                                    debug!("raw function name: {:?}", arg_ident);
-                                    ident.0 = arg_ident.0.clone();
-                                }
-                                other => {
-                                    debug!("lambda expression: {:?}", other);
-                                    let mut res = (*other).clone();
-                                    arg_instantiate(
-                                        &mut res,
-                                        &src_args,
-                                        &self
-                                            .unit
-                                            .global_scope()
-                                            .declared_pointer_types()
-                                            .get(
-                                                self.template_parameters
-                                                    .get(ident.0.as_str())
-                                                    .unwrap()
-                                                    .typename
-                                                    .as_str(),
-                                            )
-                                            .unwrap(),
-                                    );
-                                    *e = res;
-                                }
-                            }
-                        } else {
-                            debug!("found nested template call to {:?}({:?})", ident, src_args);
-
-                            // The nested template call needs its args substitued for the input
-                            // args of the outer template
-                            for arg in src_args.iter_mut() {
-                                let lambda_expr = match &arg {
-                                    Expr::Variable(arg_ident) => {
-                                        if let Some(src_arg) = self.subs.get(arg_ident.0.as_str()) {
-                                            debug!(
-                                                "nested argument function name: {:?}",
-                                                arg_ident
-                                            );
-                                            *arg = (*src_arg).clone();
-                                            None
-                                        } else if self
-                                            .unit
-                                            .known_functions()
-                                            .contains(arg_ident.0.as_str())
-                                        {
-                                            debug!("nested raw function name: {:?}", arg_ident);
-                                            ident.0 = arg_ident.0.clone();
-                                            None
-                                        } else {
-                                            Some(arg)
-                                        }
-                                    }
-                                    _ => Some(arg),
-                                };
-
-                                if let Some(lambda) = lambda_expr {
-                                    debug!("nested lambda expression: {:?}", lambda);
-                                    // TODO: Is there really nothing to do in this case because of
-                                    // the other case being handled before?
-                                }
-                            }
-
-                            self.instantiator.visit_fun_call(fun, src_args, self.unit);
-                        }
-                    }
+                    self.scope
+                        .transform_fn_call(e, self.instantiator, self.template)
+                        .expect("transform_fn_call failed");
 
                     return Visit::Parent;
                 }
@@ -224,27 +112,10 @@ impl TemplateDefinition {
         }
 
         // Perform substitutions
-        let mut subs = HashMap::new();
-        let mut template_parameters = HashMap::new();
-
-        // Add substitutions for the template parameters
-        for (id, (param, value)) in self
-            .parameters
-            .iter()
-            .zip(scope.template_parameters().iter())
-            .enumerate()
-        {
-            if let Some(ps) = &param.symbol {
-                subs.insert(ps.as_str(), value);
-                template_parameters.insert(ps.as_str(), &self.parameters[id]);
-            }
-        }
-
         ast.visit(&mut V {
-            subs,
-            template_parameters,
             instantiator,
-            unit,
+            scope,
+            template: self,
         });
 
         // Change the name

@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 
 use crate::{Error, Result};
 
-use super::{template::TemplateDefinition, TransformUnit};
+use super::{template::TemplateDefinition, Scope, TransformUnit};
 
 lazy_static! {
     // Keep this sorted
@@ -74,13 +74,18 @@ impl InstantiateTemplate {
         // Transform definition. The visitor is responsible for instantiating templates
         let mut tgt = InstantiateTemplateUnit {
             instantiator: &mut self,
-            unit,
+            scope: unit.global_scope_mut(),
         };
 
         def.visit(&mut tgt);
 
         if let Some(error) = self.error.take() {
             return Err(error);
+        }
+
+        // Push new function declarations
+        for decl in unit.global_scope_mut().take_instanced_templates() {
+            unit.push_function_declaration(decl);
         }
 
         unit.push_function_declaration(def);
@@ -99,17 +104,17 @@ impl InstantiateTemplate {
         )
     }
 
-    pub(in crate::transform) fn visit_fun_call(
+    pub(in crate::transform) fn visit_fun_call<'s>(
         &mut self,
         fun: &mut FunIdentifier,
         args: &mut Vec<Expr>,
-        unit: &mut dyn TransformUnit,
+        scope: &'s mut dyn Scope,
     ) {
         // First visit the arguments to transform inner lambdas first
         for arg in args.iter_mut() {
             arg.visit(&mut InstantiateTemplateUnit {
                 instantiator: self,
-                unit,
+                scope,
             });
         }
 
@@ -119,8 +124,10 @@ impl InstantiateTemplate {
                 .binary_search(&ident.0.as_str())
                 .is_err()
             {
-                if let Some(template) = unit.global_scope().get_template(&ident.0) {
-                    if let Err(error) = self.transform_call(&*template, ident, args, unit) {
+                // Templates are only defined at the global scope, hence the explicit
+                // global_scope() lookup
+                if let Some(template) = scope.get_template(&ident.0) {
+                    if let Err(error) = self.transform_call(&*template, ident, args, scope) {
                         self.error = Some(error);
                     }
                 } else {
@@ -130,12 +137,12 @@ impl InstantiateTemplate {
         }
     }
 
-    fn transform_call(
+    fn transform_call<'s>(
         &mut self,
         template: &TemplateDefinition,
         fun: &mut Identifier,
         args: &mut Vec<Expr>,
-        unit: &mut dyn TransformUnit,
+        scope: &'s mut dyn Scope,
     ) -> Result<()> {
         debug!("found template function call: {}({:?})", fun.0, args);
 
@@ -143,12 +150,15 @@ impl InstantiateTemplate {
         // Thus, transform the function call
 
         // Create the local scope
-        let local_scope = super::LocalScope::new(template, args, &self.symbol_table)?;
+        let mut local_scope = super::LocalScope::new(template, args, &self.symbol_table, scope)?;
 
         // Instantiate the template if needed
-        if !unit.template_instance_declared(&local_scope.name()) {
-            let template = template.instantiate(&local_scope, self, unit);
-            unit.register_template_instance(&local_scope.name(), template);
+        if !local_scope.template_instance_declared(&local_scope.name()) {
+            let template = template.instantiate(&mut local_scope, self);
+
+            // TODO: Remove this useless clone
+            let name = local_scope.name().to_owned();
+            local_scope.register_template_instance(name.as_str(), template);
         }
 
         // The identifier should be replaced by the mangled name
@@ -186,7 +196,7 @@ impl InstantiateTemplate {
 
 struct InstantiateTemplateUnit<'c> {
     instantiator: &'c mut InstantiateTemplate,
-    unit: &'c mut dyn TransformUnit,
+    scope: &'c mut dyn Scope,
 }
 
 impl Visitor for InstantiateTemplateUnit<'_> {
@@ -230,7 +240,7 @@ impl Visitor for InstantiateTemplateUnit<'_> {
 
     fn visit_expr(&mut self, e: &mut Expr) -> Visit {
         if let Expr::FunCall(fun, args) = e {
-            self.instantiator.visit_fun_call(fun, args, self.unit);
+            self.instantiator.visit_fun_call(fun, args, self.scope);
 
             // We already visited arguments in pre-order
             return Visit::Parent;

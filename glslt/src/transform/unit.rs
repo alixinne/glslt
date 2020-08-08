@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use glsl::syntax::*;
 
 use super::instantiate::InstantiateTemplate;
@@ -12,8 +10,6 @@ use crate::{Error, Result};
 pub struct Unit {
     /// Template definition context
     global_scope: GlobalScope,
-    /// Identifiers of already instantiated templates
-    instantiated_templates: HashSet<String>,
     /// Result of external declarations copied from input and generated through instantiation
     external_declarations: Vec<Node<ExternalDeclaration>>,
 }
@@ -23,7 +19,6 @@ impl Unit {
     pub fn new() -> Self {
         Self {
             global_scope: GlobalScope::new(),
-            instantiated_templates: HashSet::new(),
             external_declarations: Vec::new(),
         }
     }
@@ -36,7 +31,6 @@ impl Unit {
     pub fn with_context(global_scope: GlobalScope) -> Self {
         Self {
             global_scope,
-            instantiated_templates: HashSet::new(),
             external_declarations: Vec::new(),
         }
     }
@@ -58,25 +52,8 @@ impl TransformUnit for Unit {
         &self.global_scope
     }
 
-    fn known_functions(&self) -> &HashSet<String> {
-        self.global_scope.known_functions()
-    }
-
-    fn template_instance_declared(&self, template_name: &str) -> bool {
-        self.instantiated_templates.contains(template_name)
-    }
-
-    fn register_template_instance<'s>(
-        &mut self,
-        template_name: &str,
-        instance: Node<FunctionDefinition>,
-    ) {
-        // Instantiate the template and add it to the declarations before us
-        self.external_declarations
-            .push(instance.map(ExternalDeclaration::FunctionDefinition));
-
-        // Take note we instantiated the template
-        self.instantiated_templates.insert(template_name.to_owned());
+    fn global_scope_mut(&mut self) -> &mut GlobalScope {
+        &mut self.global_scope
     }
 
     fn push_function_declaration(&mut self, def: Node<FunctionDefinition>) {

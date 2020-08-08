@@ -8,10 +8,13 @@ use glsl::visitor::{Host, Visit, Visitor};
 use itertools::Itertools;
 
 use super::template::TemplateDefinition;
+use super::{instantiate::InstantiateTemplate, Scope};
 
 /// A local scope for resolving template arguments inside a template function
-#[derive(Default, Debug, Clone)]
-pub struct LocalScope {
+#[derive(Debug)]
+pub struct LocalScope<'p> {
+    /// Parent scope reference
+    parent: &'p mut dyn Scope,
     /// Name of the current template scope
     name: String,
     /// List of ordered template parameters
@@ -22,7 +25,7 @@ pub struct LocalScope {
     captured_parameters: Vec<String>,
 }
 
-impl LocalScope {
+impl<'p> LocalScope<'p> {
     /// Enter a new local instantiation scope
     ///
     /// # Parameters
@@ -34,6 +37,7 @@ impl LocalScope {
         template: &TemplateDefinition,
         args: &mut Vec<Expr>,
         symbol_table: &HashMap<String, super::instantiate::DeclaredSymbol>,
+        parent: &'p mut dyn Scope,
     ) -> crate::Result<Self> {
         // Extract template parameters for this scope
         let mut template_parameters = template.extract_template_parameters(args)?;
@@ -92,6 +96,7 @@ impl LocalScope {
             .collect();
 
         Ok(Self {
+            parent,
             name,
             template_parameters,
             template_parameters_by_name,
@@ -113,4 +118,167 @@ impl LocalScope {
     pub fn captured_parameters(&self) -> &[String] {
         &self.captured_parameters[..]
     }
+
+    /// Transform the target function call expression into a GLSL function call
+    ///
+    /// This takes an exclusive reference to the expression to modify it, but assumes it's a
+    /// function call and will panic if it isn't the case.
+    pub fn transform_fn_call(
+        &mut self,
+        e: &mut Expr,
+        instantiator: &mut InstantiateTemplate,
+        template: &TemplateDefinition,
+    ) -> crate::Result<()> {
+        match e {
+            Expr::FunCall(fun, src_args) => {
+                // Only consider raw identifiers for function names
+                if let FunIdentifier::Identifier(ident) = fun {
+                    if let Some((arg_id, arg)) = self
+                        .template_parameters_by_name
+                        .get(ident.0.as_str())
+                        .map(|id| (id, &self.template_parameters[*id]))
+                    {
+                        // If the substitution is a function name, just replace it and pass
+                        // argument as-is.
+                        //
+                        // Else, replace the entire function call with the templated
+                        // expression
+                        match arg {
+                            Expr::Variable(arg_ident) => {
+                                if let Some(target) =
+                                    self.resolve_function_name(arg_ident.0.as_str())
+                                {
+                                    debug!("resolved raw function name {:?}", arg_ident);
+                                    ident.0 = target.clone();
+                                } else {
+                                    debug!(
+                                        "unresolved raw function name {:?}, treating as lambda",
+                                        arg_ident
+                                    );
+                                    let mut res = arg.clone();
+                                    lambda_instantiate(
+                                        &mut res,
+                                        &src_args,
+                                        &self
+                                            .declared_pointer_types()
+                                            .get(template.parameters()[*arg_id].typename.as_str())
+                                            .unwrap(),
+                                    );
+
+                                    *e = res;
+                                }
+                            }
+                            other => {
+                                debug!("lambda expression: {:?}", other);
+                                let mut res = other.clone();
+                                lambda_instantiate(
+                                    &mut res,
+                                    &src_args,
+                                    &self
+                                        .declared_pointer_types()
+                                        .get(template.parameters()[*arg_id].typename.as_str())
+                                        .unwrap(),
+                                );
+
+                                *e = res;
+                            }
+                        }
+                    } else {
+                        debug!("found nested template call to {:?}({:?})", ident, src_args);
+                        instantiator.visit_fun_call(fun, src_args, self as &mut dyn Scope);
+                    }
+                } else {
+                    warn!("unsupported function identifier: {:?}", fun);
+                }
+            }
+            other => {
+                panic!("LocalScope::transform_fn_call can only process function call expressions, got {:?}", other);
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl Scope for LocalScope<'_> {
+    fn parent_scope(&self) -> Option<&dyn Scope> {
+        Some(self.parent)
+    }
+
+    fn declared_pointer_types(&self) -> &HashMap<String, FunctionPrototype> {
+        self.parent.declared_pointer_types()
+    }
+
+    fn get_template(&self, template_name: &str) -> Option<std::rc::Rc<TemplateDefinition>> {
+        self.parent.get_template(template_name)
+    }
+
+    fn template_instance_declared(&self, template_name: &str) -> bool {
+        self.parent.template_instance_declared(template_name)
+    }
+
+    fn register_template_instance(
+        &mut self,
+        template_name: &str,
+        instance: Node<FunctionDefinition>,
+    ) {
+        self.parent
+            .register_template_instance(template_name, instance)
+    }
+
+    fn take_instanced_templates(&mut self) -> Vec<Node<FunctionDefinition>> {
+        self.parent.take_instanced_templates()
+    }
+
+    fn resolve_function_name(&self, name: &str) -> Option<String> {
+        // Look at the local scope arguments for a definition
+        if let Some(arg) = self
+            .template_parameters_by_name
+            .get(name)
+            .and_then(|id| self.template_parameters.get(*id))
+        {
+            match arg {
+                Expr::Variable(ident) => {
+                    // This may be a name in the parent scope, delegate to parent scope
+                    self.parent.resolve_function_name(ident.0.as_str())
+                }
+                // This is a lambda expression, we can't resolve it to a function name
+                _ => None,
+            }
+        } else {
+            // No argument matching this, delegate to parent scope
+            self.parent.resolve_function_name(name)
+        }
+    }
+}
+
+fn lambda_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &FunctionPrototype) {
+    // Declare the visitor for the substitution
+    struct V<'s> {
+        subs: HashMap<String, &'s Expr>,
+    }
+
+    impl Visitor for V<'_> {
+        fn visit_expr(&mut self, e: &mut Expr) -> Visit {
+            if let Expr::Variable(ident) = e {
+                if let Some(repl) = self.subs.get(ident.0.as_str()) {
+                    *e = (*repl).clone();
+                }
+            }
+
+            Visit::Children
+        }
+    }
+
+    // Perform substitutions
+    let mut subs = HashMap::new();
+    for (id, value) in source_parameters.iter().enumerate() {
+        subs.insert(format!("_{}", id + 1), value);
+
+        if let FunctionParameterDeclaration::Named(_, p) = &prototype.parameters[id] {
+            subs.insert(format!("_{}", p.ident.ident.0), value);
+        }
+    }
+
+    tgt.visit(&mut V { subs });
 }

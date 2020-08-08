@@ -4,6 +4,8 @@ use std::rc::Rc;
 use glsl::syntax::*;
 
 use super::template::{TemplateDefinition, TryTemplate};
+use super::Scope;
+
 use crate::{Error, Result};
 
 /// GLSLT template definition global scope
@@ -15,6 +17,10 @@ pub struct GlobalScope {
     declared_templates: HashMap<String, Rc<TemplateDefinition>>,
     /// Identifiers of function declarations
     known_functions: HashSet<String>,
+    /// Identifiers of already instantiated templates
+    instantiated_templates: HashSet<String>,
+    /// Pending external declarations
+    instanced_templates: Vec<Node<FunctionDefinition>>,
 }
 
 impl GlobalScope {
@@ -73,20 +79,8 @@ impl GlobalScope {
     }
 
     /// Get the list of defined function identifiers in this global scope
-    pub fn known_functions(&self) -> &HashSet<String> {
-        &self.known_functions
-    }
-
-    /// Get the list of defined function identifiers in this global scope
     pub fn known_functions_mut(&mut self) -> &mut HashSet<String> {
         &mut self.known_functions
-    }
-
-    /// Get the template corresponding to the given name
-    pub fn get_template(&self, template_name: &str) -> Option<Rc<TemplateDefinition>> {
-        self.declared_templates
-            .get(template_name)
-            .map(|v| v.clone())
     }
 
     /// Get the list of defined templates in this global scope
@@ -146,5 +140,45 @@ impl GlobalScope {
     pub fn push_function_declaration(&mut self, def: &FunctionDefinition) {
         // We discovered a new function
         self.known_functions.insert(def.prototype.name.0.clone());
+    }
+}
+
+impl Scope for GlobalScope {
+    fn parent_scope(&self) -> Option<&dyn Scope> {
+        None
+    }
+
+    fn declared_pointer_types(&self) -> &HashMap<String, FunctionPrototype> {
+        &self.declared_pointer_types
+    }
+
+    fn get_template(&self, template_name: &str) -> Option<Rc<TemplateDefinition>> {
+        self.declared_templates
+            .get(template_name)
+            .map(|v| v.clone())
+    }
+
+    fn template_instance_declared(&self, template_name: &str) -> bool {
+        self.instantiated_templates.contains(template_name)
+    }
+
+    fn register_template_instance(
+        &mut self,
+        template_name: &str,
+        instance: Node<FunctionDefinition>,
+    ) {
+        // Take note we instantiated the template
+        self.instantiated_templates.insert(template_name.to_owned());
+
+        // Add them to the instanced templates
+        self.instanced_templates.push(instance);
+    }
+
+    fn take_instanced_templates(&mut self) -> Vec<Node<FunctionDefinition>> {
+        std::mem::replace(&mut self.instanced_templates, Vec::with_capacity(2))
+    }
+
+    fn resolve_function_name(&self, name: &str) -> Option<String> {
+        self.known_functions.get(name).cloned()
     }
 }

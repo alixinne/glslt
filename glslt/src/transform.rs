@@ -15,6 +15,9 @@ pub use local_scope::*;
 mod min_unit;
 pub use min_unit::*;
 
+mod scope;
+pub use scope::*;
+
 pub mod template;
 
 mod transform_unit;

@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use glsl::syntax::*;
 use glsl::visitor::*;
@@ -195,23 +195,8 @@ impl TransformUnit for MinUnit {
         &self.global_scope
     }
 
-    fn known_functions(&self) -> &HashSet<String> {
-        self.global_scope.known_functions()
-    }
-
-    fn template_instance_declared(&self, template_name: &str) -> bool {
-        self.external_declarations
-            .contains_key(&ExternalIdentifier::FunctionDefinition(
-                template_name.to_owned(),
-            ))
-    }
-
-    fn register_template_instance<'s>(
-        &mut self,
-        _template_name: &str,
-        instance: Node<FunctionDefinition>,
-    ) {
-        self.push_function_declaration(instance);
+    fn global_scope_mut(&mut self) -> &mut GlobalScope {
+        &mut self.global_scope
     }
 
     fn push_function_declaration(&mut self, mut def: Node<FunctionDefinition>) {

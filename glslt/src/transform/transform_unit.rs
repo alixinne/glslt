@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use glsl::syntax::*;
 
 use super::GlobalScope;
@@ -16,27 +14,8 @@ pub trait TransformUnit {
     /// Obtain a reference to the template definition context
     fn global_scope(&self) -> &GlobalScope;
 
-    /// Obtain a reference to the known function names list
-    fn known_functions(&self) -> &HashSet<String>;
-
-    /// Determine if a template has been instantiated with the given name
-    ///
-    /// # Parameters
-    ///
-    /// * `template_name`: name of the template instantiation
-    fn template_instance_declared(&self, template_name: &str) -> bool;
-
-    /// Register a template instantiation in the current transform unit
-    ///
-    /// # Parameters
-    ///
-    /// * `template_name`: name of the template instantiation
-    /// * `instance`: function definition corresponding to the instantiation
-    fn register_template_instance(
-        &mut self,
-        template_name: &str,
-        instance: Node<FunctionDefinition>,
-    );
+    /// Obtain a mutable reference to the template definition context
+    fn global_scope_mut(&mut self) -> &mut GlobalScope;
 
     /// Add a function declaration to the transform unit
     ///
