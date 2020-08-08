@@ -38,6 +38,15 @@ pub enum Error {
     /// Unsupported declarator list in minifying mode
     #[error("unsupported declarator list in minifying mode: {0:?}")]
     UnsupportedIDL(InitDeclaratorList),
+    /// Undeclared pointer type
+    #[error("undeclared pointer type: {0}")]
+    UndeclaredPointerType(String),
+    /// Could not transform the call from available arguments
+    #[error("try to transform this call as a template call")]
+    TransformAsTemplate,
+    /// Invalid parameter in template argument call
+    #[error("invalid argument at index {0}")]
+    InvalidParameter(usize),
 }
 
 /// GLSLT Result

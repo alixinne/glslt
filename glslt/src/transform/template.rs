@@ -3,9 +3,8 @@
 use std::collections::HashMap;
 
 use glsl::syntax::*;
-use glsl::visitor::*;
 
-use super::LocalScope;
+use super::{instantiate::InstantiateTemplate, LocalScope};
 
 use crate::{Error, Result};
 
@@ -31,14 +30,16 @@ pub struct TemplateDefinition {
     parameters: Vec<TemplateParameter>,
 }
 
-fn expr_vec_to_id(exprs: &[Expr]) -> String {
+fn expr_vec_to_id(exprs: &[(Expr, &str)]) -> String {
     let mut sbuf = String::new();
 
     // Transpile all expressions into the string buffer
     for expr in exprs {
+        sbuf.push_str(expr.1);
+
         glsl::transpiler::glsl::show_expr(
             &mut sbuf,
-            expr,
+            &expr.0,
             &mut glsl::transpiler::glsl::FormattingState::default(),
         )
         .unwrap();
@@ -65,7 +66,7 @@ impl TemplateDefinition {
     /// # Parameters
     ///
     /// * `args`: list of template parameter values used in the invocation
-    pub fn generate_id(&self, args: &[Expr]) -> String {
+    pub fn generate_id(&self, args: &[(Expr, &str)]) -> String {
         let args_id = expr_vec_to_id(&args);
         [crate::PREFIX, self.ast.prototype.name.0.as_str(), &args_id].join("_")
     }
@@ -75,55 +76,28 @@ impl TemplateDefinition {
     /// # Parameters
     ///
     /// * `scope`: local scope this template is being instantiated from
-    /// * `instantiator`: source visitor for the template instantiator
-    /// * `unit`: host transformation unit
     pub fn instantiate(
         &self,
         scope: &mut LocalScope,
-        instantiator: &mut super::instantiate::InstantiateTemplate,
-    ) -> Node<FunctionDefinition> {
+        outer_instantiator: &InstantiateTemplate,
+    ) -> crate::Result<Vec<Node<FunctionDefinition>>> {
         // Clone the AST
-        let mut ast = self.ast.clone();
+        let ast = self.ast.clone();
 
-        // Declare the visitor for the substitution
-        struct V<'s, 'p> {
-            instantiator: &'s mut super::instantiate::InstantiateTemplate,
-            scope: &'s mut LocalScope<'p>,
-            template: &'s TemplateDefinition,
-        }
+        // We're entering a new function, thus we need a new context
+        let mut res = InstantiateTemplate::new().instantiate(scope, ast)?;
 
-        impl Visitor for V<'_, '_> {
-            fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-                if let Expr::FunCall(_, src_args) = e {
-                    // Transform arguments first
-                    for arg in src_args.iter_mut() {
-                        arg.visit(self);
-                    }
-
-                    self.scope
-                        .transform_fn_call(e, self.instantiator, self.template)
-                        .expect("transform_fn_call failed");
-
-                    return Visit::Parent;
-                }
-
-                Visit::Children
-            }
-        }
-
-        // Perform substitutions
-        ast.visit(&mut V {
-            instantiator,
-            scope,
-            template: self,
-        });
+        // The last function is the current instantiated one, the ones before are dependencies
+        // TODO: Make this more robust
+        let ast = res.last_mut().unwrap();
 
         // Change the name
+        debug!("renaming {} to {}", ast.prototype.name.0, scope.name());
         ast.prototype.name.0 = scope.name().to_owned();
 
         // Add the captured parameters to the signature
         for ep in scope.captured_parameters() {
-            let p = instantiator.get_symbol(ep).unwrap();
+            let p = outer_instantiator.get_symbol(ep).unwrap();
 
             ast.prototype
                 .parameters
@@ -139,7 +113,7 @@ impl TemplateDefinition {
                 ));
         }
 
-        ast
+        Ok(res)
     }
 
     /// Extract the template parameters from the full set of call parameters
@@ -152,7 +126,7 @@ impl TemplateDefinition {
     ///
     /// List of expressions to be used in the template call. `args` will contain regular arguments
     /// to the GLSL function (which do not require a template instantiation).
-    pub fn extract_template_parameters(&self, args: &mut Vec<Expr>) -> Result<Vec<Expr>> {
+    pub fn extract_template_parameters(&self, args: &mut Vec<Expr>) -> Result<Vec<(Expr, &str)>> {
         let mut idx = 0;
         let mut it = self.parameters.iter();
         let mut current = it.next();
@@ -176,8 +150,12 @@ impl TemplateDefinition {
         // Put regular args back into the function call
         args.extend(other.into_iter());
 
-        // Return template args with their values
-        Ok(res)
+        // Return template args with their values and type names
+        Ok(res
+            .into_iter()
+            .enumerate()
+            .map(|(id, arg)| (arg, self.parameters[id].typename.as_str()))
+            .collect())
     }
 }
 

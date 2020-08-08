@@ -59,7 +59,7 @@ impl TransformUnit for Unit {
     fn push_function_declaration(&mut self, def: Node<FunctionDefinition>) {
         self.global_scope
             .known_functions_mut()
-            .insert(def.prototype.name.0.clone());
+            .insert(def.prototype.name.0.clone(), def.prototype.clone());
 
         // Add the definition to the declarations
         self.external_declarations
@@ -74,8 +74,12 @@ impl TransformUnit for Unit {
                     // processed to instantiate parameters
                     //
                     // TODO: Recursive template instantiation?
-                    InstantiateTemplate::new()
-                        .instantiate(self, Node::new(def, extdecl.span_id))?;
+                    let decls = InstantiateTemplate::new()
+                        .instantiate(&mut self.global_scope, Node::new(def, extdecl.span_id))?;
+
+                    for d in decls {
+                        self.push_function_declaration(d);
+                    }
                 }
                 other => self
                     .external_declarations

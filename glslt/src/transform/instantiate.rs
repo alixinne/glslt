@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 
 use crate::{Error, Result};
 
-use super::{template::TemplateDefinition, Scope, TransformUnit};
+use super::{template::TemplateDefinition, Scope};
 
 lazy_static! {
     // Keep this sorted
@@ -66,29 +66,26 @@ impl InstantiateTemplate {
 
     pub fn instantiate(
         mut self,
-        unit: &mut dyn TransformUnit,
+        scope: &mut dyn Scope,
         mut def: Node<FunctionDefinition>,
-    ) -> Result<()> {
+    ) -> Result<Vec<Node<FunctionDefinition>>> {
         // Transform definition. The visitor is responsible for instantiating templates
         let mut tgt = InstantiateTemplateUnit {
             instantiator: &mut self,
-            scope: unit.global_scope_mut(),
+            scope,
         };
 
         def.visit(&mut tgt);
 
-        if let Some(error) = self.error.take() {
-            return Err(error);
-        }
-
         // Push new function declarations
-        for decl in unit.global_scope_mut().take_instanced_templates() {
-            unit.push_function_declaration(decl);
+        let mut res = tgt.scope.take_instanced_templates();
+        res.push(def);
+
+        if let Some(error) = self.error.take() {
+            Err(error)
+        } else {
+            Ok(res)
         }
-
-        unit.push_function_declaration(def);
-
-        Ok(())
     }
 
     pub fn get_symbol(&self, name: &str) -> Option<&DeclaredSymbol> {
@@ -104,34 +101,53 @@ impl InstantiateTemplate {
 
     pub(in crate::transform) fn visit_fun_call<'s>(
         &mut self,
-        fun: &mut FunIdentifier,
-        args: &mut Vec<Expr>,
+        expr: &mut Expr,
         scope: &'s mut dyn Scope,
     ) {
-        // First visit the arguments to transform inner lambdas first
-        for arg in args.iter_mut() {
-            arg.visit(&mut InstantiateTemplateUnit {
-                instantiator: self,
-                scope,
-            });
-        }
+        match expr {
+            Expr::FunCall(fun, args) => {
+                // First visit the arguments to transform inner lambdas first
+                for arg in args.iter_mut() {
+                    arg.visit(&mut InstantiateTemplateUnit {
+                        instantiator: self,
+                        scope,
+                    });
+                }
 
-        // Only consider raw identifiers for function names
-        if let FunIdentifier::Identifier(ident) = fun {
-            if BUILTIN_FUNCTION_NAMES
-                .binary_search(&ident.0.as_str())
-                .is_err()
-            {
-                // Templates are only defined at the global scope, hence the explicit
-                // global_scope() lookup
-                if let Some(template) = scope.get_template(&ident.0) {
-                    if let Err(error) = self.transform_call(&*template, ident, args, scope) {
-                        self.error = Some(error);
+                // Only consider raw identifiers for function names
+                if let FunIdentifier::Identifier(ident) = fun {
+                    if BUILTIN_FUNCTION_NAMES
+                        .binary_search(&ident.0.as_str())
+                        .is_err()
+                    {
+                        // Look up arguments first
+                        match scope.transform_arg_call(expr, self) {
+                            Ok(()) => {}
+                            Err(Error::TransformAsTemplate) => match expr {
+                                Expr::FunCall(FunIdentifier::Identifier(ident), args) => {
+                                    if let Some(template) = scope.get_template(&ident.0) {
+                                        if let Err(error) =
+                                            self.transform_call(&*template, ident, args, scope)
+                                        {
+                                            self.error = Some(error);
+                                        }
+                                    } else {
+                                        debug!("no template for function call: {}", ident.0);
+                                    }
+                                }
+                                _ => {}
+                            },
+                            Err(error) => {
+                                self.error = Some(error);
+                            }
+                        }
                     }
-                } else {
-                    debug!("no template for function call: {}", ident.0);
                 }
             }
+            other => panic!(
+                "expected Expr::FunCall in InstantiateTemplate::visit_fun_call, got {:?}",
+                other
+            ),
         }
     }
 
@@ -149,14 +165,13 @@ impl InstantiateTemplate {
 
         // Create the local scope
         let mut local_scope = super::LocalScope::new(template, args, &self.symbol_table, scope)?;
+        trace!("symbol table: {:?}", self.symbol_table);
+        trace!("entering local scope: {:#?}", local_scope);
 
         // Instantiate the template if needed
         if !local_scope.template_instance_declared(&local_scope.name()) {
-            let template = template.instantiate(&mut local_scope, self);
-
-            // TODO: Remove this useless clone
-            let name = local_scope.name().to_owned();
-            local_scope.register_template_instance(name.as_str(), template);
+            let template = template.instantiate(&mut local_scope, self)?;
+            local_scope.register_template_instance(template);
         }
 
         // The identifier should be replaced by the mangled name
@@ -176,10 +191,18 @@ impl InstantiateTemplate {
 
     fn add_declared_symbol(
         &mut self,
+        scope: &dyn Scope,
         name: String,
         decl_type: TypeSpecifier,
         array: Option<ArraySpecifier>,
     ) {
+        if let TypeSpecifierNonArray::TypeName(tn) = &decl_type.ty {
+            if scope.declared_pointer_types().contains_key(tn.0.as_str()) {
+                // This is a template function argument, do not register it for capture
+                return;
+            }
+        }
+
         self.symbol_table.insert(
             name,
             DeclaredSymbol {
@@ -203,14 +226,11 @@ impl Visitor for InstantiateTemplateUnit<'_> {
         p: &mut FunctionParameterDeclarator,
     ) -> Visit {
         // Register a declared parameter
-        self.instantiator.symbol_table.insert(
+        self.instantiator.add_declared_symbol(
+            self.scope,
             p.ident.ident.0.clone(),
-            DeclaredSymbol {
-                symbol_id: self.instantiator.symbol_table.len(),
-                gen_id: self.instantiator.new_gen_id(),
-                decl_type: p.ty.clone(),
-                array: p.ident.array_spec.clone(),
-            },
+            p.ty.clone(),
+            p.ident.array_spec.clone(),
         );
 
         Visit::Children
@@ -219,6 +239,7 @@ impl Visitor for InstantiateTemplateUnit<'_> {
     fn visit_init_declarator_list(&mut self, idl: &mut InitDeclaratorList) -> Visit {
         // Register all declared variables
         self.instantiator.add_declared_symbol(
+            self.scope,
             idl.head.name.as_ref().unwrap().0.clone(),
             idl.head.ty.ty.clone(),
             idl.head.array_specifier.clone(),
@@ -227,6 +248,7 @@ impl Visitor for InstantiateTemplateUnit<'_> {
         // Add tail
         for t in &idl.tail {
             self.instantiator.add_declared_symbol(
+                self.scope,
                 t.ident.ident.0.clone(),
                 idl.head.ty.ty.clone(),
                 idl.head.array_specifier.clone(),
@@ -237,8 +259,8 @@ impl Visitor for InstantiateTemplateUnit<'_> {
     }
 
     fn visit_expr(&mut self, e: &mut Expr) -> Visit {
-        if let Expr::FunCall(fun, args) = e {
-            self.instantiator.visit_fun_call(fun, args, self.scope);
+        if let Expr::FunCall(_, _) = e {
+            self.instantiator.visit_fun_call(e, self.scope);
 
             // We already visited arguments in pre-order
             return Visit::Parent;

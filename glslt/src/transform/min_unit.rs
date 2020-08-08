@@ -203,7 +203,7 @@ impl TransformUnit for MinUnit {
         // Register the function as a known function
         self.global_scope
             .known_functions_mut()
-            .insert(def.prototype.name.0.clone());
+            .insert(def.prototype.name.0.clone(), def.prototype.clone());
 
         // Register it in the dependency graph
         self.extend_dag(&mut def);
@@ -223,8 +223,12 @@ impl TransformUnit for MinUnit {
                     // processed to instantiate parameters
                     //
                     // TODO: Recursive template instantiation?
-                    InstantiateTemplate::new()
-                        .instantiate(self, Node::new(def, extdecl.span_id))?;
+                    let decls = InstantiateTemplate::new()
+                        .instantiate(&mut self.global_scope, Node::new(def, extdecl.span_id))?;
+
+                    for d in decls {
+                        self.push_function_declaration(d);
+                    }
                 }
                 other => match other {
                     ExternalDeclaration::FunctionDefinition(_) => {}

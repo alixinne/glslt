@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 use glsl::syntax::*;
 
+use super::instantiate::InstantiateTemplate;
 use super::template::TemplateDefinition;
 
 /// Represents a template scope
@@ -27,13 +28,8 @@ pub trait Scope: std::fmt::Debug {
     ///
     /// # Parameters
     ///
-    /// * `template_name`: name of the template instantiation
-    /// * `instance`: function definition corresponding to the instantiation
-    fn register_template_instance(
-        &mut self,
-        template_name: &str,
-        instance: Node<FunctionDefinition>,
-    );
+    /// * `definitions`: function definitions introduced by the template instantiation
+    fn register_template_instance(&mut self, definitions: Vec<Node<FunctionDefinition>>);
 
     /// Each template instantiation round will generate functions declarations
     /// This allows pulling them in from the parent transformation unit and should be invoked after
@@ -41,5 +37,29 @@ pub trait Scope: std::fmt::Debug {
     fn take_instanced_templates(&mut self) -> Vec<Node<FunctionDefinition>>;
 
     /// Resolve an identifier as a function name. Returns None if this is not possible.
-    fn resolve_function_name(&self, name: &str) -> Option<String>;
+    fn resolve_function_name(&self, name: &str) -> Option<ResolvedArgument>;
+
+    /// Transform a function call to a parameter into an expression
+    ///
+    /// Returns Err(Error::TransformAsTemplate) if the call can't be transformed by the current
+    /// scope and requires a template lookup.
+    fn transform_arg_call(
+        &mut self,
+        expr: &mut Expr,
+        instantiator: &mut InstantiateTemplate,
+    ) -> crate::Result<()>;
+}
+
+/// Result of resolving a template parameter
+pub struct ResolvedArgument<'fp> {
+    pub pointer_type: &'fp FunctionPrototype,
+    pub body: ResolvedArgumentExpr,
+}
+
+/// Contents of a resolved argument
+pub enum ResolvedArgumentExpr {
+    /// Static function name
+    FunctionName(String),
+    /// Lambda expression
+    Lambda(Expr),
 }

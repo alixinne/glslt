@@ -9,12 +9,12 @@ fn nested_static_args() {
 
 int callbackTarget() { return 1; }
 
-int innerTemplate(IntCallback cb) {
-    return cb();
+int innerTemplate(IntCallback cbi) {
+    return cbi();
 }
 
-int outerTemplate(IntCallback cb) {
-    return innerTemplate(cb);
+int outerTemplate(IntCallback cbo) {
+    return innerTemplate(cbo);
 }
 
 void main() {
@@ -43,12 +43,12 @@ fn nested_static_args_with_arg() {
 
 int callbackTarget(int x) { return x; }
 
-int innerTemplate(IntCallback cb) {
-    return cb(1);
+int innerTemplate(IntCallback cbi) {
+    return cbi(1);
 }
 
-int outerTemplate(IntCallback cb) {
-    return innerTemplate(cb);
+int outerTemplate(IntCallback cbo) {
+    return innerTemplate(cbo);
 }
 
 void main() {
@@ -75,12 +75,12 @@ fn nested_lambda_with_arg() {
     common::verify_transform(
         r#"int IntCallback(int x);
 
-int innerTemplate(IntCallback cb) {
-    return cb(1);
+int innerTemplate(IntCallback cbi) {
+    return cbi(1);
 }
 
-int outerTemplate(IntCallback cb) {
-    return innerTemplate(cb);
+int outerTemplate(IntCallback cbo) {
+    return innerTemplate(cbo);
 }
 
 void main() {
@@ -105,12 +105,12 @@ fn doubly_nested_lambda_with_arg() {
     common::verify_transform(
         r#"int IntCallback(int x);
 
-int innerTemplate(IntCallback cb) {
-    return cb(1);
+int innerTemplate(IntCallback cbi) {
+    return cbi(1);
 }
 
-int outerTemplate(IntCallback cb) {
-    return innerTemplate(2 * cb(_1));
+int outerTemplate(IntCallback cbo) {
+    return innerTemplate(2 * cbo(_1));
 }
 
 void main() {
@@ -182,6 +182,36 @@ void main() {
 
 vec4 _glslt_infillSolidBorder_0(float p, float width) {
     return _glslt_pathFillSegment_0(p, width, p);
+}
+
+void main() {
+    gl_FragColor = _glslt_infillSolidBorder_0(0.25, 5.0);
+}"#,
+    );
+}
+
+#[test]
+fn nested_complex_lambda2() {
+    common::verify_transform(
+        r#"vec4 PathInfill(float p);
+
+vec4 pathFillSegment(float ph, float width, PathInfill infill) {
+  return infill(ph) * vec4(1., 1., 1., 0.5);
+}
+
+vec4 infillSolidBorder(float p, float width, PathInfill color) {
+  return pathFillSegment(p, width, color(p));
+}
+
+void main() {
+    gl_FragColor = infillSolidBorder(0.25, 5.0, vec4(1., 2., 3., 4.));
+}"#,
+        r#"vec4 _glslt_pathFillSegment_0(float ph, float width) {
+    return vec4(1., 2., 3., 4.) * vec4(1., 1., 1., 0.5);
+}
+
+vec4 _glslt_infillSolidBorder_0(float p, float width) {
+    return _glslt_pathFillSegment_0(p, width);
 }
 
 void main() {

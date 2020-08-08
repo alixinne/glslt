@@ -187,7 +187,7 @@ dependencies = [
 [[package]]
 name = "glsl"
 version = "5.0.0"
-source = "git+https://github.com/vtavernier/glsl?branch=dev#7805450d0036cdc059d25834238b4cf91e0d8ff3"
+source = "git+https://github.com/vtavernier/glsl?branch=dev#0032d0e12a82690c70a968356ca6068a2e367eae"
 dependencies = [
  "bimap 0.5.2",
  "lazy_static",
