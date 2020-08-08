@@ -4,6 +4,9 @@ use glsl::syntax::*;
 
 use crate::Result;
 
+mod fn_ref;
+pub use fn_ref::*;
+
 mod global_scope;
 pub(crate) use global_scope::*;
 

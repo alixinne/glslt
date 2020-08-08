@@ -4,7 +4,7 @@ use glsl::syntax::*;
 use glsl::visitor::*;
 
 use super::instantiate::InstantiateTemplate;
-use super::{GlobalScope, TransformUnit};
+use super::{FnRef, GlobalScope, TransformUnit};
 
 use crate::{Error, Result};
 
@@ -44,18 +44,24 @@ impl MinUnit {
     }
 
     /// Obtain an iterator to the functions and templates defined in the current unit
-    pub fn iter_functions(&self) -> impl Iterator<Item = Node<&'_ FunctionDefinition>> {
+    pub fn iter_functions(&self) -> impl Iterator<Item = Node<FnRef>> {
         self.external_declarations
             .values()
             .filter_map(|ed| match ed.contents {
-                ExternalDeclaration::FunctionDefinition(ref fd) => Some(Node::new(fd, ed.span_id)),
+                ExternalDeclaration::FunctionDefinition(ref fd) => Some(Node::new(
+                    FnRef {
+                        prototype: &fd.prototype,
+                        statement: &fd.statement,
+                    },
+                    ed.span_id,
+                )),
                 _ => None,
             })
             .chain(
                 self.global_scope
                     .declared_templates()
                     .values()
-                    .map(|dt| dt.ast()),
+                    .map(|dt| dt.fn_ref()),
             )
     }
 

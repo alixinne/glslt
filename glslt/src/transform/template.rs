@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use glsl::syntax::*;
 
-use super::{instantiate::InstantiateTemplate, LocalScope};
+use super::{instantiate::InstantiateTemplate, FnRef, LocalScope};
 
 use crate::{Error, Result};
 
@@ -28,6 +28,8 @@ pub struct TemplateDefinition {
     ast: Node<FunctionDefinition>,
     /// List of template parameters
     parameters: Vec<TemplateParameter>,
+    /// Original prototype
+    raw_prototype: FunctionPrototype,
 }
 
 fn expr_vec_to_id(exprs: &[(Expr, &str)]) -> String {
@@ -59,6 +61,17 @@ impl TemplateDefinition {
     /// Get the list of parameters of this template
     pub fn parameters(&self) -> &[TemplateParameter] {
         &self.parameters[..]
+    }
+
+    /// Get the FnRef definition of this template
+    pub fn fn_ref(&self) -> Node<FnRef> {
+        Node::new(
+            FnRef {
+                prototype: &self.raw_prototype,
+                statement: &self.ast.statement,
+            },
+            self.ast.span_id,
+        )
     }
 
     /// Generate a unique ID for the given template invocation
@@ -191,6 +204,7 @@ pub fn parse_definition_as_template(
     let mut non_template_parameters = Vec::new();
     let span_id = def.span_id;
     let mut def = def.into_inner();
+    let raw_prototype = def.prototype.clone();
 
     for (arg_id, parameter) in def
         .prototype
@@ -237,6 +251,7 @@ pub fn parse_definition_as_template(
         Ok(TryTemplate::Template(TemplateDefinition {
             ast: def,
             parameters,
+            raw_prototype,
         }))
     }
 }
