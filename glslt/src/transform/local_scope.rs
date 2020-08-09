@@ -345,6 +345,9 @@ fn lambda_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &Fu
             if let Expr::Variable(ident) = e {
                 if let Some(repl) = self.subs.get(ident.0.as_str()) {
                     *e = (*repl).clone();
+
+                    // Visiting the current expression again makes no sense here
+                    return Visit::Parent;
                 }
             }
 
