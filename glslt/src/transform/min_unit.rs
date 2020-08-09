@@ -227,8 +227,6 @@ impl TransformUnit for MinUnit {
                 ExternalDeclaration::FunctionDefinition(def) => {
                     // No template parameter, it's a "regular" function so it has to be
                     // processed to instantiate parameters
-                    //
-                    // TODO: Recursive template instantiation?
                     let decls = InstantiateTemplate::new()
                         .instantiate(&mut self.global_scope, Node::new(def, extdecl.span_id))?;
 
