@@ -94,7 +94,7 @@ impl InstantiateTemplate {
 
     fn new_gen_id(&self) -> Node<Identifier> {
         Node::new(
-            Identifier::new(format!("{}_lp{}", crate::PREFIX, self.symbol_table.len())).unwrap(),
+            Identifier(format!("{}_lp{}", crate::PREFIX, self.symbol_table.len())),
             None,
         )
     }
@@ -180,10 +180,7 @@ impl InstantiateTemplate {
         // Add the captured parameters to the end of the call
         for ep in local_scope.captured_parameters().iter() {
             // TODO: Preserve span information
-            args.push(Expr::Variable(Node::new(
-                Identifier::new(ep.clone()).unwrap(),
-                None,
-            )));
+            args.push(Expr::Variable(Node::new(Identifier(ep.clone()), None)));
         }
 
         Ok(())
