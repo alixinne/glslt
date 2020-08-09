@@ -123,8 +123,9 @@ impl InstantiateTemplate {
                         // Look up arguments first
                         match scope.transform_arg_call(expr, self) {
                             Ok(()) => {}
-                            Err(Error::TransformAsTemplate) => match expr {
-                                Expr::FunCall(FunIdentifier::Identifier(ident), args) => {
+                            Err(Error::TransformAsTemplate) => {
+                                if let Expr::FunCall(FunIdentifier::Identifier(ident), args) = expr
+                                {
                                     if let Some(template) = scope.get_template(&ident.0) {
                                         if let Err(error) =
                                             self.transform_call(&*template, ident, args, scope)
@@ -135,8 +136,7 @@ impl InstantiateTemplate {
                                         debug!("no template for function call: {}", ident.0);
                                     }
                                 }
-                                _ => {}
-                            },
+                            }
                             Err(error) => {
                                 self.error = Some(error);
                             }
