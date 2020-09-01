@@ -22,12 +22,12 @@ pub trait TransformUnit {
     /// # Parameters
     ///
     /// * `def`: syntax tree for the function definition
-    fn push_function_declaration(&mut self, def: Node<FunctionDefinition>);
+    fn push_function_declaration(&mut self, def: FunctionDefinition);
 
     /// Parse a GLSLT declaration and add it to the transform unit
     ///
     /// # Parameters
     ///
     /// * `extdecl`: top-level declaration to parse as GLSLT
-    fn parse_external_declaration(&mut self, extdecl: Node<ExternalDeclaration>) -> Result<()>;
+    fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()>;
 }

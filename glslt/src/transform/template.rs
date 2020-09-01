@@ -25,7 +25,7 @@ pub struct TemplateDefinition {
     /// AST for the partially instantiated template definition.
     ///
     /// This has to be cloned and visited to replace the template parameters.
-    ast: Node<FunctionDefinition>,
+    ast: FunctionDefinition,
     /// List of template parameters
     parameters: Vec<TemplateParameter>,
     /// Original prototype
@@ -54,8 +54,8 @@ fn expr_vec_to_id(exprs: &[(Expr, &str)]) -> String {
 
 impl TemplateDefinition {
     /// Get the AST of this template definition
-    pub fn ast(&self) -> Node<&FunctionDefinition> {
-        Node::new(&*self.ast, self.ast.span_id)
+    pub fn ast(&self) -> &FunctionDefinition {
+        &self.ast
     }
 
     /// Get the list of parameters of this template
@@ -70,7 +70,7 @@ impl TemplateDefinition {
                 prototype: &self.raw_prototype,
                 statement: &self.ast.statement,
             },
-            self.ast.span_id,
+            self.ast.span,
         )
     }
 
@@ -93,7 +93,7 @@ impl TemplateDefinition {
         &self,
         scope: &mut LocalScope,
         outer_instantiator: &InstantiateTemplate,
-    ) -> crate::Result<Vec<Node<FunctionDefinition>>> {
+    ) -> crate::Result<Vec<FunctionDefinition>> {
         // Clone the AST
         let ast = self.ast.clone();
 
@@ -112,9 +112,9 @@ impl TemplateDefinition {
         for ep in scope.captured_parameters() {
             let p = outer_instantiator.get_symbol(ep).unwrap();
 
-            ast.prototype
-                .parameters
-                .push(FunctionParameterDeclaration::Named(
+            // TODO: Span information?
+            ast.prototype.parameters.push(
+                FunctionParameterDeclarationData::Named(
                     None,
                     FunctionParameterDeclarator {
                         ty: p.decl_type.clone(),
@@ -123,7 +123,9 @@ impl TemplateDefinition {
                             array_spec: p.array.clone(),
                         },
                     },
-                ));
+                )
+                .into(),
+            );
         }
 
         Ok(res)
@@ -177,7 +179,7 @@ pub enum TryTemplate {
     /// GLSLT template function
     Template(TemplateDefinition),
     /// GLSL function
-    Function(Node<FunctionDefinition>),
+    Function(FunctionDefinition),
 }
 
 /// Try parsing a function definition as a template
@@ -197,31 +199,29 @@ pub enum TryTemplate {
 ///
 /// See [crate::Error] for potential template declaration errors.
 pub fn parse_definition_as_template(
-    def: Node<FunctionDefinition>,
+    def: FunctionDefinition,
     declared_pointer_types: &HashMap<String, FunctionPrototype>,
 ) -> Result<TryTemplate> {
     let mut parameters = Vec::new();
     let mut non_template_parameters = Vec::new();
-    let span_id = def.span_id;
+    let span = def.span;
     let mut def = def.into_inner();
     let raw_prototype = def.prototype.clone();
 
-    for (arg_id, parameter) in def
-        .prototype
-        .parameters
-        .drain(0..def.prototype.parameters.len())
-        .enumerate()
-    {
-        let (n, t) = match &parameter {
-            FunctionParameterDeclaration::Named(_, d) => (Some(d.ident.ident.0.clone()), &d.ty),
-            FunctionParameterDeclaration::Unnamed(_, t) => (None, t),
+    let len = def.prototype.parameters.len();
+    let name = def.prototype.name.to_string();
+
+    for (arg_id, parameter) in def.prototype.parameters.drain(0..len).enumerate() {
+        let (n, t) = match &*parameter {
+            FunctionParameterDeclarationData::Named(_, d) => (Some(d.ident.ident.0.clone()), &d.ty),
+            FunctionParameterDeclarationData::Unnamed(_, t) => (None, t),
         };
 
         if let TypeSpecifierNonArray::TypeName(tn) = &t.ty {
             if declared_pointer_types.contains_key(&tn.0) {
                 if t.array_specifier.is_some() {
                     return Err(Error::ArrayedTemplateParameter {
-                        name: def.prototype.name.to_string(),
+                        name,
                         index: arg_id,
                     });
                 } else {
@@ -243,7 +243,7 @@ pub fn parse_definition_as_template(
         .parameters
         .extend(non_template_parameters.into_iter());
 
-    let def = Node::new(def, span_id);
+    let def = Node::new(def, span);
 
     if parameters.is_empty() {
         Ok(TryTemplate::Function(def))

@@ -235,11 +235,11 @@ impl Scope for LocalScope<'_, '_> {
         self.parent.template_instance_declared(template_name)
     }
 
-    fn register_template_instance(&mut self, definitions: Vec<Node<FunctionDefinition>>) {
+    fn register_template_instance(&mut self, definitions: Vec<FunctionDefinition>) {
         self.parent.register_template_instance(definitions)
     }
 
-    fn take_instanced_templates(&mut self) -> Vec<Node<FunctionDefinition>> {
+    fn take_instanced_templates(&mut self) -> Vec<FunctionDefinition> {
         self.parent.take_instanced_templates()
     }
 
@@ -360,7 +360,7 @@ fn lambda_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &Fu
     for (id, value) in source_parameters.iter().enumerate() {
         subs.insert(format!("_{}", id + 1), value);
 
-        if let FunctionParameterDeclaration::Named(_, p) = &prototype.parameters[id] {
+        if let FunctionParameterDeclarationData::Named(_, p) = &*prototype.parameters[id] {
             subs.insert(format!("_{}", p.ident.ident.0), value);
         }
     }

@@ -4,7 +4,42 @@ use glsl::parser::Parse;
 use glsl::syntax::*;
 use glsl::visitor::{Host, Visit, Visitor};
 
-use pretty_assertions::assert_eq;
+// Code from pretty_assertions
+// Use contents_eq to ignore span information when comparing syntax trees
+
+#[macro_export]
+macro_rules! assert_eq {
+    ($left:expr , $right:expr,) => ({
+        assert_eq!($left, $right)
+    });
+    ($left:expr , $right:expr) => ({
+        match (&($left), &($right)) {
+            (left_val, right_val) => {
+                if !left_val.contents_eq(&right_val) {
+                    panic!("assertion failed: `(left == right)`\
+                          \n\
+                          \n{}\
+                          \n",
+                           pretty_assertions::Comparison::new(left_val, right_val))
+                }
+            }
+        }
+    });
+    ($left:expr , $right:expr, $($arg:tt)*) => ({
+        match (&($left), &($right)) {
+            (left_val, right_val) => {
+                if !left_val.contents_eq(&right_val) {
+                    panic!("assertion failed: `(left == right)`: {}\
+                          \n\
+                          \n{}\
+                          \n",
+                           format_args!($($arg)*),
+                           pretty_assertions::Comparison::new(left_val, right_val))
+                }
+            }
+        }
+    });
+}
 
 use glslt::transform::TransformUnit;
 

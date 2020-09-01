@@ -11,7 +11,7 @@ pub struct Unit {
     /// Template definition context
     global_scope: GlobalScope,
     /// Result of external declarations copied from input and generated through instantiation
-    external_declarations: Vec<Node<ExternalDeclaration>>,
+    external_declarations: Vec<ExternalDeclaration>,
 }
 
 impl Unit {
@@ -56,24 +56,28 @@ impl TransformUnit for Unit {
         &mut self.global_scope
     }
 
-    fn push_function_declaration(&mut self, def: Node<FunctionDefinition>) {
+    fn push_function_declaration(&mut self, def: FunctionDefinition) {
         self.global_scope
             .known_functions_mut()
             .insert(def.prototype.name.0.clone(), def.prototype.clone());
 
         // Add the definition to the declarations
-        self.external_declarations
-            .push(def.map(ExternalDeclaration::FunctionDefinition));
+        // TODO: Don't clone def.span?
+        let span = def.span;
+        self.external_declarations.push(ExternalDeclaration::new(
+            ExternalDeclarationData::FunctionDefinition(def),
+            span,
+        ));
     }
 
-    fn parse_external_declaration(&mut self, extdecl: Node<ExternalDeclaration>) -> Result<()> {
+    fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()> {
         if let Some(extdecl) = self.global_scope.parse_external_declaration(extdecl)? {
             match extdecl.contents {
-                ExternalDeclaration::FunctionDefinition(def) => {
+                ExternalDeclarationData::FunctionDefinition(def) => {
                     // No template parameter, it's a "regular" function so it has to be
                     // processed to instantiate parameters
-                    let decls = InstantiateTemplate::new()
-                        .instantiate(&mut self.global_scope, Node::new(def, extdecl.span_id))?;
+                    let decls =
+                        InstantiateTemplate::new().instantiate(&mut self.global_scope, def)?;
 
                     for d in decls {
                         self.push_function_declaration(d);
@@ -81,7 +85,7 @@ impl TransformUnit for Unit {
                 }
                 other => self
                     .external_declarations
-                    .push(Node::new(other, extdecl.span_id)),
+                    .push(Node::new(other, extdecl.span)),
             }
         }
 

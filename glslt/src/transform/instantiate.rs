@@ -48,7 +48,7 @@ lazy_static! {
 #[derive(Debug, Clone)]
 pub struct DeclaredSymbol {
     pub symbol_id: usize,
-    pub gen_id: Node<Identifier>,
+    pub gen_id: Identifier,
     pub decl_type: TypeSpecifier,
     pub array: Option<ArraySpecifier>,
 }
@@ -67,8 +67,8 @@ impl InstantiateTemplate {
     pub fn instantiate(
         mut self,
         scope: &mut dyn Scope,
-        mut def: Node<FunctionDefinition>,
-    ) -> Result<Vec<Node<FunctionDefinition>>> {
+        mut def: FunctionDefinition,
+    ) -> Result<Vec<FunctionDefinition>> {
         // Transform definition. The visitor is responsible for instantiating templates
         let mut tgt = InstantiateTemplateUnit {
             instantiator: &mut self,
@@ -92,11 +92,8 @@ impl InstantiateTemplate {
         self.symbol_table.get(name)
     }
 
-    fn new_gen_id(&self) -> Node<Identifier> {
-        Node::new(
-            Identifier(format!("{}_lp{}", crate::PREFIX, self.symbol_table.len())),
-            None,
-        )
+    fn new_gen_id(&self) -> Identifier {
+        IdentifierData(format!("{}_lp{}", crate::PREFIX, self.symbol_table.len())).into()
     }
 
     pub(in crate::transform) fn visit_fun_call<'s>(
@@ -180,7 +177,7 @@ impl InstantiateTemplate {
         // Add the captured parameters to the end of the call
         for ep in local_scope.captured_parameters().iter() {
             // TODO: Preserve span information
-            args.push(Expr::Variable(Node::new(Identifier(ep.clone()), None)));
+            args.push(Expr::Variable(IdentifierData(ep.clone()).into()));
         }
 
         Ok(())

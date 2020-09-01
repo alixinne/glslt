@@ -20,7 +20,7 @@ pub struct GlobalScope {
     /// Identifiers of already instantiated templates
     instantiated_templates: HashSet<String>,
     /// Pending external declarations
-    instanced_templates: Vec<Node<FunctionDefinition>>,
+    instanced_templates: Vec<FunctionDefinition>,
 }
 
 impl GlobalScope {
@@ -47,20 +47,23 @@ impl GlobalScope {
     }
 
     fn parse_declaration(&mut self, decl: Declaration) -> Result<Option<ExternalDeclaration>> {
-        match decl {
-            Declaration::FunctionPrototype(prototype) => {
+        match decl.contents {
+            DeclarationData::FunctionPrototype(prototype) => {
                 // A function prototype is what we'll call a function pointer type
                 self.parse_function_prototype(prototype)?;
                 Ok(None)
             }
-            other => Ok(Some(ExternalDeclaration::Declaration(other))),
+            other => Ok(Some(ExternalDeclaration::new(
+                ExternalDeclarationData::Declaration(Declaration::new(other, decl.span)),
+                decl.span,
+            ))),
         }
     }
 
     fn parse_function_definition(
         &mut self,
-        def: Node<FunctionDefinition>,
-    ) -> Result<Option<Node<FunctionDefinition>>> {
+        def: FunctionDefinition,
+    ) -> Result<Option<FunctionDefinition>> {
         // A function definition is a template if any of its arguments is a pointer
         let name = def.prototype.name.0.clone();
         let template =
@@ -108,24 +111,19 @@ impl GlobalScope {
     /// if this declaration is not a template or needs to be instantiated in a global scope
     pub fn parse_external_declaration(
         &mut self,
-        extdecl: Node<ExternalDeclaration>,
-    ) -> Result<Option<Node<ExternalDeclaration>>> {
-        let span_id = extdecl.span_id;
+        extdecl: ExternalDeclaration,
+    ) -> Result<Option<ExternalDeclaration>> {
+        let span = extdecl.span;
 
         match extdecl.contents {
-            ExternalDeclaration::Declaration(decl) => self
-                .parse_declaration(decl)
-                .map(|ed| ed.map(|ed| Node::new(ed, span_id))),
-            ExternalDeclaration::FunctionDefinition(def) => Ok(self
-                .parse_function_definition(Node::new(def, span_id))?
-                .map(|n| {
-                    Node::new(
-                        ExternalDeclaration::FunctionDefinition(n.into_inner()),
-                        span_id,
-                    )
-                })),
+            ExternalDeclarationData::Declaration(decl) => self.parse_declaration(decl),
+            ExternalDeclarationData::FunctionDefinition(def) => {
+                Ok(self.parse_function_definition(def)?.map(|n| {
+                    ExternalDeclaration::new(ExternalDeclarationData::FunctionDefinition(n), span)
+                }))
+            }
             // Just forward the others
-            other => Ok(Some(Node::new(other, span_id))),
+            other => Ok(Some(ExternalDeclaration::new(other, span))),
         }
     }
 
@@ -161,7 +159,7 @@ impl Scope for GlobalScope {
         self.instantiated_templates.contains(template_name)
     }
 
-    fn register_template_instance(&mut self, definitions: Vec<Node<FunctionDefinition>>) {
+    fn register_template_instance(&mut self, definitions: Vec<FunctionDefinition>) {
         for template in definitions {
             let template_name = template.prototype.name.0.as_str();
 
@@ -173,7 +171,7 @@ impl Scope for GlobalScope {
         }
     }
 
-    fn take_instanced_templates(&mut self) -> Vec<Node<FunctionDefinition>> {
+    fn take_instanced_templates(&mut self) -> Vec<FunctionDefinition> {
         std::mem::replace(&mut self.instanced_templates, Vec::with_capacity(2))
     }
 

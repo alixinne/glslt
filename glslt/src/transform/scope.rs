@@ -29,12 +29,12 @@ pub trait Scope: std::fmt::Debug {
     /// # Parameters
     ///
     /// * `definitions`: function definitions introduced by the template instantiation
-    fn register_template_instance(&mut self, definitions: Vec<Node<FunctionDefinition>>);
+    fn register_template_instance(&mut self, definitions: Vec<FunctionDefinition>);
 
     /// Each template instantiation round will generate functions declarations
     /// This allows pulling them in from the parent transformation unit and should be invoked after
     /// each instantiation round.
-    fn take_instanced_templates(&mut self) -> Vec<Node<FunctionDefinition>>;
+    fn take_instanced_templates(&mut self) -> Vec<FunctionDefinition>;
 
     /// Resolve an identifier as a function name. Returns None if this is not possible.
     fn resolve_function_name(&self, name: &str) -> Option<ResolvedArgument>;
