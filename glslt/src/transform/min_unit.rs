@@ -277,10 +277,15 @@ impl TransformUnit for MinUnit {
                             if let TypeSpecifierNonArray::Struct(ss) = &idl.head.ty.ty.ty {
                                 // It's a struct declaration
                                 if let Some(tn) = &ss.name {
-                                    self.external_declarations.insert(
-                                        ExternalIdentifier::Declaration(tn.0.clone()),
-                                        Node::new(other, extdecl.span),
-                                    );
+                                    // Dependency key
+                                    let key = ExternalIdentifier::Declaration(tn.0.clone());
+                                    // Node for dependency walking and storage
+                                    let mut node = Node::new(other, extdecl.span);
+
+                                    // Parse type name dependencies in the struct specification
+                                    self.extend_dag(&mut node);
+
+                                    self.external_declarations.insert(key, node);
                                 } else {
                                     return Err(Error::UnsupportedIDL(idl.clone()));
                                 }

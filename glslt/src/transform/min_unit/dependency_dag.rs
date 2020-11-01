@@ -54,6 +54,12 @@ impl DependencyDag {
         // Self-reference makes no sense here
         assert!(scope != dependency);
 
+        trace!(
+            "DependencyDag: add_dep {:?} -> {:?}",
+            self.symbol_map.get_by_right(&scope).unwrap(),
+            self.symbol_map.get_by_right(&dependency).unwrap()
+        );
+
         self.graph
             .add_edge(NodeIndex::new(scope), NodeIndex::new(dependency), ());
     }
