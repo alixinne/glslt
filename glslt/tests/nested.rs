@@ -4,7 +4,7 @@ mod common;
 
 #[test]
 fn nested_static_args() {
-    common::verify_transform(
+    common::verify_both(
         r#"int IntCallback();
 
 int callbackTarget() { return 1; }
@@ -33,12 +33,13 @@ int _glslt_outerTemplate_0() {
 void main() {
     _glslt_outerTemplate_0();
 }"#,
+        "main",
     );
 }
 
 #[test]
 fn nested_static_args_with_arg() {
-    common::verify_transform(
+    common::verify_both(
         r#"int IntCallback(int x);
 
 int callbackTarget(int x) { return x; }
@@ -67,12 +68,13 @@ int _glslt_outerTemplate_0() {
 void main() {
     _glslt_outerTemplate_0();
 }"#,
+        "main",
     );
 }
 
 #[test]
 fn nested_lambda_with_arg() {
-    common::verify_transform(
+    common::verify_both(
         r#"int IntCallback(int x);
 
 int innerTemplate(IntCallback cbi) {
@@ -97,12 +99,13 @@ int _glslt_outerTemplate_0() {
 void main() {
     _glslt_outerTemplate_0();
 }"#,
+        "main",
     );
 }
 
 #[test]
 fn doubly_nested_lambda_with_arg() {
-    common::verify_transform(
+    common::verify_both(
         r#"int IntCallback(int x);
 
 int innerTemplate(IntCallback cbi) {
@@ -127,12 +130,13 @@ int _glslt_outerTemplate_0() {
 void main() {
     _glslt_outerTemplate_0();
 }"#,
+        "main",
     );
 }
 
 #[test]
 fn nested_complex() {
-    common::verify_transform(
+    common::verify_both(
         r#"vec4 PathInfill(float p);
 
 vec4 pathFillSegment(float ph, float width, PathInfill infill) {
@@ -157,12 +161,13 @@ vec4 _glslt_infillSolidBorder_0(float p, float width) {
 void main() {
     gl_FragColor = _glslt_infillSolidBorder_0(0.25, 5.0);
 }"#,
+        "main",
     );
 }
 
 #[test]
 fn nested_complex_lambda() {
-    common::verify_transform(
+    common::verify_both(
         r#"vec4 PathInfill(float p);
 
 vec4 pathFillSegment(float ph, float width, PathInfill infill) {
@@ -187,12 +192,13 @@ vec4 _glslt_infillSolidBorder_0(float p, float width) {
 void main() {
     gl_FragColor = _glslt_infillSolidBorder_0(0.25, 5.0);
 }"#,
+        "main",
     );
 }
 
 #[test]
 fn nested_complex_lambda2() {
-    common::verify_transform(
+    common::verify_both(
         r#"vec4 PathInfill(float p);
 
 vec4 pathFillSegment(float ph, float width, PathInfill infill) {
@@ -217,5 +223,6 @@ vec4 _glslt_infillSolidBorder_0(float p, float width) {
 void main() {
     gl_FragColor = _glslt_infillSolidBorder_0(0.25, 5.0);
 }"#,
+        "main",
     );
 }

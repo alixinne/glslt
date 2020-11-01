@@ -156,7 +156,11 @@ fn to_string(tu: &TranslationUnit) -> String {
     s
 }
 
-pub fn verify_transform(src: &str, expected: &str) {
+fn verify_transform_impl(
+    src: &str,
+    expected: &str,
+    transform: impl FnOnce(TranslationUnit) -> TranslationUnit,
+) {
     env_logger::builder()
         .format_timestamp(None)
         .filter_level(log::LevelFilter::Trace)
@@ -172,17 +176,8 @@ pub fn verify_transform(src: &str, expected: &str) {
     // Reformat source
     let source = to_string(&src);
 
-    // Transform source
-    let mut unit = glslt::transform::Unit::new();
-    for decl in (src.0).0.into_iter() {
-        let err = format!("failed to transform declaration: {:?}", decl);
-        unit.parse_external_declaration(decl).expect(&err);
-    }
-
-    // Get result
-    let mut transformed = unit
-        .into_translation_unit()
-        .expect("failed to obtain translation unit for result");
+    // Run transform function
+    let mut transformed = transform(src);
 
     // Visit the transformed source to find generated identifiers
     let mut id = IdentifierDiscovery::default();
@@ -212,4 +207,40 @@ pub fn verify_transform(src: &str, expected: &str) {
             panic!("failed to substitute identifiers in expected: {:?}", err);
         }
     }
+}
+
+pub fn verify_transform(src: &str, expected: &str) {
+    verify_transform_impl(src, expected, |src| {
+        // Transform source
+        let mut unit = glslt::transform::Unit::new();
+        for decl in (src.0).0.into_iter() {
+            let err = format!("failed to transform declaration: {:?}", decl);
+            unit.parse_external_declaration(decl).expect(&err);
+        }
+
+        // Get result
+        unit.into_translation_unit()
+            .expect("failed to obtain translation unit for result")
+    });
+}
+
+pub fn verify_min_transform(src: &str, expected: &str, entry_point: &str) {
+    verify_transform_impl(src, expected, |src| {
+        // Transform source
+        let mut unit = glslt::transform::MinUnit::new();
+        for decl in (src.0).0.into_iter() {
+            let err = format!("failed to transform declaration: {:?}", decl);
+            unit.parse_external_declaration(decl).expect(&err);
+        }
+
+        // Get result
+        let entry_points = [entry_point];
+        unit.into_translation_unit(entry_points.iter().copied())
+            .expect("failed to obtain translation unit for result")
+    });
+}
+
+pub fn verify_both(src: &str, expected: &str, entry_point: &str) {
+    verify_transform(src, expected);
+    verify_min_transform(src, expected, entry_point);
 }

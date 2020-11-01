@@ -4,7 +4,7 @@ mod common;
 
 #[test]
 fn capture_simple() {
-    common::verify_transform(
+    common::verify_both(
         r#"int intfn(int x);
 
 int fnTemplate(in intfn callback) {
@@ -23,12 +23,13 @@ void main() {
     int captureMe = 8;
     _glslt_fnTemplate_0(captureMe);
 }"#,
+        "main",
     );
 }
 
 #[test]
 fn capture_double() {
-    common::verify_transform(
+    common::verify_both(
         r#"int intfn(int x, int y);
 
 int fnTemplate(in intfn callback) {
@@ -49,21 +50,22 @@ void main() {
     int captureMe = 8;
     _glslt_fnTemplate_0(captureMe);
 }"#,
+        "main",
     );
 }
 
 #[test]
 fn capture_static() {
-    common::verify_transform(
+    common::verify_both(
         r#"int Fn1(int x);
 int Fn2(int x, int y);
 
-int target1(int x) {
-    return 2 * x;
-}
-
 int target2(int x, int y) {
     return x * y;
+}
+
+int target1(int x) {
+    return 2 * x;
 }
 
 int fnTemplate(Fn1 cb1, Fn2 cb2) {
@@ -75,12 +77,12 @@ void main() {
     int captureMe = 8;
     fnTemplate(target1, target2(_1, _2 * captureMe));
 }"#,
-        r#"int target1(int x) {
-    return 2 * x;
+        r#"int target2(int x, int y) {
+    return x * y;
 }
 
-int target2(int x, int y) {
-    return x * y;
+int target1(int x) {
+    return 2 * x;
 }
 
 int _glslt_fnTemplate_0(int _glslt_lp0) {
@@ -92,6 +94,7 @@ void main() {
     int captureMe = 8;
     _glslt_fnTemplate_0(captureMe);
 }"#,
+        "main",
     );
 }
 
@@ -99,13 +102,9 @@ void main() {
 fn capture_stack() {
     // This test passing ensures there is no infinite recursion in lambda_instantiate
 
-    common::verify_transform(
+    common::verify_both(
         r#"int Fn1(int x);
 int Fn2(int x, int y);
-
-int target1(int x) {
-    return 2 * x;
-}
 
 int target2(int x, int y) {
     return x * y;
@@ -120,11 +119,7 @@ void main() {
     int captureMe = 8;
     fnTemplate(target2(_1, _2 * captureMe));
 }"#,
-        r#"int target1(int x) {
-                return 2 * x;
-        }
-
-int target2(int x, int y) {
+        r#"int target2(int x, int y) {
         return x * y;
 }
 
@@ -137,5 +132,6 @@ void main() {
         int captureMe = 8;
             _glslt_fnTemplate_0(captureMe);
 }"#,
+        "main",
     );
 }
