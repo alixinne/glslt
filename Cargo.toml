@@ -5,4 +5,3 @@ members = [ "glslt", "glslt_cli" ]
 glsl = { git = "https://github.com/vtavernier/glsl", branch = "dev" }
 glsl-impl = { git = "https://github.com/vtavernier/glsl", branch = "dev" }
 glslt = { path = "glslt" }
-nom_locate = { git = "https://github.com/fflorent/nom_locate.git", branch = "master" }
