@@ -103,13 +103,13 @@ impl MinUnit {
         ))
     }
 
-    fn extend_dag(&mut self, tu: &mut impl Host) {
+    fn extend_dag(&mut self, tu: &mut impl HostMut) {
         struct VisitorData<'e> {
             current_scope_name: Option<usize>,
             this: &'e mut MinUnit,
         }
 
-        impl Visitor for VisitorData<'_> {
+        impl VisitorMut for VisitorData<'_> {
             fn visit_external_declaration(&mut self, _node: &mut ExternalDeclaration) -> Visit {
                 self.current_scope_name = None;
 
@@ -192,7 +192,7 @@ impl MinUnit {
             this: self,
         };
 
-        tu.visit(&mut visitor);
+        tu.visit_mut(&mut visitor);
     }
 }
 

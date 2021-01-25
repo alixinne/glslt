@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use glsl::syntax::*;
-use glsl::visitor::{Host, Visit, Visitor};
+use glsl::visitor::{HostMut, Visit, VisitorMut};
 
 use itertools::Itertools;
 
@@ -59,7 +59,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
             captured: HashMap<String, &'ds super::instantiate::DeclaredSymbol>,
         }
 
-        impl Visitor for Capturer<'_> {
+        impl VisitorMut for Capturer<'_> {
             fn visit_expr(&mut self, e: &mut Expr) -> Visit {
                 if let Expr::Variable(ident) = e {
                     // This is a variable. If it's in the symbol table, it needs to be
@@ -84,7 +84,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
         };
 
         for tp in &mut template_parameters {
-            tp.0.visit(&mut capturer);
+            tp.0.visit_mut(&mut capturer);
         }
 
         // Extract the list of captured variables ordered by symbol_id
@@ -340,7 +340,7 @@ fn lambda_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &Fu
         subs: HashMap<String, &'s Expr>,
     }
 
-    impl Visitor for V<'_> {
+    impl VisitorMut for V<'_> {
         fn visit_expr(&mut self, e: &mut Expr) -> Visit {
             if let Expr::Variable(ident) = e {
                 if let Some(repl) = self.subs.get(ident.0.as_str()) {
@@ -365,5 +365,5 @@ fn lambda_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &Fu
         }
     }
 
-    tgt.visit(&mut V { subs });
+    tgt.visit_mut(&mut V { subs });
 }

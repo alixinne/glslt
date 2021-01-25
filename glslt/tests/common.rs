@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use glsl::parser::Parse;
 use glsl::syntax::*;
-use glsl::visitor::{Host, Visit, Visitor};
+use glsl::visitor::{HostMut, Visit, VisitorMut};
 
 // Code from pretty_assertions
 // Use contents_eq to ignore span information when comparing syntax trees
@@ -50,7 +50,7 @@ struct IdentifierDiscovery {
     known_identifiers: HashMap<String, usize>,
 }
 
-impl Visitor for IdentifierDiscovery {
+impl VisitorMut for IdentifierDiscovery {
     fn visit_identifier(&mut self, ident: &mut Identifier) -> Visit {
         if ident.0.starts_with(glslt::PREFIX) {
             // Extract generated part
@@ -85,7 +85,7 @@ impl<'d> IdentifierReplacement<'d> {
     }
 
     pub fn replace(mut self, target: &mut TranslationUnit) -> Result<(), String> {
-        target.visit(&mut self);
+        target.visit_mut(&mut self);
 
         if self.missing_identifiers.is_empty() {
             Ok(())
@@ -101,7 +101,7 @@ impl<'d> IdentifierReplacement<'d> {
     }
 }
 
-impl Visitor for IdentifierReplacement<'_> {
+impl VisitorMut for IdentifierReplacement<'_> {
     fn visit_identifier(&mut self, ident: &mut Identifier) -> Visit {
         if ident.0.starts_with(glslt::PREFIX) && ident.0.len() > glslt::PREFIX.len() {
             // Extract generated part
@@ -181,7 +181,7 @@ fn verify_transform_impl(
 
     // Visit the transformed source to find generated identifiers
     let mut id = IdentifierDiscovery::default();
-    expected.visit(&mut id);
+    expected.visit_mut(&mut id);
 
     // Transform identifiers in the expected result (assuming same order)
     let replacement = IdentifierReplacement::new(&id);

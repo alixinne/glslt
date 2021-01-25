@@ -13,7 +13,7 @@ path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-glsl = "5"
+glsl = "6"
 
 thiserror = "1.0"
 sha-1 = "0.9"

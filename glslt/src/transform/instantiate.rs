@@ -75,7 +75,7 @@ impl InstantiateTemplate {
             scope,
         };
 
-        def.visit(&mut tgt);
+        def.visit_mut(&mut tgt);
 
         // Push new function declarations
         let mut res = tgt.scope.take_instanced_templates();
@@ -105,7 +105,7 @@ impl InstantiateTemplate {
             Expr::FunCall(fun, args) => {
                 // First visit the arguments to transform inner lambdas first
                 for arg in args.iter_mut() {
-                    arg.visit(&mut InstantiateTemplateUnit {
+                    arg.visit_mut(&mut InstantiateTemplateUnit {
                         instantiator: self,
                         scope,
                     });
@@ -214,7 +214,7 @@ struct InstantiateTemplateUnit<'c> {
     scope: &'c mut dyn Scope,
 }
 
-impl Visitor for InstantiateTemplateUnit<'_> {
+impl VisitorMut for InstantiateTemplateUnit<'_> {
     fn visit_function_parameter_declarator(
         &mut self,
         p: &mut FunctionParameterDeclarator,
