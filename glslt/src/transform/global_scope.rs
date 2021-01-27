@@ -1,7 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::rc::Rc;
 
 use glsl::syntax::*;
+
+use indexmap::IndexMap;
 
 use super::template::{TemplateDefinition, TryTemplate};
 use super::{ResolvedArgument, ResolvedArgumentExpr, Scope};
@@ -12,11 +14,11 @@ use crate::{Error, Result};
 #[derive(Default, Debug, Clone)]
 pub struct GlobalScope {
     /// Known pointer types
-    declared_pointer_types: HashMap<String, FunctionPrototype>,
+    declared_pointer_types: IndexMap<String, FunctionPrototype>,
     /// Known GLSLT template functions
-    declared_templates: HashMap<String, Rc<TemplateDefinition>>,
+    declared_templates: IndexMap<String, Rc<TemplateDefinition>>,
     /// Identifiers of function declarations
-    known_functions: HashMap<String, FunctionPrototype>,
+    known_functions: IndexMap<String, FunctionPrototype>,
     /// Identifiers of already instantiated templates
     instantiated_templates: HashSet<String>,
     /// Pending external declarations
@@ -82,17 +84,17 @@ impl GlobalScope {
     }
 
     /// Get the list of defined function identifiers in this global scope
-    pub fn known_functions_mut(&mut self) -> &mut HashMap<String, FunctionPrototype> {
+    pub fn known_functions_mut(&mut self) -> &mut IndexMap<String, FunctionPrototype> {
         &mut self.known_functions
     }
 
     /// Get the list of defined templates in this global scope
-    pub fn declared_templates(&self) -> &HashMap<String, Rc<TemplateDefinition>> {
+    pub fn declared_templates(&self) -> &IndexMap<String, Rc<TemplateDefinition>> {
         &self.declared_templates
     }
 
     /// Get the list of defined pointer types in this global scope
-    pub fn declared_pointer_types(&self) -> &HashMap<String, FunctionPrototype> {
+    pub fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype> {
         &self.declared_pointer_types
     }
 
@@ -147,7 +149,7 @@ impl Scope for GlobalScope {
         None
     }
 
-    fn declared_pointer_types(&self) -> &HashMap<String, FunctionPrototype> {
+    fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype> {
         &self.declared_pointer_types
     }
 

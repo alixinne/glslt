@@ -1,10 +1,9 @@
 //! Definition of the local scope structure for template instantiation
 
-use std::collections::HashMap;
-
 use glsl::syntax::*;
 use glsl::visitor::{HostMut, Visit, VisitorMut};
 
+use indexmap::IndexMap;
 use itertools::Itertools;
 
 use super::template::TemplateDefinition;
@@ -20,7 +19,7 @@ pub struct LocalScope<'p, 'q> {
     /// List of ordered template parameters
     template_parameters: Vec<(Expr, &'q str)>,
     /// Lookup table for template parameters by name
-    template_parameters_by_name: HashMap<String, usize>,
+    template_parameters_by_name: IndexMap<String, usize>,
     /// List of parameter names captured by entering the current scope
     captured_parameters: Vec<String>,
 }
@@ -36,14 +35,14 @@ impl<'p, 'q> LocalScope<'p, 'q> {
     pub fn new(
         template: &'q TemplateDefinition,
         args: &mut Vec<Expr>,
-        symbol_table: &HashMap<String, super::instantiate::DeclaredSymbol>,
+        symbol_table: &IndexMap<String, super::instantiate::DeclaredSymbol>,
         parent: &'p mut dyn Scope,
     ) -> crate::Result<Self> {
         // Extract template parameters for this scope
         let mut template_parameters = template.extract_template_parameters(args)?;
 
         // Build lookup table
-        let mut template_parameters_by_name = HashMap::with_capacity(template_parameters.len());
+        let mut template_parameters_by_name = IndexMap::with_capacity(template_parameters.len());
         for (index, parameter) in template.parameters().iter().enumerate() {
             if let Some(name) = parameter.symbol.as_ref() {
                 template_parameters_by_name.insert(name.to_owned(), index);
@@ -55,8 +54,8 @@ impl<'p, 'q> LocalScope<'p, 'q> {
 
         // Extract the set of captured variables
         struct Capturer<'ds> {
-            st: &'ds HashMap<String, super::instantiate::DeclaredSymbol>,
-            captured: HashMap<String, &'ds super::instantiate::DeclaredSymbol>,
+            st: &'ds IndexMap<String, super::instantiate::DeclaredSymbol>,
+            captured: IndexMap<String, &'ds super::instantiate::DeclaredSymbol>,
         }
 
         impl VisitorMut for Capturer<'_> {
@@ -80,7 +79,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
         // Visit the input expressions
         let mut capturer = Capturer {
             st: symbol_table,
-            captured: HashMap::new(),
+            captured: IndexMap::new(),
         };
 
         for tp in &mut template_parameters {
@@ -223,7 +222,7 @@ impl Scope for LocalScope<'_, '_> {
         Some(self.parent)
     }
 
-    fn declared_pointer_types(&self) -> &HashMap<String, FunctionPrototype> {
+    fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype> {
         self.parent.declared_pointer_types()
     }
 
@@ -337,7 +336,7 @@ impl Scope for LocalScope<'_, '_> {
 fn lambda_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &FunctionPrototype) {
     // Declare the visitor for the substitution
     struct V<'s> {
-        subs: HashMap<String, &'s Expr>,
+        subs: IndexMap<String, &'s Expr>,
     }
 
     impl VisitorMut for V<'_> {
@@ -356,7 +355,7 @@ fn lambda_instantiate(tgt: &mut Expr, source_parameters: &[Expr], prototype: &Fu
     }
 
     // Perform substitutions
-    let mut subs = HashMap::new();
+    let mut subs = IndexMap::new();
     for (id, value) in source_parameters.iter().enumerate() {
         subs.insert(format!("_{}", id + 1), value);
 

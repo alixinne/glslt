@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-
 use glsl::syntax::*;
 use glsl::visitor::*;
+
+use indexmap::IndexMap;
 
 use super::instantiate::InstantiateTemplate;
 use super::{FnRef, GlobalScope, TransformUnit};
@@ -17,7 +17,7 @@ pub struct MinUnit {
     /// Template definition global scope
     global_scope: GlobalScope,
     /// External declaration repository
-    external_declarations: HashMap<ExternalIdentifier, ExternalDeclaration>,
+    external_declarations: IndexMap<ExternalIdentifier, ExternalDeclaration>,
     /// Dependency graph, built as declarations are added to this unit
     dag: DependencyDag,
     /// Static contents that can be included before other declarations (such as #version, precision

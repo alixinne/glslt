@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-
 use glsl::syntax::*;
 use glsl::visitor::*;
 
+use indexmap::IndexMap;
 use lazy_static::lazy_static;
 
 use crate::{Error, Result};
@@ -56,7 +55,7 @@ pub struct DeclaredSymbol {
 #[derive(Default)]
 pub struct InstantiateTemplate {
     error: Option<Error>,
-    symbol_table: HashMap<String, DeclaredSymbol>,
+    symbol_table: IndexMap<String, DeclaredSymbol>,
 }
 
 impl InstantiateTemplate {

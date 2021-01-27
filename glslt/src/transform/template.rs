@@ -1,8 +1,8 @@
 //! Definitions of template function abstractrepresentations
 
-use std::collections::HashMap;
-
 use glsl::syntax::*;
+
+use indexmap::IndexMap;
 
 use super::{instantiate::InstantiateTemplate, FnRef, LocalScope};
 
@@ -200,7 +200,7 @@ pub enum TryTemplate {
 /// See [crate::Error] for potential template declaration errors.
 pub fn parse_definition_as_template(
     def: FunctionDefinition,
-    declared_pointer_types: &HashMap<String, FunctionPrototype>,
+    declared_pointer_types: &IndexMap<String, FunctionPrototype>,
 ) -> Result<TryTemplate> {
     let mut parameters = Vec::new();
     let mut non_template_parameters = Vec::new();

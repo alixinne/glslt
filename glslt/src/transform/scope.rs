@@ -1,7 +1,8 @@
-use std::collections::HashMap;
 use std::rc::Rc;
 
 use glsl::syntax::*;
+
+use indexmap::IndexMap;
 
 use super::instantiate::InstantiateTemplate;
 use super::template::TemplateDefinition;
@@ -12,7 +13,7 @@ pub trait Scope: std::fmt::Debug {
     fn parent_scope(&self) -> Option<&dyn Scope>;
 
     /// Get the list of defined pointer types in this global scope
-    fn declared_pointer_types(&self) -> &HashMap<String, FunctionPrototype>;
+    fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype>;
 
     /// Get the template corresponding to the given name
     fn get_template(&self, template_name: &str) -> Option<Rc<TemplateDefinition>>;

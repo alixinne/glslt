@@ -22,6 +22,7 @@ petgraph = "0.5"
 bimap = "0.4"
 log = "0.4.8"
 itertools = "0.9"
+indexmap = "1.6"
 
 [dependencies.pyo3]
 version = "0.11"

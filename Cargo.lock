@@ -221,6 +221,7 @@ dependencies = [
  "bimap",
  "env_logger",
  "glsl",
+ "indexmap",
  "itertools",
  "lazy_static",
  "log",
