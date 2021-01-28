@@ -4,7 +4,7 @@ use glsl::visitor::*;
 use indexmap::IndexMap;
 
 use super::instantiate::InstantiateTemplate;
-use super::{FnRef, GlobalScope, TransformUnit};
+use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
 
 use crate::{Error, Result};
 
@@ -227,119 +227,134 @@ impl TransformUnit for MinUnit {
     fn parse_external_declaration(
         &mut self,
         extdecl: ExternalDeclaration,
-    ) -> Result<Option<FnRef>> {
-        if let Some(extdecl) = self.global_scope.parse_external_declaration(extdecl)? {
-            match extdecl.contents {
-                ExternalDeclarationData::FunctionDefinition(def) => {
-                    // No template parameter, it's a "regular" function so it has to be
-                    // processed to instantiate parameters
-                    let decls =
-                        InstantiateTemplate::new().instantiate(&mut self.global_scope, def)?;
+    ) -> Result<Option<FnHandle>> {
+        let unparsed;
 
-                    for d in decls {
-                        self.push_function_declaration(d);
-                    }
-
-                    let f = self.external_declarations.last().unwrap();
-                    match &f.1.contents {
-                        ExternalDeclarationData::FunctionDefinition(def) => {
-                            return Ok(Some(FnRef {
-                                prototype: &def.prototype,
-                                statement: &def.statement,
-                            }));
-                        }
-                        _ => unreachable!(),
-                    }
-                }
-                other => match other {
-                    ExternalDeclarationData::FunctionDefinition(_) => {}
-                    ExternalDeclarationData::Preprocessor(ref pp) => match &pp.contents {
-                        PreprocessorData::Define(PreprocessorDefine::ObjectLike {
-                            ident, ..
-                        }) => {
-                            self.external_declarations.insert(
-                                ExternalIdentifier::Declaration(ident.0.clone()),
-                                Node::new(other, extdecl.span),
-                            );
-                        }
-                        PreprocessorData::Define(PreprocessorDefine::FunctionLike {
-                            ident,
-                            ..
-                        }) => {
-                            self.external_declarations.insert(
-                                ExternalIdentifier::FunctionDefinition(ident.0.clone()),
-                                Node::new(other, extdecl.span),
-                            );
-                        }
-                        PreprocessorData::Version(_) | PreprocessorData::Extension(_) => {
-                            self.static_declarations
-                                .push(Node::new(other, extdecl.span));
-                        }
-                        rest => {
-                            return Err(Error::UnsupportedPreprocessor(Preprocessor::new(
-                                rest.clone(),
-                                pp.span,
-                            )))
-                        }
-                    },
-                    ExternalDeclarationData::Declaration(ref decl) => match &decl.contents {
-                        DeclarationData::FunctionPrototype(_) => {
-                            unreachable!("prototype already consumed by template engine")
-                        }
-                        DeclarationData::InitDeclaratorList(idl) => {
-                            // TODO: Handle variable declarations at top-level using
-                            // InitDeclaratorList. For now, this only handles struct declarations.
-                            if let TypeSpecifierNonArray::Struct(ss) = &idl.head.ty.ty.ty {
-                                // It's a struct declaration
-                                if let Some(tn) = &ss.name {
-                                    // Dependency key
-                                    let key = ExternalIdentifier::Declaration(tn.0.clone());
-                                    // Node for dependency walking and storage
-                                    let mut node = Node::new(other, extdecl.span);
-
-                                    // Parse type name dependencies in the struct specification
-                                    self.extend_dag(&mut node);
-
-                                    self.external_declarations.insert(key, node);
-                                } else {
-                                    return Err(Error::UnsupportedIDL(idl.clone()));
-                                }
-                            } else {
-                                // It's a variable declaration, maybe?
-                                if let Some(name) = &idl.head.name {
-                                    self.external_declarations.insert(
-                                        ExternalIdentifier::Declaration(name.0.clone()),
-                                        Node::new(other, extdecl.span),
-                                    );
-                                } else {
-                                    return Err(Error::UnsupportedIDL(idl.clone()));
-                                }
-                            }
-                        }
-                        DeclarationData::Precision(_, _) | DeclarationData::Block(_) => {
-                            // TODO: How to handle Declaration::Block?
-                            self.static_declarations
-                                .push(Node::new(other, extdecl.span));
-                        }
-                        DeclarationData::Global(tq, identifiers) => {
-                            // TODO: How are globals used by function code?
-                            // TODO: Preserve span information
-                            for id in identifiers {
-                                self.external_declarations.insert(
-                                    ExternalIdentifier::Declaration(id.0.clone()),
-                                    Node::new(
-                                        ExternalDeclarationData::Declaration(
-                                            DeclarationData::Global(tq.clone(), vec![id.clone()])
-                                                .into(),
-                                        ),
-                                        extdecl.span,
-                                    ),
-                                );
-                            }
-                        }
-                    },
-                },
+        match self.global_scope.parse_external_declaration(extdecl)? {
+            ParsedDeclaration::ConsumedAsType => {
+                return Ok(None);
             }
+            ParsedDeclaration::ConsumedAsTemplate(r) => {
+                return Ok(Some(r.into()));
+            }
+            ParsedDeclaration::Unparsed(extdecl) => {
+                unparsed = extdecl;
+            }
+        }
+
+        let extdecl = unparsed;
+        match extdecl.contents {
+            ExternalDeclarationData::FunctionDefinition(def) => {
+                // No template parameter, it's a "regular" function so it has to be
+                // processed to instantiate parameters
+                let decls = InstantiateTemplate::new().instantiate(&mut self.global_scope, def)?;
+
+                for d in decls {
+                    self.push_function_declaration(d);
+                }
+
+                let f = self.external_declarations.last().unwrap();
+                match &f.1.contents {
+                    ExternalDeclarationData::FunctionDefinition(def) => {
+                        return Ok(Some(
+                            Node::new(
+                                FnRef {
+                                    prototype: &def.prototype,
+                                    statement: &def.statement,
+                                },
+                                extdecl.span,
+                            )
+                            .into(),
+                        ));
+                    }
+                    _ => unreachable!(),
+                }
+            }
+            other => match other {
+                ExternalDeclarationData::FunctionDefinition(_) => {}
+                ExternalDeclarationData::Preprocessor(ref pp) => match &pp.contents {
+                    PreprocessorData::Define(PreprocessorDefine::ObjectLike { ident, .. }) => {
+                        self.external_declarations.insert(
+                            ExternalIdentifier::Declaration(ident.0.clone()),
+                            Node::new(other, extdecl.span),
+                        );
+                    }
+                    PreprocessorData::Define(PreprocessorDefine::FunctionLike {
+                        ident, ..
+                    }) => {
+                        self.external_declarations.insert(
+                            ExternalIdentifier::FunctionDefinition(ident.0.clone()),
+                            Node::new(other, extdecl.span),
+                        );
+                    }
+                    PreprocessorData::Version(_) | PreprocessorData::Extension(_) => {
+                        self.static_declarations
+                            .push(Node::new(other, extdecl.span));
+                    }
+                    rest => {
+                        return Err(Error::UnsupportedPreprocessor(Preprocessor::new(
+                            rest.clone(),
+                            pp.span,
+                        )))
+                    }
+                },
+                ExternalDeclarationData::Declaration(ref decl) => match &decl.contents {
+                    DeclarationData::FunctionPrototype(_) => {
+                        unreachable!("prototype already consumed by template engine")
+                    }
+                    DeclarationData::InitDeclaratorList(idl) => {
+                        // TODO: Handle variable declarations at top-level using
+                        // InitDeclaratorList. For now, this only handles struct declarations.
+                        if let TypeSpecifierNonArray::Struct(ss) = &idl.head.ty.ty.ty {
+                            // It's a struct declaration
+                            if let Some(tn) = &ss.name {
+                                // Dependency key
+                                let key = ExternalIdentifier::Declaration(tn.0.clone());
+                                // Node for dependency walking and storage
+                                let mut node = Node::new(other, extdecl.span);
+
+                                // Parse type name dependencies in the struct specification
+                                self.extend_dag(&mut node);
+
+                                self.external_declarations.insert(key, node);
+                            } else {
+                                return Err(Error::UnsupportedIDL(idl.clone()));
+                            }
+                        } else {
+                            // It's a variable declaration, maybe?
+                            if let Some(name) = &idl.head.name {
+                                self.external_declarations.insert(
+                                    ExternalIdentifier::Declaration(name.0.clone()),
+                                    Node::new(other, extdecl.span),
+                                );
+                            } else {
+                                return Err(Error::UnsupportedIDL(idl.clone()));
+                            }
+                        }
+                    }
+                    DeclarationData::Precision(_, _) | DeclarationData::Block(_) => {
+                        // TODO: How to handle Declaration::Block?
+                        self.static_declarations
+                            .push(Node::new(other, extdecl.span));
+                    }
+                    DeclarationData::Global(tq, identifiers) => {
+                        // TODO: How are globals used by function code?
+                        // TODO: Preserve span information
+                        for id in identifiers {
+                            self.external_declarations.insert(
+                                ExternalIdentifier::Declaration(id.0.clone()),
+                                Node::new(
+                                    ExternalDeclarationData::Declaration(
+                                        DeclarationData::Global(tq.clone(), vec![id.clone()])
+                                            .into(),
+                                    ),
+                                    extdecl.span,
+                                ),
+                            );
+                        }
+                    }
+                },
+            },
         }
 
         Ok(None)

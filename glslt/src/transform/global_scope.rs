@@ -10,6 +10,16 @@ use super::{ResolvedArgument, ResolvedArgumentExpr, Scope};
 
 use crate::{Error, Result};
 
+/// Result of parsing an ExternalDeclaration
+pub enum ParsedDeclaration {
+    /// The declaration was a function template type definition
+    ConsumedAsType,
+    /// The declaration was a function and was merged into the global scope as a template
+    ConsumedAsTemplate(Rc<TemplateDefinition>),
+    /// The declaration was something else and is to be processed by the caller
+    Unparsed(ExternalDeclaration),
+}
+
 /// GLSLT template definition global scope
 #[derive(Default, Debug, Clone)]
 pub struct GlobalScope {
@@ -48,24 +58,23 @@ impl GlobalScope {
         Ok(())
     }
 
-    fn parse_declaration(&mut self, decl: Declaration) -> Result<Option<ExternalDeclaration>> {
+    fn parse_declaration(&mut self, decl: Declaration) -> Result<ParsedDeclaration> {
         match decl.contents {
             DeclarationData::FunctionPrototype(prototype) => {
                 // A function prototype is what we'll call a function pointer type
                 self.parse_function_prototype(prototype)?;
-                Ok(None)
+                Ok(ParsedDeclaration::ConsumedAsType)
             }
-            other => Ok(Some(ExternalDeclaration::new(
+            other => Ok(ParsedDeclaration::Unparsed(ExternalDeclaration::new(
                 ExternalDeclarationData::Declaration(Declaration::new(other, decl.span)),
                 decl.span,
             ))),
         }
     }
 
-    fn parse_function_definition(
-        &mut self,
-        def: FunctionDefinition,
-    ) -> Result<Option<FunctionDefinition>> {
+    fn parse_function_definition(&mut self, def: FunctionDefinition) -> Result<ParsedDeclaration> {
+        let span = def.span;
+
         // A function definition is a template if any of its arguments is a pointer
         let name = def.prototype.name.0.clone();
         let template =
@@ -76,10 +85,15 @@ impl GlobalScope {
                 info!("declared template: {}", template.ast().prototype.name.0);
 
                 // We found a template parameter, so it's a template function
-                self.declared_templates.insert(name, Rc::new(template));
-                Ok(None)
+                self.declared_templates
+                    .insert(name.clone(), Rc::new(template));
+
+                let parsed = self.declared_templates.get(&name).unwrap();
+                Ok(ParsedDeclaration::ConsumedAsTemplate(parsed.clone()))
             }
-            TryTemplate::Function(def) => Ok(Some(def)),
+            TryTemplate::Function(def) => Ok(ParsedDeclaration::Unparsed(
+                ExternalDeclaration::new(ExternalDeclarationData::FunctionDefinition(def), span),
+            )),
         }
     }
 
@@ -114,18 +128,18 @@ impl GlobalScope {
     pub fn parse_external_declaration(
         &mut self,
         extdecl: ExternalDeclaration,
-    ) -> Result<Option<ExternalDeclaration>> {
+    ) -> Result<ParsedDeclaration> {
         let span = extdecl.span;
 
         match extdecl.contents {
             ExternalDeclarationData::Declaration(decl) => self.parse_declaration(decl),
             ExternalDeclarationData::FunctionDefinition(def) => {
-                Ok(self.parse_function_definition(def)?.map(|n| {
-                    ExternalDeclaration::new(ExternalDeclarationData::FunctionDefinition(n), span)
-                }))
+                Ok(self.parse_function_definition(def)?)
             }
             // Just forward the others
-            other => Ok(Some(ExternalDeclaration::new(other, span))),
+            other => Ok(ParsedDeclaration::Unparsed(ExternalDeclaration::new(
+                other, span,
+            ))),
         }
     }
 

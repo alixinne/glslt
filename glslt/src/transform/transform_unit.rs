@@ -1,6 +1,6 @@
 use glsl::syntax::*;
 
-use super::{FnRef, GlobalScope};
+use super::{FnHandle, GlobalScope};
 
 use crate::Result;
 
@@ -29,6 +29,8 @@ pub trait TransformUnit {
     /// # Parameters
     ///
     /// * `extdecl`: top-level declaration to parse as GLSLT
-    fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration)
-        -> Result<Option<FnRef>>;
+    fn parse_external_declaration(
+        &mut self,
+        extdecl: ExternalDeclaration,
+    ) -> Result<Option<FnHandle>>;
 }

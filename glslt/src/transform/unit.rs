@@ -1,7 +1,7 @@
 use glsl::syntax::*;
 
 use super::instantiate::InstantiateTemplate;
-use super::{FnRef, GlobalScope, TransformUnit};
+use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
 
 use crate::{Error, Result};
 
@@ -73,34 +73,51 @@ impl TransformUnit for Unit {
     fn parse_external_declaration(
         &mut self,
         extdecl: ExternalDeclaration,
-    ) -> Result<Option<FnRef>> {
-        if let Some(extdecl) = self.global_scope.parse_external_declaration(extdecl)? {
-            match extdecl.contents {
-                ExternalDeclarationData::FunctionDefinition(def) => {
-                    // No template parameter, it's a "regular" function so it has to be
-                    // processed to instantiate parameters
-                    let decls =
-                        InstantiateTemplate::new().instantiate(&mut self.global_scope, def)?;
-
-                    for d in decls {
-                        self.push_function_declaration(d);
-                    }
-
-                    let f = self.external_declarations.last().unwrap();
-                    match &f.contents {
-                        ExternalDeclarationData::FunctionDefinition(def) => {
-                            return Ok(Some(FnRef {
-                                prototype: &def.prototype,
-                                statement: &def.statement,
-                            }));
-                        }
-                        _ => unreachable!(),
-                    }
-                }
-                other => self
-                    .external_declarations
-                    .push(Node::new(other, extdecl.span)),
+    ) -> Result<Option<FnHandle>> {
+        let unparsed;
+        match self.global_scope.parse_external_declaration(extdecl)? {
+            ParsedDeclaration::ConsumedAsType => {
+                return Ok(None);
             }
+            ParsedDeclaration::ConsumedAsTemplate(r) => {
+                return Ok(Some(r.into()));
+            }
+            ParsedDeclaration::Unparsed(extdecl) => {
+                unparsed = extdecl;
+            }
+        }
+
+        let extdecl = unparsed;
+        match extdecl.contents {
+            ExternalDeclarationData::FunctionDefinition(def) => {
+                // No template parameter, it's a "regular" function so it has to be
+                // processed to instantiate parameters
+                let decls = InstantiateTemplate::new().instantiate(&mut self.global_scope, def)?;
+
+                for d in decls {
+                    self.push_function_declaration(d);
+                }
+
+                let f = self.external_declarations.last().unwrap();
+                match &f.contents {
+                    ExternalDeclarationData::FunctionDefinition(def) => {
+                        return Ok(Some(
+                            Node::new(
+                                FnRef {
+                                    prototype: &def.prototype,
+                                    statement: &def.statement,
+                                },
+                                extdecl.span,
+                            )
+                            .into(),
+                        ));
+                    }
+                    _ => unreachable!(),
+                }
+            }
+            other => self
+                .external_declarations
+                .push(Node::new(other, extdecl.span)),
         }
 
         Ok(None)
