@@ -1,7 +1,7 @@
 use glsl::syntax::*;
 
 use super::instantiate::InstantiateTemplate;
-use super::{GlobalScope, TransformUnit};
+use super::{FnRef, GlobalScope, TransformUnit};
 
 use crate::{Error, Result};
 
@@ -70,7 +70,10 @@ impl TransformUnit for Unit {
         ));
     }
 
-    fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()> {
+    fn parse_external_declaration(
+        &mut self,
+        extdecl: ExternalDeclaration,
+    ) -> Result<Option<FnRef>> {
         if let Some(extdecl) = self.global_scope.parse_external_declaration(extdecl)? {
             match extdecl.contents {
                 ExternalDeclarationData::FunctionDefinition(def) => {
@@ -82,6 +85,17 @@ impl TransformUnit for Unit {
                     for d in decls {
                         self.push_function_declaration(d);
                     }
+
+                    let f = self.external_declarations.last().unwrap();
+                    match &f.contents {
+                        ExternalDeclarationData::FunctionDefinition(def) => {
+                            return Ok(Some(FnRef {
+                                prototype: &def.prototype,
+                                statement: &def.statement,
+                            }));
+                        }
+                        _ => unreachable!(),
+                    }
                 }
                 other => self
                     .external_declarations
@@ -89,6 +103,6 @@ impl TransformUnit for Unit {
             }
         }
 
-        Ok(())
+        Ok(None)
     }
 }

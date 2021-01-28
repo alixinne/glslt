@@ -217,13 +217,17 @@ impl TransformUnit for MinUnit {
         // Add the definition to the declarations
         // TODO: Don't clone def.span?
         let span = def.span;
+        let id = ExternalIdentifier::FunctionDefinition(def.prototype.name.0.clone());
         self.external_declarations.insert(
-            ExternalIdentifier::FunctionDefinition(def.prototype.name.0.clone()),
+            id.clone(),
             ExternalDeclaration::new(ExternalDeclarationData::FunctionDefinition(def), span),
         );
     }
 
-    fn parse_external_declaration(&mut self, extdecl: ExternalDeclaration) -> Result<()> {
+    fn parse_external_declaration(
+        &mut self,
+        extdecl: ExternalDeclaration,
+    ) -> Result<Option<FnRef>> {
         if let Some(extdecl) = self.global_scope.parse_external_declaration(extdecl)? {
             match extdecl.contents {
                 ExternalDeclarationData::FunctionDefinition(def) => {
@@ -234,6 +238,17 @@ impl TransformUnit for MinUnit {
 
                     for d in decls {
                         self.push_function_declaration(d);
+                    }
+
+                    let f = self.external_declarations.last().unwrap();
+                    match &f.1.contents {
+                        ExternalDeclarationData::FunctionDefinition(def) => {
+                            return Ok(Some(FnRef {
+                                prototype: &def.prototype,
+                                statement: &def.statement,
+                            }));
+                        }
+                        _ => unreachable!(),
                     }
                 }
                 other => match other {
@@ -327,6 +342,6 @@ impl TransformUnit for MinUnit {
             }
         }
 
-        Ok(())
+        Ok(None)
     }
 }
