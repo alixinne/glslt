@@ -2,6 +2,8 @@ use glsl::syntax::*;
 use glsl::visitor::*;
 
 use indexmap::IndexMap;
+use lazy_static::lazy_static;
+use regex::Regex;
 
 use super::instantiate::InstantiateTemplate;
 use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
@@ -103,20 +105,59 @@ impl MinUnit {
         ))
     }
 
-    fn extend_dag(&mut self, tu: &mut impl HostMut) {
+    fn extend_dag(&mut self, tu: &impl Host) {
         struct VisitorData<'e> {
             current_scope_name: Option<usize>,
             this: &'e mut MinUnit,
         }
 
-        impl VisitorMut for VisitorData<'_> {
-            fn visit_external_declaration(&mut self, _node: &mut ExternalDeclaration) -> Visit {
+        impl Visitor for VisitorData<'_> {
+            fn visit_external_declaration(&mut self, _node: &ExternalDeclaration) -> Visit {
                 self.current_scope_name = None;
 
                 Visit::Children
             }
 
-            fn visit_struct_specifier(&mut self, node: &mut StructSpecifier) -> Visit {
+            fn visit_preprocessor_define(&mut self, def: &PreprocessorDefine) -> Visit {
+                lazy_static! {
+                    static ref RE: Regex = Regex::new("[_a-zA-Z][_a-zA-Z0-9]*").unwrap();
+                }
+
+                // Declare the current scope name
+                let csn = self
+                    .this
+                    .dag
+                    .declare_symbol(ExternalId::Declaration(match def {
+                        PreprocessorDefine::ObjectLike { ident, .. } => &ident.0,
+                        PreprocessorDefine::FunctionLike { ident, .. } => &ident.0,
+                    }));
+
+                self.current_scope_name = Some(csn);
+
+                // Check the list of identifiers that should not be considered external
+                // dependencies
+                let mut scope_identifiers = std::collections::HashSet::new();
+                if let PreprocessorDefine::FunctionLike { args, .. } = def {
+                    scope_identifiers.extend(args.iter().map(|a| a.0.as_str()));
+                }
+
+                // The value is not parsed by the glsl crate, so we need to extract identifiers
+                // ourselves
+                for ident in RE.captures_iter(&match def {
+                    PreprocessorDefine::ObjectLike { value, .. } => value,
+                    PreprocessorDefine::FunctionLike { value, .. } => value,
+                }) {
+                    let symbol = self
+                        .this
+                        .dag
+                        .declare_symbol(ExternalId::Declaration(ident.get(0).unwrap().as_str()));
+                    self.this.dag.add_dep(csn, symbol);
+                }
+
+                Visit::Parent
+            }
+
+            fn visit_struct_specifier(&mut self, node: &StructSpecifier) -> Visit {
                 if self.current_scope_name.is_none() {
                     if let Some(name) = &node.name {
                         self.current_scope_name = Some(
@@ -130,7 +171,7 @@ impl MinUnit {
                 Visit::Children
             }
 
-            fn visit_function_definition(&mut self, node: &mut FunctionDefinition) -> Visit {
+            fn visit_function_definition(&mut self, node: &FunctionDefinition) -> Visit {
                 self.current_scope_name = Some(self.this.dag.declare_symbol(
                     ExternalId::FunctionDefinition(node.prototype.name.0.as_str()),
                 ));
@@ -138,7 +179,7 @@ impl MinUnit {
                 Visit::Children
             }
 
-            fn visit_type_name(&mut self, node: &mut TypeName) -> Visit {
+            fn visit_type_name(&mut self, node: &TypeName) -> Visit {
                 if let Some(csn) = self.current_scope_name {
                     let this = self
                         .this
@@ -153,7 +194,7 @@ impl MinUnit {
                 Visit::Children
             }
 
-            fn visit_fun_identifier(&mut self, node: &mut FunIdentifier) -> Visit {
+            fn visit_fun_identifier(&mut self, node: &FunIdentifier) -> Visit {
                 if let FunIdentifier::Identifier(ident) = node {
                     if let Some(csn) = self.current_scope_name {
                         let this = self
@@ -167,7 +208,7 @@ impl MinUnit {
                 Visit::Children
             }
 
-            fn visit_identifier(&mut self, node: &mut Identifier) -> Visit {
+            fn visit_identifier(&mut self, node: &Identifier) -> Visit {
                 if self
                     .this
                     .external_declarations
@@ -192,7 +233,7 @@ impl MinUnit {
             this: self,
         };
 
-        tu.visit_mut(&mut visitor);
+        tu.visit(&mut visitor);
     }
 }
 
@@ -274,6 +315,8 @@ impl TransformUnit for MinUnit {
                 ExternalDeclarationData::FunctionDefinition(_) => {}
                 ExternalDeclarationData::Preprocessor(ref pp) => match &pp.contents {
                     PreprocessorData::Define(PreprocessorDefine::ObjectLike { ident, .. }) => {
+                        self.extend_dag(pp);
+
                         self.external_declarations.insert(
                             ExternalIdentifier::Declaration(ident.0.clone()),
                             Node::new(other, extdecl.span),
@@ -282,6 +325,8 @@ impl TransformUnit for MinUnit {
                     PreprocessorData::Define(PreprocessorDefine::FunctionLike {
                         ident, ..
                     }) => {
+                        self.extend_dag(pp);
+
                         self.external_declarations.insert(
                             ExternalIdentifier::FunctionDefinition(ident.0.clone()),
                             Node::new(other, extdecl.span),

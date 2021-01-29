@@ -196,7 +196,7 @@ dependencies = [
 [[package]]
 name = "glsl"
 version = "6.0.0"
-source = "git+https://github.com/vtavernier/glsl?branch=dev#7ec0371619d1787a3bdceda378d222b8ebfb5fb0"
+source = "git+https://github.com/vtavernier/glsl?branch=dev#763a064da702b45a4aaac262c272fa653d14d4f3"
 dependencies = [
  "glsl-impl",
  "lazy_static",
@@ -206,8 +206,8 @@ dependencies = [
 
 [[package]]
 name = "glsl-impl"
-version = "5.0.1"
-source = "git+https://github.com/vtavernier/glsl?branch=dev#7ec0371619d1787a3bdceda378d222b8ebfb5fb0"
+version = "6.0.0"
+source = "git+https://github.com/vtavernier/glsl?branch=dev#763a064da702b45a4aaac262c272fa653d14d4f3"
 dependencies = [
  "quote",
  "syn",
@@ -228,6 +228,7 @@ dependencies = [
  "petgraph",
  "pretty_assertions",
  "pyo3",
+ "regex",
  "sha-1",
  "structopt",
  "thiserror",
