@@ -209,6 +209,7 @@ fn verify_transform_impl(
     }
 }
 
+#[allow(dead_code)]
 pub fn verify_transform(src: &str, expected: &str) {
     verify_transform_impl(src, expected, |src| {
         // Transform source
@@ -224,6 +225,7 @@ pub fn verify_transform(src: &str, expected: &str) {
     });
 }
 
+#[allow(dead_code)]
 pub fn verify_min_transform(src: &str, expected: &str, entry_point: &str) {
     verify_transform_impl(src, expected, |src| {
         // Transform source
@@ -240,6 +242,7 @@ pub fn verify_min_transform(src: &str, expected: &str, entry_point: &str) {
     });
 }
 
+#[allow(dead_code)]
 pub fn verify_both(src: &str, expected: &str, entry_point: &str) {
     verify_transform(src, expected);
     verify_min_transform(src, expected, entry_point);
