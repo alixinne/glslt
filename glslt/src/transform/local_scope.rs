@@ -4,10 +4,12 @@ use glsl::syntax::*;
 use glsl::visitor::{HostMut, Visit, VisitorMut};
 
 use indexmap::IndexMap;
-use itertools::Itertools;
 
 use super::template::TemplateDefinition;
-use super::{instantiate::InstantiateTemplate, ResolvedArgument, ResolvedArgumentExpr, Scope};
+use super::{
+    instantiate::{CapturedParameter, DeclaredSymbol, InstantiateTemplate},
+    ResolvedArgument, ResolvedArgumentExpr, Scope,
+};
 
 /// A local scope for resolving template arguments inside a template function
 #[derive(Debug)]
@@ -21,7 +23,7 @@ pub struct LocalScope<'p, 'q> {
     /// Lookup table for template parameters by name
     template_parameters_by_name: IndexMap<String, usize>,
     /// List of parameter names captured by entering the current scope
-    captured_parameters: Vec<String>,
+    captured_parameters: Vec<CapturedParameter>,
 }
 
 impl<'p, 'q> LocalScope<'p, 'q> {
@@ -35,7 +37,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
     pub fn new(
         template: &'q TemplateDefinition,
         args: &mut Vec<Expr>,
-        symbol_table: &IndexMap<String, super::instantiate::DeclaredSymbol>,
+        symbol_table: &IndexMap<String, DeclaredSymbol>,
         parent: &'p mut dyn Scope,
     ) -> crate::Result<Self> {
         // Extract template parameters for this scope
@@ -54,8 +56,8 @@ impl<'p, 'q> LocalScope<'p, 'q> {
 
         // Extract the set of captured variables
         struct Capturer<'ds> {
-            st: &'ds IndexMap<String, super::instantiate::DeclaredSymbol>,
-            captured: IndexMap<String, &'ds super::instantiate::DeclaredSymbol>,
+            st: &'ds IndexMap<String, DeclaredSymbol>,
+            captured: IndexMap<String, &'ds DeclaredSymbol>,
         }
 
         impl VisitorMut for Capturer<'_> {
@@ -69,6 +71,11 @@ impl<'p, 'q> LocalScope<'p, 'q> {
                         self.captured.insert(ident.0.clone(), sb);
                         // Rename the reference
                         *ident = sb.gen_id.clone();
+                    } else {
+                        debug!(
+                            "not in symbol_table, should be a template parameter: {}",
+                            ident.0
+                        );
                     }
                 }
 
@@ -76,9 +83,23 @@ impl<'p, 'q> LocalScope<'p, 'q> {
             }
         }
 
+        // Merge in the symbol table the outer captured parameters
+        let mut symbol_table = symbol_table.clone();
+        for captured_parameter in parent.captured_parameters() {
+            symbol_table.insert(
+                captured_parameter.gen_id.clone(),
+                DeclaredSymbol {
+                    symbol_id: captured_parameter.symbol_id,
+                    gen_id: IdentifierData(captured_parameter.gen_id.clone()).into(),
+                    decl_type: captured_parameter.decl_type.clone(),
+                    array: captured_parameter.array.clone(),
+                },
+            );
+        }
+
         // Visit the input expressions
         let mut capturer = Capturer {
-            st: symbol_table,
+            st: &symbol_table,
             captured: IndexMap::new(),
         };
 
@@ -87,30 +108,52 @@ impl<'p, 'q> LocalScope<'p, 'q> {
         }
 
         // Extract the list of captured variables ordered by symbol_id
-        let extra_parameters: Vec<_> = capturer
+        let mut captured_parameters: IndexMap<_, _> = capturer
             .captured
             .into_iter()
-            .sorted_by_key(|ep| ep.1.symbol_id)
-            .map(|(key, _)| key)
+            .map(|(key, _)| {
+                // TODO: This should be a proper semantic error
+                let declared = symbol_table.get(&key).expect("unknown symbol").clone();
+                (
+                    key.clone(),
+                    CapturedParameter {
+                        ident: key,
+                        gen_id: declared.gen_id.0.clone(),
+                        symbol_id: declared.symbol_id,
+                        decl_type: declared.decl_type,
+                        array: declared.array,
+                    },
+                )
+            })
             .collect();
+
+        // Insert outer captured parameters
+        for outer in parent.captured_parameters() {
+            if !captured_parameters.contains_key(&outer.ident) {
+                trace!("adding outer captured parameter: {:?}", outer);
+
+                let mut outer = outer.clone();
+                outer.ident = outer.gen_id.clone();
+                captured_parameters.insert(outer.gen_id.clone(), outer);
+            }
+        }
+
+        let mut captured_parameters: Vec<_> =
+            captured_parameters.into_iter().map(|(_, v)| v).collect();
+        captured_parameters.sort_by_key(|item| item.symbol_id);
 
         Ok(Self {
             parent,
             name,
             template_parameters,
             template_parameters_by_name,
-            captured_parameters: extra_parameters,
+            captured_parameters,
         })
     }
 
     /// Get the name of the current template scope
     pub fn name(&self) -> &str {
         self.name.as_str()
-    }
-
-    /// Get the list of captured parameter names
-    pub fn captured_parameters(&self) -> &[String] {
-        &self.captured_parameters[..]
     }
 
     /// Transform the target function call expression into a GLSL function call
@@ -330,6 +373,10 @@ impl Scope for LocalScope<'_, '_> {
         }
 
         Err(crate::Error::TransformAsTemplate)
+    }
+
+    fn captured_parameters(&self) -> &[CapturedParameter] {
+        &self.captured_parameters[..]
     }
 }
 

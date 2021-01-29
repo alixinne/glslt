@@ -4,7 +4,7 @@ use glsl::syntax::*;
 
 use indexmap::IndexMap;
 
-use super::{instantiate::InstantiateTemplate, FnRef, LocalScope};
+use super::{instantiate::InstantiateTemplate, FnRef, LocalScope, Scope};
 
 use crate::{Error, Result};
 
@@ -98,7 +98,8 @@ impl TemplateDefinition {
         let ast = self.ast.clone();
 
         // We're entering a new function, thus we need a new context
-        let mut res = InstantiateTemplate::new().instantiate(scope, ast)?;
+        let mut res =
+            InstantiateTemplate::new(Some(&outer_instantiator)).instantiate(scope, ast)?;
 
         // The last function is the current instantiated one, the ones before are dependencies
         // TODO: Make this more robust
@@ -110,17 +111,15 @@ impl TemplateDefinition {
 
         // Add the captured parameters to the signature
         for ep in scope.captured_parameters() {
-            let p = outer_instantiator.get_symbol(ep).unwrap();
-
             // TODO: Span information?
             ast.prototype.parameters.push(
                 FunctionParameterDeclarationData::Named(
                     None,
                     FunctionParameterDeclarator {
-                        ty: p.decl_type.clone(),
+                        ty: ep.decl_type.clone(),
                         ident: ArrayedIdentifier {
-                            ident: p.gen_id.clone(),
-                            array_spec: p.array.clone(),
+                            ident: IdentifierData(ep.gen_id.clone()).into(),
+                            array_spec: ep.array.clone(),
                         },
                     },
                 )

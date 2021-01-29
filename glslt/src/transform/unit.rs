@@ -92,7 +92,8 @@ impl TransformUnit for Unit {
             ExternalDeclarationData::FunctionDefinition(def) => {
                 // No template parameter, it's a "regular" function so it has to be
                 // processed to instantiate parameters
-                let decls = InstantiateTemplate::new().instantiate(&mut self.global_scope, def)?;
+                let decls =
+                    InstantiateTemplate::new(None).instantiate(&mut self.global_scope, def)?;
 
                 for d in decls {
                     self.push_function_declaration(d);

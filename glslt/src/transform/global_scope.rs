@@ -207,4 +207,8 @@ impl Scope for GlobalScope {
     ) -> Result<()> {
         Err(Error::TransformAsTemplate)
     }
+
+    fn captured_parameters(&self) -> &[super::instantiate::CapturedParameter] {
+        &[]
+    }
 }

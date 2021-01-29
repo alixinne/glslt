@@ -44,6 +44,15 @@ lazy_static! {
     ];
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct CapturedParameter {
+    pub ident: String,
+    pub symbol_id: usize,
+    pub gen_id: String,
+    pub decl_type: TypeSpecifier,
+    pub array: Option<ArraySpecifier>,
+}
+
 #[derive(Debug, Clone)]
 pub struct DeclaredSymbol {
     pub symbol_id: usize,
@@ -52,15 +61,20 @@ pub struct DeclaredSymbol {
     pub array: Option<ArraySpecifier>,
 }
 
-#[derive(Default)]
+#[derive(Debug)]
 pub struct InstantiateTemplate {
     error: Option<Error>,
     symbol_table: IndexMap<String, DeclaredSymbol>,
+    current_id: usize,
 }
 
 impl InstantiateTemplate {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(outer: Option<&InstantiateTemplate>) -> Self {
+        Self {
+            error: None,
+            symbol_table: Default::default(),
+            current_id: outer.map(|o| o.current_id).unwrap_or(0),
+        }
     }
 
     pub fn instantiate(
@@ -91,8 +105,13 @@ impl InstantiateTemplate {
         self.symbol_table.get(name)
     }
 
-    fn new_gen_id(&self) -> Identifier {
-        IdentifierData(format!("{}_lp{}", crate::PREFIX, self.symbol_table.len())).into()
+    fn new_gen_id(&mut self) -> Identifier {
+        IdentifierData(format!("{}_lp{}", crate::PREFIX, {
+            let id = self.current_id;
+            self.current_id += 1;
+            id
+        }))
+        .into()
     }
 
     pub(in crate::transform) fn visit_fun_call<'s>(
@@ -162,7 +181,6 @@ impl InstantiateTemplate {
         // Create the local scope
         let mut local_scope = super::LocalScope::new(template, args, &self.symbol_table, scope)?;
         trace!("symbol table: {:?}", self.symbol_table);
-        trace!("entering local scope: {:#?}", local_scope);
 
         // Instantiate the template if needed
         if !local_scope.template_instance_declared(&local_scope.name()) {
@@ -176,7 +194,7 @@ impl InstantiateTemplate {
         // Add the captured parameters to the end of the call
         for ep in local_scope.captured_parameters().iter() {
             // TODO: Preserve span information
-            args.push(Expr::Variable(IdentifierData(ep.clone()).into()));
+            args.push(Expr::Variable(IdentifierData(ep.ident.clone()).into()));
         }
 
         Ok(())
@@ -196,11 +214,12 @@ impl InstantiateTemplate {
             }
         }
 
+        let gen_id = self.new_gen_id();
         self.symbol_table.insert(
             name,
             DeclaredSymbol {
                 symbol_id: self.symbol_table.len(),
-                gen_id: self.new_gen_id(),
+                gen_id,
                 decl_type,
                 array,
             },

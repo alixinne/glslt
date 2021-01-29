@@ -4,7 +4,7 @@ use glsl::syntax::*;
 
 use indexmap::IndexMap;
 
-use super::instantiate::InstantiateTemplate;
+use super::instantiate::{CapturedParameter, InstantiateTemplate};
 use super::template::TemplateDefinition;
 
 /// Represents a template scope
@@ -49,6 +49,9 @@ pub trait Scope: std::fmt::Debug {
         expr: &mut Expr,
         instantiator: &mut InstantiateTemplate,
     ) -> crate::Result<()>;
+
+    /// Return the list of parameters captured by this scope
+    fn captured_parameters(&self) -> &[CapturedParameter];
 }
 
 /// Result of resolving a template parameter
