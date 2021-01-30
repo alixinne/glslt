@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use glsl::syntax::*;
 
@@ -15,7 +15,7 @@ pub enum ParsedDeclaration {
     /// The declaration was a function template type definition
     ConsumedAsType,
     /// The declaration was a function and was merged into the global scope as a template
-    ConsumedAsTemplate(Rc<TemplateDefinition>),
+    ConsumedAsTemplate(Arc<TemplateDefinition>),
     /// The declaration was something else and is to be processed by the caller
     Unparsed(ExternalDeclaration),
 }
@@ -26,7 +26,7 @@ pub struct GlobalScope {
     /// Known pointer types
     declared_pointer_types: IndexMap<String, FunctionPrototype>,
     /// Known GLSLT template functions
-    declared_templates: IndexMap<String, Rc<TemplateDefinition>>,
+    declared_templates: IndexMap<String, Arc<TemplateDefinition>>,
     /// Identifiers of function declarations
     known_functions: IndexMap<String, FunctionPrototype>,
     /// Identifiers of already instantiated templates
@@ -86,7 +86,7 @@ impl GlobalScope {
 
                 // We found a template parameter, so it's a template function
                 self.declared_templates
-                    .insert(name.clone(), Rc::new(template));
+                    .insert(name.clone(), Arc::new(template));
 
                 let parsed = self.declared_templates.get(&name).unwrap();
                 Ok(ParsedDeclaration::ConsumedAsTemplate(parsed.clone()))
@@ -103,7 +103,7 @@ impl GlobalScope {
     }
 
     /// Get the list of defined templates in this global scope
-    pub fn declared_templates(&self) -> &IndexMap<String, Rc<TemplateDefinition>> {
+    pub fn declared_templates(&self) -> &IndexMap<String, Arc<TemplateDefinition>> {
         &self.declared_templates
     }
 
@@ -167,7 +167,7 @@ impl Scope for GlobalScope {
         &self.declared_pointer_types
     }
 
-    fn get_template(&self, template_name: &str) -> Option<Rc<TemplateDefinition>> {
+    fn get_template(&self, template_name: &str) -> Option<Arc<TemplateDefinition>> {
         self.declared_templates.get(template_name).cloned()
     }
 

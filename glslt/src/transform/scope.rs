@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use glsl::syntax::*;
 
@@ -16,7 +16,7 @@ pub trait Scope: std::fmt::Debug {
     fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype>;
 
     /// Get the template corresponding to the given name
-    fn get_template(&self, template_name: &str) -> Option<Rc<TemplateDefinition>>;
+    fn get_template(&self, template_name: &str) -> Option<Arc<TemplateDefinition>>;
 
     /// Determine if a template has been instantiated with the given name
     ///

@@ -1,5 +1,7 @@
 //! Definition of the local scope structure for template instantiation
 
+use std::sync::Arc;
+
 use glsl::syntax::*;
 use glsl::visitor::{HostMut, Visit, VisitorMut};
 
@@ -269,7 +271,7 @@ impl Scope for LocalScope<'_, '_> {
         self.parent.declared_pointer_types()
     }
 
-    fn get_template(&self, template_name: &str) -> Option<std::rc::Rc<TemplateDefinition>> {
+    fn get_template(&self, template_name: &str) -> Option<Arc<TemplateDefinition>> {
         self.parent.get_template(template_name)
     }
 

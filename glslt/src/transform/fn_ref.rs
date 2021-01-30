@@ -1,6 +1,6 @@
 //! FnRef type declaration
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use glsl::syntax::*;
 
@@ -21,13 +21,13 @@ impl glsl::syntax::NodeContents for FnRef<'_> {}
 #[derive(Debug, Clone)]
 pub enum FnHandle<'a> {
     /// Reference to a template definition
-    Owned(Rc<TemplateDefinition>),
+    Owned(Arc<TemplateDefinition>),
     /// Reference to a function declaration
     Borrowed(Node<FnRef<'a>>),
 }
 
-impl From<Rc<TemplateDefinition>> for FnHandle<'_> {
-    fn from(td: Rc<TemplateDefinition>) -> Self {
+impl From<Arc<TemplateDefinition>> for FnHandle<'_> {
+    fn from(td: Arc<TemplateDefinition>) -> Self {
         Self::Owned(td)
     }
 }
