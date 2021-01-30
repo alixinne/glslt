@@ -1,6 +1,6 @@
 [package]
 name = "glslt_cli"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Vincent Tavernier <vince.tavernier@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -13,6 +13,6 @@ name = "glsltcc"
 path = "src/main.rs"
 
 [dependencies]
-glslt = { version = "=0.4.2", features = ["cli"] }
+glslt = { version = "=0.4.3", features = ["cli"] }
 
 anyhow = "1.0"
