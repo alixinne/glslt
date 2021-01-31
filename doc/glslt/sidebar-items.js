@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["PREFIX","Prefix for generated names for functions and captured parameters"]],"enum":[["Error","GLSLT transform error type"]],"fn":[["parse_files","Parse a set of files into a single translation unit"]],"mod":[["api","API wrapper module"],["transform","GLSLT transform utilities definitions"]],"type":[["Result","GLSLT Result"]]});

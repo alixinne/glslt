@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["TryTemplate","Result of parsing a function definition"]],"fn":[["parse_definition_as_template","Try parsing a function definition as a template"]],"struct":[["TemplateDefinition","Definition of a template function"],["TemplateParameter","Function parameter of a template"]]});

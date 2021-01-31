@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["glslt"] = [{"text":"impl&lt;'a&gt; Clone for FnRef&lt;'a&gt;","synthetic":false,"types":[]},{"text":"impl&lt;'a&gt; Clone for FnHandle&lt;'a&gt;","synthetic":false,"types":[]},{"text":"impl Clone for MinUnit","synthetic":false,"types":[]},{"text":"impl Clone for TemplateParameter","synthetic":false,"types":[]},{"text":"impl Clone for TemplateDefinition","synthetic":false,"types":[]},{"text":"impl Clone for Unit","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

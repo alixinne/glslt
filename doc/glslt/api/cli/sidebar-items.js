@@ -1,0 +1,1 @@
+initSidebarItems({"derive":[["StructOpt","Generates the `StructOpt` impl."]],"fn":[["main","Entry point for the glsltcc front-end"]],"struct":[["Opts","Command-line arguments structure"]],"trait":[["StructOpt","A struct that is converted from command line arguments."]]});
