@@ -1,6 +1,6 @@
 # [glslt](https://github.com/vtavernier/glslt)
 
-[![Build Status](https://travis-ci.com/vtavernier/glslt.svg?branch=master)](https://travis-ci.com/vtavernier/glslt) [![GitHub release](https://img.shields.io/github/v/release/vtavernier/glslt)](https://github.com/vtavernier/glslt/releases) [![PyPI](https://img.shields.io/pypi/v/glslt)](https://pypi.org/project/glslt/) [![License](https://img.shields.io/github/license/vtavernier/glslt)](LICENSE)
+[![Run tests](https://github.com/vtavernier/glslt/workflows/Run%20tests/badge.svg?branch=master)](https://github.com/vtavernier/glslt/actions) [![GitHub release](https://img.shields.io/github/v/release/vtavernier/glslt)](https://github.com/vtavernier/glslt/releases) [![PyPI](https://img.shields.io/pypi/v/glslt)](https://pypi.org/project/glslt/) [![License](https://img.shields.io/github/license/vtavernier/glslt)](LICENSE)
 
 `glslt` is a prototype language for adding template functions to the GLSL
 language.
