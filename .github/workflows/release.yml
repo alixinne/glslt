@@ -1,0 +1,73 @@
+name: Release glslt
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    name: Release crate
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-pc-windows-msvc
+        include:
+          - target: x86_64-unknown-linux-gnu
+            target_arch: x86_64
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-msvc
+            target_arch: x86_64
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Build windows wheels
+        run: ./ci/build_wheels.ps1 ${{ matrix.target }}
+        if: matrix.os == 'windows-latest'
+
+      - name: Build linux wheels
+        uses: addnab/docker-run-action@v1
+        with:
+          image: quay.io/pypa/manylinux2010_${{ matrix.target_arch }}
+          run: /io/ci/build_wheels.sh
+          options: -v ${{ github.workspace }}:/io
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Build CLI binary
+        run: cargo rustc -p glslt_cli --bin glsltcc --target ${{ matrix.target }} --release
+
+      - name: Strip CLI binary
+        run: strip target/${{ matrix.target }}/release/glsltcc
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Prepare release
+        run: |
+          RELEASE_NAME=$(git describe --tags --abbrev=0)
+          (cd target/${{ matrix.target }}/release && tar czf ${{ github.workspace }}/target/wheels/glslt-$RELEASE_NAME-${{ matrix.target }}.tar.gz glsltcc)
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Prepare release
+        run: |
+          del target\wheels\glslt*.tar.gz
+          $ReleaseName = & git describe --tags --abbrev=0
+          cd target/${{ matrix.target }}/release
+          7z a ${{ github.workspace }}/target/wheels/glslt-$ReleaseName-${{ matrix.target }}.7z glsltcc.exe
+        if: matrix.os == 'windows-latest'
+
+      - name: Upload to GitHub release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: 'target/wheels/*.{tar.gz,7z,whl,zip}'
+          file_glob: true
+          tag: ${{ github.ref }}
+          overwrite: true

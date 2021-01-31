@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e -x
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 export PATH="$HOME/.cargo/bin:$PATH"
 
 /opt/python/cp37*/bin/pip install -U maturin
@@ -20,4 +20,4 @@ for PYBIN in /opt/python/cp{35,36,37,38,39}*/bin; do
 done
 
 # We're building in Docker but we want outside to access the wheels directory
-chmod 0777 /io/target/wheels
+chmod -R o+rwX /io/target
