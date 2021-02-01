@@ -17,7 +17,7 @@ pub enum ParsedDeclaration {
     /// The declaration was a function and was merged into the global scope as a template
     ConsumedAsTemplate(Arc<TemplateDefinition>),
     /// The declaration was something else and is to be processed by the caller
-    Unparsed(ExternalDeclaration),
+    Unparsed(Arc<ExternalDeclaration>),
 }
 
 /// GLSLT template definition global scope
@@ -65,9 +65,11 @@ impl GlobalScope {
                 self.parse_function_prototype(prototype)?;
                 Ok(ParsedDeclaration::ConsumedAsType)
             }
-            other => Ok(ParsedDeclaration::Unparsed(ExternalDeclaration::new(
-                ExternalDeclarationData::Declaration(Declaration::new(other, decl.span)),
-                decl.span,
+            other => Ok(ParsedDeclaration::Unparsed(Arc::new(
+                ExternalDeclaration::new(
+                    ExternalDeclarationData::Declaration(Declaration::new(other, decl.span)),
+                    decl.span,
+                ),
             ))),
         }
     }
@@ -91,9 +93,9 @@ impl GlobalScope {
                 let parsed = self.declared_templates.get(&name).unwrap();
                 Ok(ParsedDeclaration::ConsumedAsTemplate(parsed.clone()))
             }
-            TryTemplate::Function(def) => Ok(ParsedDeclaration::Unparsed(
+            TryTemplate::Function(def) => Ok(ParsedDeclaration::Unparsed(Arc::new(
                 ExternalDeclaration::new(ExternalDeclarationData::FunctionDefinition(def), span),
-            )),
+            ))),
         }
     }
 
@@ -137,8 +139,8 @@ impl GlobalScope {
                 Ok(self.parse_function_definition(def)?)
             }
             // Just forward the others
-            other => Ok(ParsedDeclaration::Unparsed(ExternalDeclaration::new(
-                other, span,
+            other => Ok(ParsedDeclaration::Unparsed(Arc::new(
+                ExternalDeclaration::new(other, span),
             ))),
         }
     }

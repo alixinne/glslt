@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use glsl::syntax::*;
 
 use super::instantiate::InstantiateTemplate;
@@ -40,7 +42,9 @@ impl Unit {
     /// All the declarations given as input will be included in-order in the output, with the
     /// template instantiations interleaved when needed.
     pub fn into_translation_unit(self) -> Result<TranslationUnit> {
-        Ok(TranslationUnit(NonEmpty(self.external_declarations.into_iter().collect())))
+        Ok(TranslationUnit(NonEmpty(
+            self.external_declarations.into_iter().collect(),
+        )))
     }
 }
 
@@ -84,7 +88,7 @@ impl TransformUnit for Unit {
             }
         }
 
-        let extdecl = unparsed;
+        let extdecl = Arc::try_unwrap(unparsed).unwrap();
         match extdecl.contents {
             ExternalDeclarationData::FunctionDefinition(def) => {
                 // No template parameter, it's a "regular" function so it has to be

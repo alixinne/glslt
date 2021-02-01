@@ -43,7 +43,7 @@ impl<'a> FnHandle<'a> {
     pub fn fn_ref(&self) -> Node<FnRef> {
         match self {
             Self::Owned(r) => r.fn_ref(),
-            Self::Borrowed(r) => r.clone(),
+            Self::Borrowed(r) => *r,
         }
     }
 }

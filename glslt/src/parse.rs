@@ -44,7 +44,7 @@ fn parse_file<T>(
 ) -> Result<(), T::Error>
 where
     T: PreprocessorFs,
-    T::Error: From<glsl::parser::ParseError>
+    T::Error: From<glsl::parser::ParseError>,
 {
     let canonical_path = fs.canonicalize(path)?;
 
@@ -95,7 +95,7 @@ where
 pub fn parse_files<T>(pb: &[PathBuf], fs: &T) -> Result<TranslationUnit, T::Error>
 where
     T: PreprocessorFs,
-    T::Error: From<glsl::parser::ParseError>
+    T::Error: From<glsl::parser::ParseError>,
 {
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
@@ -104,5 +104,7 @@ where
         parse_file(path, &mut parsed_external_declarations, &mut seen_files, fs)?;
     }
 
-    Ok(TranslationUnit(NonEmpty(parsed_external_declarations.into_iter().collect())))
+    Ok(TranslationUnit(NonEmpty(
+        parsed_external_declarations.into_iter().collect(),
+    )))
 }

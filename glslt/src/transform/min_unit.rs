@@ -250,21 +250,21 @@ impl TransformUnit for MinUnit {
         &mut self.global_scope
     }
 
-    fn push_function_declaration(&mut self, mut def: FunctionDefinition) {
+    fn push_function_declaration(&mut self, def: FunctionDefinition) {
         // Register the function as a known function
         self.global_scope
             .known_functions_mut()
             .insert(def.prototype.name.0.clone(), def.prototype.clone());
 
         // Register it in the dependency graph
-        self.extend_dag(&mut def);
+        self.extend_dag(&def);
 
         // Add the definition to the declarations
         // TODO: Don't clone def.span?
         let span = def.span;
         let id = ExternalIdentifier::FunctionDefinition(def.prototype.name.0.clone());
         self.external_declarations.insert(
-            id.clone(),
+            id,
             Arc::new(ExternalDeclaration::new(
                 ExternalDeclarationData::FunctionDefinition(def),
                 span,
@@ -290,7 +290,7 @@ impl TransformUnit for MinUnit {
             }
         }
 
-        let extdecl = unparsed;
+        let extdecl = Arc::try_unwrap(unparsed).unwrap();
         match extdecl.contents {
             ExternalDeclarationData::FunctionDefinition(def) => {
                 // No template parameter, it's a "regular" function so it has to be
@@ -364,10 +364,10 @@ impl TransformUnit for MinUnit {
                                 // Dependency key
                                 let key = ExternalIdentifier::Declaration(tn.0.clone());
                                 // Node for dependency walking and storage
-                                let mut node = Node::new(other, extdecl.span);
+                                let node = Node::new(other, extdecl.span);
 
                                 // Parse type name dependencies in the struct specification
-                                self.extend_dag(&mut node);
+                                self.extend_dag(&node);
 
                                 self.external_declarations.insert(key, Arc::new(node));
                             } else {
