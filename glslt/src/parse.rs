@@ -36,8 +36,9 @@ pub trait PreprocessorFs {
 mod std_fs;
 pub use std_fs::*;
 
-fn parse_file<T>(
-    path: &PathBuf,
+fn parse_tu_internal<T>(
+    base_path: &PathBuf,
+    tu: TranslationUnit,
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
     fs: &T,
@@ -46,20 +47,6 @@ where
     T: PreprocessorFs,
     T::Error: From<glsl::parser::ParseError>,
 {
-    let canonical_path = fs.canonicalize(path)?;
-
-    // Get the parent directory of the current file
-    let base_path = canonical_path
-        .parent()
-        .expect("failed to find current directory")
-        .to_owned();
-
-    // We've seen this path now
-    seen_files.insert(canonical_path.clone());
-
-    // Parse this file
-    let tu = TranslationUnit::parse(&fs.read(&canonical_path)?)?;
-
     // Extend the root TU
     for extdecl in (tu.0).0.into_iter() {
         let Node { contents, span } = extdecl;
@@ -84,6 +71,56 @@ where
     }
 
     Ok(())
+}
+
+fn parse_file<T>(
+    path: &PathBuf,
+    parsed_external_declarations: &mut Vec<ExternalDeclaration>,
+    seen_files: &mut HashSet<PathBuf>,
+    fs: &T,
+) -> Result<(), T::Error>
+where
+    T: PreprocessorFs,
+    T::Error: From<glsl::parser::ParseError>,
+{
+    let canonical_path = fs.canonicalize(path)?;
+
+    // Get the parent directory of the current file
+    let base_path = canonical_path
+        .parent()
+        .expect("failed to find current directory")
+        .to_owned();
+
+    // We've seen this path now
+    seen_files.insert(canonical_path.clone());
+
+    // Parse this file
+    let tu = TranslationUnit::parse(&fs.read(&canonical_path)?)?;
+
+    // Forward the parse process
+    parse_tu_internal(&base_path, tu, parsed_external_declarations, seen_files, fs)
+}
+
+/// Process the includes of a TranslationUnit
+///
+/// # Parameters
+///
+/// * `base_path`: base path for relative references
+/// * `tu`: entry translation unit
+/// * `fs`: fs implementation
+pub fn parse_tu<T>(base_path: &PathBuf, tu: TranslationUnit, fs: &T) -> Result<TranslationUnit, T::Error>
+where
+    T: PreprocessorFs,
+    T::Error: From<glsl::parser::ParseError>,
+{
+    let mut parsed_external_declarations = Vec::new();
+    let mut seen_files = HashSet::new();
+
+    parse_tu_internal(base_path, tu, &mut parsed_external_declarations, &mut seen_files, fs)?;
+
+    Ok(TranslationUnit(NonEmpty(
+        parsed_external_declarations.into_iter().collect(),
+    )))
 }
 
 /// Parse a set of files into a single translation unit
