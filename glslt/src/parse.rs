@@ -1,18 +1,52 @@
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
 use glsl::parser::Parse;
 use glsl::syntax::*;
 
-use crate::{Error, Result};
+/// Filesystem abstraction for include resolving
+pub trait PreprocessorFs {
+    /// Error type for i/o errors. Needs to be convertible from glsl::parser::ParseError
+    type Error;
 
-fn parse_file(
+    /// Read the contents of a file given by its path
+    ///
+    /// # Parameters
+    ///
+    /// * `path`: path to the file
+    fn read(&self, path: &std::path::Path) -> Result<Cow<str>, Self::Error>;
+
+    /// Canonicalize the given path
+    ///
+    /// # Parameters
+    ///
+    /// * `path`: path to canonicalize
+    fn canonicalize(&self, path: &std::path::Path) -> Result<PathBuf, Self::Error>;
+
+    /// Resolve an include path to an actual file
+    ///
+    /// # Parameters
+    ///
+    /// * `base_path`: directory of the current file
+    /// * `path`: include path to resolve relative to `base_path`
+    fn resolve(&self, base_path: &PathBuf, path: &Path) -> Result<PathBuf, Self::Error>;
+}
+
+mod std_fs;
+pub use std_fs::*;
+
+fn parse_file<T>(
     path: &PathBuf,
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
-    include: &[PathBuf],
-) -> Result<()> {
-    let canonical_path = std::fs::canonicalize(path)?;
+    fs: &T,
+) -> Result<(), T::Error>
+where
+    T: PreprocessorFs,
+    T::Error: From<glsl::parser::ParseError>
+{
+    let canonical_path = fs.canonicalize(path)?;
 
     // Get the parent directory of the current file
     let base_path = canonical_path
@@ -24,7 +58,7 @@ fn parse_file(
     seen_files.insert(canonical_path.clone());
 
     // Parse this file
-    let tu = TranslationUnit::parse(&std::fs::read_to_string(&canonical_path)?)?;
+    let tu = TranslationUnit::parse(&fs.read(&canonical_path)?)?;
 
     // Extend the root TU
     for extdecl in (tu.0).0.into_iter() {
@@ -33,37 +67,9 @@ fn parse_file(
         match contents {
             ExternalDeclarationData::Preprocessor(pp) => match pp.contents {
                 PreprocessorData::Include(inc) => {
-                    let resolved_path = match &inc.path {
-                        Path::Absolute(path) => {
-                            let path = PathBuf::from(path);
-
-                            include
-                                .iter()
-                                .find_map(|dir| std::fs::canonicalize(dir.join(&path)).ok())
-                        }
-                        Path::Relative(path) => {
-                            let path = PathBuf::from(path);
-
-                            std::iter::once(&base_path)
-                                .chain(include.iter())
-                                .find_map(|dir| std::fs::canonicalize(dir.join(&path)).ok())
-                        }
-                    };
-
-                    match resolved_path {
-                        Some(file) => {
-                            if !seen_files.contains(&file) {
-                                parse_file(
-                                    &file,
-                                    parsed_external_declarations,
-                                    seen_files,
-                                    include,
-                                )?;
-                            }
-                        }
-                        None => {
-                            return Err(Error::UnresolvedInclude(inc.path));
-                        }
+                    let resolved_path = fs.resolve(&base_path, &inc.path)?;
+                    if !seen_files.contains(&resolved_path) {
+                        parse_file(&resolved_path, parsed_external_declarations, seen_files, fs)?;
                     }
                 }
                 other => parsed_external_declarations.push(ExternalDeclaration::new(
@@ -85,22 +91,18 @@ fn parse_file(
 /// # Parameters
 ///
 /// * `pb`: list of paths to concatenate
-/// * `include`: list of include directories for system include resolution
-pub fn parse_files(pb: &[PathBuf], include: &[PathBuf]) -> Result<TranslationUnit> {
+/// * `fs`: fs implementation
+pub fn parse_files<T>(pb: &[PathBuf], fs: &T) -> Result<TranslationUnit, T::Error>
+where
+    T: PreprocessorFs,
+    T::Error: From<glsl::parser::ParseError>
+{
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
 
     for path in pb {
-        parse_file(
-            path,
-            &mut parsed_external_declarations,
-            &mut seen_files,
-            &include,
-        )?;
+        parse_file(path, &mut parsed_external_declarations, &mut seen_files, fs)?;
     }
 
-    Ok(TranslationUnit(
-        NonEmpty::from_non_empty_iter(parsed_external_declarations.into_iter())
-            .ok_or_else(|| Error::EmptyInput)?,
-    ))
+    Ok(TranslationUnit(NonEmpty(parsed_external_declarations.into_iter().collect())))
 }

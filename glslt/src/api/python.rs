@@ -177,10 +177,12 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
     ) -> PyResult<PyTranslationUnit> {
         crate::parse_files(
             &files.into_iter().map(PathBuf::from).collect::<Vec<_>>(),
-            &include_paths
-                .into_iter()
-                .map(PathBuf::from)
-                .collect::<Vec<_>>(),
+            &crate::parse::StdPreprocessorFs::with_include_path(
+                &include_paths
+                    .into_iter()
+                    .map(PathBuf::from)
+                    .collect::<Vec<_>>(),
+            ),
         )
         .map(Into::into)
         .map_err(|e| RuntimeError::py_err(format!("{}", e)))

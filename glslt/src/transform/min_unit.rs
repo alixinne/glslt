@@ -101,14 +101,12 @@ impl MinUnit {
                 .filter_map(|id| stored_decls.remove(&id)),
         );
 
-        Ok(TranslationUnit(
-            NonEmpty::from_non_empty_iter(
-                external_declarations
-                    .into_iter()
-                    .map(|arc| Arc::try_unwrap(arc).unwrap_or_else(|arc| (*arc).clone())),
-            )
-            .ok_or_else(|| Error::EmptyInput)?,
-        ))
+        Ok(TranslationUnit(NonEmpty(
+            external_declarations
+                .into_iter()
+                .map(|arc| Arc::try_unwrap(arc).unwrap_or_else(|arc| (*arc).clone()))
+                .collect(),
+        )))
     }
 
     fn extend_dag(&mut self, tu: &impl Host) {

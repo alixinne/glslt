@@ -3,7 +3,7 @@ use glsl::syntax::*;
 use super::instantiate::InstantiateTemplate;
 use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
 
-use crate::{Error, Result};
+use crate::Result;
 
 /// GLSLT template instantiation context
 #[derive(Default, Debug, Clone)]
@@ -40,10 +40,7 @@ impl Unit {
     /// All the declarations given as input will be included in-order in the output, with the
     /// template instantiations interleaved when needed.
     pub fn into_translation_unit(self) -> Result<TranslationUnit> {
-        Ok(TranslationUnit(
-            NonEmpty::from_non_empty_iter(self.external_declarations.into_iter())
-                .ok_or_else(|| Error::EmptyInput)?,
-        ))
+        Ok(TranslationUnit(NonEmpty(self.external_declarations.into_iter().collect())))
     }
 }
 

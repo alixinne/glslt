@@ -4,15 +4,6 @@ use thiserror::Error;
 /// GLSLT transform error type
 #[derive(Debug, Error)]
 pub enum Error {
-    /// No top-level declarations were found in any of the input files
-    #[error("no top-level declarations were found in any of the input files")]
-    EmptyInput,
-    /// I/O error
-    #[error("i/o error: {0}")]
-    IoError(#[from] std::io::Error),
-    /// GLSL parse error
-    #[error("parse error: {0}")]
-    ParseError(#[from] glsl::parser::ParseError),
     /// Re-declaration of a function pointer type
     #[error("function pointer {name} previously declared as {previous_declaration}")]
     DuplicatePointerDefinition {
@@ -29,9 +20,6 @@ pub enum Error {
         /// 0-based position of the parameter in the function declaration
         index: usize,
     },
-    /// Unresolved include directive
-    #[error("unresolved include: {0:?}")]
-    UnresolvedInclude(glsl::syntax::Path),
     /// Unsupported preprocessor directive in minifying mode
     #[error("unsupported preprocessor directive in minifying mode: {0:?}")]
     UnsupportedPreprocessor(Preprocessor),

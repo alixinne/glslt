@@ -63,7 +63,10 @@ pub fn main(opts: Opts) -> anyhow::Result<()> {
     .ok();
 
     // Parse input files in parallel
-    let tu = crate::parse_files(&opts.input, &opts.include)?;
+    let tu = crate::parse_files(
+        &opts.input,
+        &crate::parse::StdPreprocessorFs::with_include_path(&opts.include),
+    )?;
 
     // Process the input
     let processed_input = if opts.keep_fns.is_empty() {
