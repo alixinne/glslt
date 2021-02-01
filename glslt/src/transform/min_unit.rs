@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use glsl::syntax::*;
 use glsl::visitor::*;
 
@@ -19,12 +21,12 @@ pub struct MinUnit {
     /// Template definition global scope
     global_scope: GlobalScope,
     /// External declaration repository
-    external_declarations: IndexMap<ExternalIdentifier, ExternalDeclaration>,
+    external_declarations: IndexMap<ExternalIdentifier, Arc<ExternalDeclaration>>,
     /// Dependency graph, built as declarations are added to this unit
     dag: DependencyDag,
     /// Static contents that can be included before other declarations (such as #version, precision
     /// qualifiers, etc.)
-    static_declarations: Vec<ExternalDeclaration>,
+    static_declarations: Vec<Arc<ExternalDeclaration>>,
 }
 
 impl MinUnit {
@@ -100,8 +102,12 @@ impl MinUnit {
         );
 
         Ok(TranslationUnit(
-            NonEmpty::from_non_empty_iter(external_declarations.into_iter())
-                .ok_or_else(|| Error::EmptyInput)?,
+            NonEmpty::from_non_empty_iter(
+                external_declarations
+                    .into_iter()
+                    .map(|arc| Arc::try_unwrap(arc).unwrap_or_else(|arc| (*arc).clone())),
+            )
+            .ok_or_else(|| Error::EmptyInput)?,
         ))
     }
 
@@ -261,7 +267,10 @@ impl TransformUnit for MinUnit {
         let id = ExternalIdentifier::FunctionDefinition(def.prototype.name.0.clone());
         self.external_declarations.insert(
             id.clone(),
-            ExternalDeclaration::new(ExternalDeclarationData::FunctionDefinition(def), span),
+            Arc::new(ExternalDeclaration::new(
+                ExternalDeclarationData::FunctionDefinition(def),
+                span,
+            )),
         );
     }
 
@@ -320,7 +329,7 @@ impl TransformUnit for MinUnit {
 
                         self.external_declarations.insert(
                             ExternalIdentifier::Declaration(ident.0.clone()),
-                            Node::new(other, extdecl.span),
+                            Arc::new(Node::new(other, extdecl.span)),
                         );
                     }
                     PreprocessorData::Define(PreprocessorDefine::FunctionLike {
@@ -330,12 +339,12 @@ impl TransformUnit for MinUnit {
 
                         self.external_declarations.insert(
                             ExternalIdentifier::FunctionDefinition(ident.0.clone()),
-                            Node::new(other, extdecl.span),
+                            Arc::new(Node::new(other, extdecl.span)),
                         );
                     }
                     PreprocessorData::Version(_) | PreprocessorData::Extension(_) => {
                         self.static_declarations
-                            .push(Node::new(other, extdecl.span));
+                            .push(Arc::new(Node::new(other, extdecl.span)));
                     }
                     rest => {
                         return Err(Error::UnsupportedPreprocessor(Preprocessor::new(
@@ -362,7 +371,7 @@ impl TransformUnit for MinUnit {
                                 // Parse type name dependencies in the struct specification
                                 self.extend_dag(&mut node);
 
-                                self.external_declarations.insert(key, node);
+                                self.external_declarations.insert(key, Arc::new(node));
                             } else {
                                 return Err(Error::UnsupportedIDL(idl.clone()));
                             }
@@ -371,7 +380,7 @@ impl TransformUnit for MinUnit {
                             if let Some(name) = &idl.head.name {
                                 self.external_declarations.insert(
                                     ExternalIdentifier::Declaration(name.0.clone()),
-                                    Node::new(other, extdecl.span),
+                                    Arc::new(Node::new(other, extdecl.span)),
                                 );
                             } else {
                                 return Err(Error::UnsupportedIDL(idl.clone()));
@@ -381,7 +390,7 @@ impl TransformUnit for MinUnit {
                     DeclarationData::Precision(_, _) | DeclarationData::Block(_) => {
                         // TODO: How to handle Declaration::Block?
                         self.static_declarations
-                            .push(Node::new(other, extdecl.span));
+                            .push(Arc::new(Node::new(other, extdecl.span)));
                     }
                     DeclarationData::Global(tq, identifiers) => {
                         // TODO: How are globals used by function code?
@@ -389,13 +398,13 @@ impl TransformUnit for MinUnit {
                         for id in identifiers {
                             self.external_declarations.insert(
                                 ExternalIdentifier::Declaration(id.0.clone()),
-                                Node::new(
+                                Arc::new(Node::new(
                                     ExternalDeclarationData::Declaration(
                                         DeclarationData::Global(tq.clone(), vec![id.clone()])
                                             .into(),
                                     ),
                                     extdecl.span,
-                                ),
+                                )),
                             );
                         }
                     }
