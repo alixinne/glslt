@@ -46,6 +46,25 @@ pub enum StdPreprocessorFsError {
     ParseError(#[from] glsl::parser::ParseError),
 }
 
+impl PartialEq for StdPreprocessorFsError {
+    fn eq(&self, other: &Self) -> bool {
+        match self {
+            Self::Io(a) => match other {
+                Self::Io(b) => a.kind() == b.kind(),
+                _ => false,
+            },
+            Self::UnresolvedInclude(a) => match other {
+                Self::UnresolvedInclude(b) => a == b,
+                _ => false,
+            },
+            Self::ParseError(a) => match other {
+                Self::ParseError(b) => a == b,
+                _ => false,
+            },
+        }
+    }
+}
+
 impl PreprocessorFs for StdPreprocessorFs {
     type Error = StdPreprocessorFsError;
 
