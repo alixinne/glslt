@@ -1,3 +1,5 @@
+//! Parsing utilities
+
 use std::borrow::Cow;
 use std::collections::HashSet;
 use std::path::PathBuf;

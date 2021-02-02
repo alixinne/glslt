@@ -175,7 +175,7 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
         files: Vec<String>,
         include_paths: Vec<String>,
     ) -> PyResult<PyTranslationUnit> {
-        crate::parse_files(
+        crate::parse::parse_files(
             &files.into_iter().map(PathBuf::from).collect::<Vec<_>>(),
             &crate::parse::StdPreprocessorFs::with_include_path(
                 &include_paths

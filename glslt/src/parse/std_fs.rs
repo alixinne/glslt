@@ -9,15 +9,15 @@ use thiserror::Error;
 use super::PreprocessorFs;
 
 /// Implementation of [super::PreprocessorFs] for [std::fs]
-#[derive(Default, Debug, Clone, Copy)]
-pub struct StdPreprocessorFs<'i> {
-    include: &'i [PathBuf],
+#[derive(Default, Debug, Clone)]
+pub struct StdPreprocessorFs {
+    include: Vec<PathBuf>,
 }
 
-impl<'i> StdPreprocessorFs<'i> {
+impl StdPreprocessorFs {
     /// Create a new StdPreprocessorFs instance with no system include path
     pub fn new() -> Self {
-        Self { include: &[] }
+        Self { include: vec![] }
     }
 
     /// Create a new StdPreprocessorFs instance with the given include path
@@ -25,8 +25,10 @@ impl<'i> StdPreprocessorFs<'i> {
     /// # Parameters
     ///
     /// * `include`: list of paths to include directories to check for absolute includes
-    pub fn with_include_path(include: &'i [PathBuf]) -> Self {
-        Self { include }
+    pub fn with_include_path(include: &[PathBuf]) -> Self {
+        Self {
+            include: include.to_vec(),
+        }
     }
 }
 
@@ -44,7 +46,7 @@ pub enum StdPreprocessorFsError {
     ParseError(#[from] glsl::parser::ParseError),
 }
 
-impl PreprocessorFs for StdPreprocessorFs<'_> {
+impl PreprocessorFs for StdPreprocessorFs {
     type Error = StdPreprocessorFsError;
 
     fn read(&self, path: &std::path::Path) -> Result<Cow<str>, Self::Error> {
