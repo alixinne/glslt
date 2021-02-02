@@ -17,14 +17,14 @@ pub trait PreprocessorFs {
     /// # Parameters
     ///
     /// * `path`: path to the file
-    fn read(&self, path: &std::path::Path) -> Result<Cow<str>, Self::Error>;
+    fn read(&self, path: &PathBuf) -> Result<Cow<str>, Self::Error>;
 
     /// Canonicalize the given path
     ///
     /// # Parameters
     ///
     /// * `path`: path to canonicalize
-    fn canonicalize(&self, path: &std::path::Path) -> Result<PathBuf, Self::Error>;
+    fn canonicalize(&self, path: &PathBuf) -> Result<PathBuf, Self::Error>;
 
     /// Resolve an include path to an actual file
     ///

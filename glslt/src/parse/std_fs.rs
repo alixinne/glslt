@@ -68,11 +68,11 @@ impl PartialEq for StdPreprocessorFsError {
 impl PreprocessorFs for StdPreprocessorFs {
     type Error = StdPreprocessorFsError;
 
-    fn read(&self, path: &std::path::Path) -> Result<Cow<str>, Self::Error> {
+    fn read(&self, path: &PathBuf) -> Result<Cow<str>, Self::Error> {
         Ok(Cow::Owned(std::fs::read_to_string(path)?))
     }
 
-    fn canonicalize(&self, path: &std::path::Path) -> Result<PathBuf, Self::Error> {
+    fn canonicalize(&self, path: &PathBuf) -> Result<PathBuf, Self::Error> {
         Ok(std::fs::canonicalize(path)?)
     }
 
