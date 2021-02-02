@@ -36,12 +36,20 @@ pub trait PreprocessorFs {
 mod std_fs;
 pub use std_fs::*;
 
+/// List of comments in a parsed output
+pub type Comments = std::collections::BTreeMap<
+    glsl::syntax::NodeSpan,
+    glsl::syntax::Node<glsl::syntax::Comment<'static>>,
+>;
+
 fn parse_tu_internal<T>(
     base_path: &PathBuf,
     tu: TranslationUnit,
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
     fs: &T,
+    cmt: &mut Comments,
+    source_id: &mut usize,
 ) -> Result<(), T::Error>
 where
     T: PreprocessorFs,
@@ -56,7 +64,14 @@ where
                 PreprocessorData::Include(inc) => {
                     let resolved_path = fs.resolve(&base_path, &inc.path)?;
                     if !seen_files.contains(&resolved_path) {
-                        parse_file(&resolved_path, parsed_external_declarations, seen_files, fs)?;
+                        parse_file(
+                            &resolved_path,
+                            parsed_external_declarations,
+                            seen_files,
+                            fs,
+                            cmt,
+                            source_id,
+                        )?;
                     }
                 }
                 other => parsed_external_declarations.push(ExternalDeclaration::new(
@@ -78,6 +93,8 @@ fn parse_file<T>(
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
     fs: &T,
+    cmt: &mut Comments,
+    source_id: &mut usize,
 ) -> Result<(), T::Error>
 where
     T: PreprocessorFs,
@@ -94,21 +111,63 @@ where
     // We've seen this path now
     seen_files.insert(canonical_path.clone());
 
-    // Parse this file
-    let tu = TranslationUnit::parse(&fs.read(&canonical_path)?)?;
-
-    // Forward the parse process
-    parse_tu_internal(&base_path, tu, parsed_external_declarations, seen_files, fs)
+    parse_str(
+        &base_path,
+        &fs.read(&canonical_path)?,
+        parsed_external_declarations,
+        seen_files,
+        fs,
+        cmt,
+        source_id,
+    )
 }
 
-/// Process the includes of a TranslationUnit
-///
-/// # Parameters
-///
-/// * `base_path`: base path for relative references
-/// * `tu`: entry translation unit
-/// * `fs`: fs implementation
-pub fn parse_tu<T>(base_path: &PathBuf, tu: TranslationUnit, fs: &T) -> Result<TranslationUnit, T::Error>
+fn parse_str<T>(
+    base_path: &PathBuf,
+    source: &str,
+    parsed_external_declarations: &mut Vec<ExternalDeclaration>,
+    seen_files: &mut HashSet<PathBuf>,
+    fs: &T,
+    cmt: &mut Comments,
+    source_id: &mut usize,
+) -> Result<(), T::Error>
+where
+    T: PreprocessorFs,
+    T::Error: From<glsl::parser::ParseError>,
+{
+    // Parse this file
+    let mut ctx = glsl::parser::ParseContextData::with_comments();
+    ctx.set_source(*source_id);
+
+    let tu = TranslationUnit::parse_with_context(source, &mut ctx)?;
+    *source_id += 1;
+
+    // Merge comments
+    cmt.extend(
+        ctx.comments()
+            .unwrap()
+            .into_iter()
+            .map(|(k, v)| (*k, v.clone().map(|c| c.to_owned()))),
+    );
+
+    // Forward the parse process
+    parse_tu_internal(
+        base_path,
+        tu,
+        parsed_external_declarations,
+        seen_files,
+        fs,
+        cmt,
+        source_id,
+    )
+}
+
+/// Process the includes of some raw source
+pub fn parse_source<T>(
+    base_path: &PathBuf,
+    source: &str,
+    fs: &T,
+) -> Result<(TranslationUnit, Comments), T::Error>
 where
     T: PreprocessorFs,
     T::Error: From<glsl::parser::ParseError>,
@@ -116,11 +175,23 @@ where
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
 
-    parse_tu_internal(base_path, tu, &mut parsed_external_declarations, &mut seen_files, fs)?;
+    let mut comments = Comments::new();
+    let mut source_id = 0;
 
-    Ok(TranslationUnit(NonEmpty(
-        parsed_external_declarations.into_iter().collect(),
-    )))
+    parse_str(
+        base_path,
+        source,
+        &mut parsed_external_declarations,
+        &mut seen_files,
+        fs,
+        &mut comments,
+        &mut source_id,
+    )?;
+
+    Ok((
+        TranslationUnit(NonEmpty(parsed_external_declarations.into_iter().collect())),
+        comments,
+    ))
 }
 
 /// Parse a set of files into a single translation unit
@@ -129,7 +200,7 @@ where
 ///
 /// * `pb`: list of paths to concatenate
 /// * `fs`: fs implementation
-pub fn parse_files<T>(pb: &[PathBuf], fs: &T) -> Result<TranslationUnit, T::Error>
+pub fn parse_files<T>(pb: &[PathBuf], fs: &T) -> Result<(TranslationUnit, Comments), T::Error>
 where
     T: PreprocessorFs,
     T::Error: From<glsl::parser::ParseError>,
@@ -137,11 +208,22 @@ where
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
 
+    let mut comments = Comments::new();
+    let mut source_id = 0;
+
     for path in pb {
-        parse_file(path, &mut parsed_external_declarations, &mut seen_files, fs)?;
+        parse_file(
+            path,
+            &mut parsed_external_declarations,
+            &mut seen_files,
+            fs,
+            &mut comments,
+            &mut source_id,
+        )?;
     }
 
-    Ok(TranslationUnit(NonEmpty(
-        parsed_external_declarations.into_iter().collect(),
-    )))
+    Ok((
+        TranslationUnit(NonEmpty(parsed_external_declarations.into_iter().collect())),
+        comments,
+    ))
 }
