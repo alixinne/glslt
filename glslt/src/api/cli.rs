@@ -66,6 +66,7 @@ pub fn main(opts: Opts) -> anyhow::Result<()> {
     let (tu, _) = crate::parse::parse_files(
         &opts.input,
         &crate::parse::StdPreprocessorFs::with_include_path(&opts.include),
+        None,
     )?;
 
     // Process the input

@@ -186,6 +186,7 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
                     .map(PathBuf::from)
                     .collect::<Vec<_>>(),
             ),
+            None,
         )
         .map(|(tu, _)| Into::into(tu))
         .map_err(|e| RuntimeError::py_err(format!("{}", e)))

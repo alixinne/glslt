@@ -157,11 +157,18 @@ impl glsl_lang::parse::TypeTablePolicy for GlsltPolicy {
     }
 }
 
-fn get_parse_options() -> ParseOptions {
-    ParseOptions {
-        type_names: glsl_lang::parse::TypeNames::with_policy(GlsltPolicy),
-        comments: Some(Default::default()),
-        ..Default::default()
+fn make_parse_options(existing: Option<&ParseOptions>) -> ParseOptions {
+    if let Some(existing) = existing {
+        ParseOptions {
+            type_names: glsl_lang::parse::TypeNames::with_policy(GlsltPolicy),
+            ..existing.clone()
+        }
+    } else {
+        ParseOptions {
+            type_names: glsl_lang::parse::TypeNames::with_policy(GlsltPolicy),
+            comments: Some(Default::default()),
+            ..Default::default()
+        }
     }
 }
 
@@ -171,7 +178,7 @@ pub fn parse_source_default(
 ) -> Result<(TranslationUnit, ParseOptions), StdPreprocessorFsError> {
     let std_fs = StdPreprocessorFs::new();
     let base_path = std::env::current_dir().unwrap();
-    Ok(parse_source(&base_path, source, &std_fs)?)
+    Ok(parse_source(&base_path, source, &std_fs, None)?)
 }
 
 /// Process the includes of some raw source
@@ -179,6 +186,7 @@ pub fn parse_source<T>(
     base_path: &PathBuf,
     source: &str,
     fs: &T,
+    opts: Option<&ParseOptions>,
 ) -> Result<(TranslationUnit, ParseOptions), T::Error>
 where
     T: PreprocessorFs,
@@ -186,7 +194,7 @@ where
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
 
-    let mut opts = get_parse_options();
+    let mut opts = make_parse_options(opts);
 
     parse_str(
         base_path,
@@ -209,14 +217,19 @@ where
 ///
 /// * `pb`: list of paths to concatenate
 /// * `fs`: fs implementation
-pub fn parse_files<T>(pb: &[PathBuf], fs: &T) -> Result<(TranslationUnit, ParseOptions), T::Error>
+/// * `opts`: parse options
+pub fn parse_files<T>(
+    pb: &[PathBuf],
+    fs: &T,
+    opts: Option<&ParseOptions>,
+) -> Result<(TranslationUnit, ParseOptions), T::Error>
 where
     T: PreprocessorFs,
 {
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
 
-    let mut opts = get_parse_options();
+    let mut opts = make_parse_options(opts);
 
     for path in pb {
         parse_file(
