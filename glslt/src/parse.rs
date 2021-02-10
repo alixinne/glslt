@@ -4,13 +4,15 @@ use std::borrow::Cow;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
-use glsl::parser::Parse;
-use glsl::syntax::*;
+use glsl_lang::{
+    ast::*,
+    parse::{Parse, ParseOptions},
+};
 
 /// Filesystem abstraction for include resolving
 pub trait PreprocessorFs {
-    /// Error type for i/o errors. Needs to be convertible from glsl::parser::ParseError
-    type Error;
+    /// Error type for i/o errors
+    type Error: From<glsl_lang::parse::ParseErrorStatic>;
 
     /// Read the contents of a file given by its path
     ///
@@ -38,27 +40,19 @@ pub trait PreprocessorFs {
 mod std_fs;
 pub use std_fs::*;
 
-/// List of comments in a parsed output
-pub type Comments = std::collections::BTreeMap<
-    glsl::syntax::NodeSpan,
-    glsl::syntax::Node<glsl::syntax::Comment<'static>>,
->;
-
 fn parse_tu_internal<T>(
     base_path: &PathBuf,
     tu: TranslationUnit,
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
     fs: &T,
-    cmt: &mut Comments,
-    source_id: &mut usize,
+    opts: &mut ParseOptions,
 ) -> Result<(), T::Error>
 where
     T: PreprocessorFs,
-    T::Error: From<glsl::parser::ParseError>,
 {
     // Extend the root TU
-    for extdecl in (tu.0).0.into_iter() {
+    for extdecl in tu.0.into_iter() {
         let Node { contents, span } = extdecl;
 
         match contents {
@@ -71,8 +65,7 @@ where
                             parsed_external_declarations,
                             seen_files,
                             fs,
-                            cmt,
-                            source_id,
+                            opts,
                         )?;
                     }
                 }
@@ -95,12 +88,10 @@ fn parse_file<T>(
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
     fs: &T,
-    cmt: &mut Comments,
-    source_id: &mut usize,
+    opts: &mut ParseOptions,
 ) -> Result<(), T::Error>
 where
     T: PreprocessorFs,
-    T::Error: From<glsl::parser::ParseError>,
 {
     let canonical_path = fs.canonicalize(path)?;
 
@@ -119,8 +110,7 @@ where
         parsed_external_declarations,
         seen_files,
         fs,
-        cmt,
-        source_id,
+        opts,
     )
 }
 
@@ -130,27 +120,18 @@ fn parse_str<T>(
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
     fs: &T,
-    cmt: &mut Comments,
-    source_id: &mut usize,
+    opts: &mut ParseOptions,
 ) -> Result<(), T::Error>
 where
     T: PreprocessorFs,
-    T::Error: From<glsl::parser::ParseError>,
 {
     // Parse this file
-    let mut ctx = glsl::parser::ParseContextData::with_comments();
-    ctx.set_source(*source_id);
+    let (tu, new_opts) =
+        TranslationUnit::parse_with_options(source, &opts).map_err(|e| e.map_token(Into::into))?;
 
-    let tu = TranslationUnit::parse_with_context(source, &mut ctx)?;
-    *source_id += 1;
-
-    // Merge comments
-    cmt.extend(
-        ctx.comments()
-            .unwrap()
-            .into_iter()
-            .map(|(k, v)| (*k, v.clone().map(|c| c.to_owned()))),
-    );
+    // Swap the options structure with the new one (with new type names and comments)
+    *opts = new_opts;
+    opts.source_id += 1;
 
     // Forward the parse process
     parse_tu_internal(
@@ -159,9 +140,38 @@ where
         parsed_external_declarations,
         seen_files,
         fs,
-        cmt,
-        source_id,
+        opts,
     )
+}
+
+struct GlsltPolicy;
+
+impl glsl_lang::parse::TypeTablePolicy for GlsltPolicy {
+    fn promote_to_type_name(
+        &self,
+        name: &glsl_lang::ast::Identifier,
+        ctx: glsl_lang::parse::IdentifierContext,
+    ) -> bool {
+        trace!("glslt parsing: promoting {} to type name", name);
+        ctx == glsl_lang::parse::IdentifierContext::FunctionPrototype
+    }
+}
+
+fn get_parse_options() -> ParseOptions {
+    ParseOptions {
+        type_names: glsl_lang::parse::TypeNames::with_policy(GlsltPolicy),
+        comments: Some(Default::default()),
+        ..Default::default()
+    }
+}
+
+/// Parse the given source with default filesystem inclusion
+pub fn parse_source_default(
+    source: &str,
+) -> Result<(TranslationUnit, ParseOptions), StdPreprocessorFsError> {
+    let std_fs = StdPreprocessorFs::new();
+    let base_path = std::env::current_dir().unwrap();
+    Ok(parse_source(&base_path, source, &std_fs)?)
 }
 
 /// Process the includes of some raw source
@@ -169,16 +179,14 @@ pub fn parse_source<T>(
     base_path: &PathBuf,
     source: &str,
     fs: &T,
-) -> Result<(TranslationUnit, Comments), T::Error>
+) -> Result<(TranslationUnit, ParseOptions), T::Error>
 where
     T: PreprocessorFs,
-    T::Error: From<glsl::parser::ParseError>,
 {
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
 
-    let mut comments = Comments::new();
-    let mut source_id = 0;
+    let mut opts = get_parse_options();
 
     parse_str(
         base_path,
@@ -186,13 +194,12 @@ where
         &mut parsed_external_declarations,
         &mut seen_files,
         fs,
-        &mut comments,
-        &mut source_id,
+        &mut opts,
     )?;
 
     Ok((
-        TranslationUnit(NonEmpty(parsed_external_declarations.into_iter().collect())),
-        comments,
+        TranslationUnit(parsed_external_declarations.into_iter().collect()),
+        opts,
     ))
 }
 
@@ -202,16 +209,14 @@ where
 ///
 /// * `pb`: list of paths to concatenate
 /// * `fs`: fs implementation
-pub fn parse_files<T>(pb: &[PathBuf], fs: &T) -> Result<(TranslationUnit, Comments), T::Error>
+pub fn parse_files<T>(pb: &[PathBuf], fs: &T) -> Result<(TranslationUnit, ParseOptions), T::Error>
 where
     T: PreprocessorFs,
-    T::Error: From<glsl::parser::ParseError>,
 {
     let mut parsed_external_declarations = Vec::new();
     let mut seen_files = HashSet::new();
 
-    let mut comments = Comments::new();
-    let mut source_id = 0;
+    let mut opts = get_parse_options();
 
     for path in pb {
         parse_file(
@@ -219,13 +224,12 @@ where
             &mut parsed_external_declarations,
             &mut seen_files,
             fs,
-            &mut comments,
-            &mut source_id,
+            &mut opts,
         )?;
     }
 
     Ok((
-        TranslationUnit(NonEmpty(parsed_external_declarations.into_iter().collect())),
-        comments,
+        TranslationUnit(parsed_external_declarations.into_iter().collect()),
+        opts,
     ))
 }

@@ -1,4 +1,4 @@
-use glsl::syntax::*;
+use glsl_lang::ast::*;
 
 use super::{FnHandle, GlobalScope};
 

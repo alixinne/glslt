@@ -11,8 +11,7 @@
 //! <https://github.com/vtavernier/glsl/tree/dev/>).
 //!
 //! ```rust
-//! use glslt::glsl::parser::Parse;
-//! use glslt::glsl::syntax::*;
+//! use glslt::glsl_lang::ast::*;
 //! use glslt::transform::{Unit, TransformUnit};
 //!
 //! let glsl_src = r#"
@@ -34,8 +33,8 @@
 //! }
 //! "#;
 //!
-//! // Parse the GLSL source code
-//! let tu = TranslationUnit::parse(glsl_src).expect("failed to parse GLSLT source");
+//! // Parse the GLSLT source code
+//! let tu = glslt::parse::parse_source_default(glsl_src).expect("failed to parse GLSLT source");
 //!
 //! // Create the transform unit
 //! let mut unit = Unit::new();
@@ -50,10 +49,10 @@
 //!
 //! // Transpile the syntax tree to GLSL source
 //! let mut output_src = String::new();
-//! glsl::transpiler::glsl::show_translation_unit(
+//! glsl_lang::transpiler::glsl::show_translation_unit(
 //!     &mut output_src,
 //!     &tu,
-//!     glsl::transpiler::glsl::FormattingState::default(),
+//!     glsl_lang::transpiler::glsl::FormattingState::default(),
 //! ).expect("failed to generate GLSL");
 //! ```
 //!
@@ -87,7 +86,7 @@
 #[macro_use]
 extern crate log;
 
-pub use glsl;
+pub use glsl_lang;
 
 /// Prefix for generated names for functions and captured parameters
 pub const PREFIX: &str = "_glslt";
@@ -96,6 +95,8 @@ pub mod api;
 
 mod error;
 pub use error::*;
+
+pub mod glsl_ext;
 
 pub mod parse;
 

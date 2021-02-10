@@ -5,8 +5,7 @@ use std::path::PathBuf;
 use pyo3::exceptions::RuntimeError;
 use pyo3::prelude::*;
 
-use glsl::parser::Parse;
-use glsl::syntax::TranslationUnit;
+use glsl_lang::ast::TranslationUnit;
 
 use crate::transform::{MinUnit, TransformUnit, Unit};
 
@@ -31,10 +30,10 @@ impl PyTranslationUnit {
     #[text_signature = "($self)"]
     pub fn to_glsl(&self) -> PyResult<String> {
         let mut r = String::new();
-        glsl::transpiler::glsl::show_translation_unit(
+        glsl_lang::transpiler::glsl::show_translation_unit(
             &mut r,
             &self.tu,
-            glsl::transpiler::glsl::FormattingState::default(),
+            glsl_lang::transpiler::glsl::FormattingState::default(),
         )
         .map_err(|e| RuntimeError::py_err(format!("{}", e)))?;
         Ok(r)
@@ -52,10 +51,12 @@ trait HasTransformUnitExt {
 
 impl<T: HasTransformUnit> HasTransformUnitExt for T {
     fn add_unit(&mut self, unit: PyTranslationUnit) -> PyResult<()> {
-        for decl in (unit.tu.0).0.into_iter() {
+        // TODO: Don't use debug formatting
+
+        for decl in unit.tu.0.into_iter() {
             self.unit_mut()
                 .parse_external_declaration(decl)
-                .map_err(|e| RuntimeError::py_err(format!("{}", e)))?;
+                .map_err(|e| RuntimeError::py_err(format!("{:?}", e)))?;
         }
 
         Ok(())
@@ -157,9 +158,11 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
     #[pyfn(m, "parse_string")]
     #[text_signature = "(source, /)"]
     pub fn parse_string_py(_py: Python, source: &str) -> PyResult<PyTranslationUnit> {
-        TranslationUnit::parse(source)
-            .map(Into::into)
-            .map_err(|e| RuntimeError::py_err(format!("{}", e)))
+        // TODO: Don't use debug formatting
+
+        crate::parse::parse_source_default(source)
+            .map(|(tu, _)| tu.into())
+            .map_err(|e| RuntimeError::py_err(format!("{:?}", e)))
     }
 
     /// Parse a set of input files into an abstract syntax tree

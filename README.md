@@ -354,10 +354,11 @@ an example.
 
 ## Limitations
 
-This program is based on the excellent [glsl](https://github.com/phaazon/glsl)
+This program is based on the [glsl-lang](https://github.com/vtavernier/glsl-lang)
 crate for parsing and manipulating the GLSL AST in Rust. However, since it's
 only an AST and not a full parse tree, we have currently no way of preserving
-comments or original formatting.
+original formatting. Comments are still parsed and are available to library
+users, but they are not currently included in the output.
 
 Furthermore, since pre-processor directives have to be passed through to the
 GPU for accurate execution, shaders which are syntactically invalid without

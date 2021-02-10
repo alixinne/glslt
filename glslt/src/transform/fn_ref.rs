@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use glsl::syntax::*;
+use glsl_lang::ast::*;
 
 use crate::transform::template::TemplateDefinition;
 
@@ -15,7 +15,7 @@ pub struct FnRef<'a> {
     pub statement: &'a CompoundStatement,
 }
 
-impl glsl::syntax::NodeContents for FnRef<'_> {}
+impl glsl_lang::ast::NodeContents for FnRef<'_> {}
 
 /// Handle to a function definition somewhere in the glslt units
 #[derive(Debug, Clone)]

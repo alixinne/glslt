@@ -1,10 +1,9 @@
-use glsl::syntax::*;
-use glsl::visitor::*;
+use glsl_lang::{ast::*, visitor::*};
 
 use indexmap::IndexMap;
 use lazy_static::lazy_static;
 
-use crate::{Error, Result};
+use crate::{glsl_ext::FunIdentifierExt, Error, Result};
 
 use super::{template::TemplateDefinition, Scope};
 
@@ -19,15 +18,14 @@ lazy_static! {
         "bitfieldExtract", "bitfieldInsert", "bitfieldReverse", "ceil", "clamp", "cos", "cosh",
         "cross", "dFdx", "dFdxCoarse", "dFdxFine", "dFdy", "dFdyCoarse", "dFdyFine", "degrees",
         "determinant", "distance", "dot", "equal", "exp", "exp2", "faceforward", "findLSB",
-        "findMSB", "float", "floatBitsToInt", "floatBitsToUint", "floor", "fma", "fract", "frexp",
-        "fwidth", "fwidthCoarse", "fwidthFine", "greaterThan", "greaterThanEqual",
-        "groupMemoryBarrier", "imageAtomicAdd", "imageAtomicAnd", "imageAtomicCompSwap",
-        "imageAtomicExchange", "imageAtomicMax", "imageAtomicMin", "imageAtomicOr",
-        "imageAtomicXor", "imageLoad", "imageSamples", "imageSize", "imageStore", "imulExtended",
-        "int", "intBitsToFloat", "interpolateAtCentroid", "interpolateAtOffset",
-        "interpolateAtSample", "inverse", "inversesqrt", "isinf", "isnan", "ivec2", "ivec3",
-        "ivec4", "ldexp", "length", "lessThan", "lessThanEqual", "log", "log2", "mat2", "mat3",
-        "mat4", "matrixCompMult", "max", "memoryBarrier", "memoryBarrierAtomicCounter",
+        "findMSB", "floatBitsToInt", "floatBitsToUint", "floor", "fma", "fract", "frexp", "fwidth",
+        "fwidthCoarse", "fwidthFine", "greaterThan", "greaterThanEqual", "groupMemoryBarrier",
+        "imageAtomicAdd", "imageAtomicAnd", "imageAtomicCompSwap", "imageAtomicExchange",
+        "imageAtomicMax", "imageAtomicMin", "imageAtomicOr", "imageAtomicXor", "imageLoad",
+        "imageSamples", "imageSize", "imageStore", "imulExtended", "intBitsToFloat",
+        "interpolateAtCentroid", "interpolateAtOffset", "interpolateAtSample", "inverse",
+        "inversesqrt", "isinf", "isnan", "ldexp", "length", "lessThan", "lessThanEqual", "log",
+        "log2", "matrixCompMult", "max", "memoryBarrier", "memoryBarrierAtomicCounter",
         "memoryBarrierBuffer", "memoryBarrierImage", "memoryBarrierShared", "min", "mix", "mod",
         "modf", "noise", "noise1", "noise2", "noise3", "noise4", "normalize", "not", "notEqual",
         "outerProduct", "packDouble2x32", "packHalf2x16", "packSnorm2x16", "packSnorm4x8",
@@ -38,9 +36,9 @@ lazy_static! {
         "textureLod", "textureLodOffset", "textureOffset", "textureProj", "textureProjGrad",
         "textureProjGradOffset", "textureProjLod", "textureProjLodOffset", "textureProjOffset",
         "textureQueryLevels", "textureQueryLod", "textureSamples", "textureSize", "transpose",
-        "trunc", "uaddCarry", "uint", "uintBitsToFloat", "umulExtended", "unpackDouble2x32",
+        "trunc", "uaddCarry", "uintBitsToFloat", "umulExtended", "unpackDouble2x32",
         "unpackHalf2x16", "unpackSnorm2x16", "unpackSnorm4x8", "unpackUnorm", "unpackUnorm2x16",
-        "unpackUnorm4x8", "usubBorrow", "uvec2", "uvec3", "uvec4", "vec2", "vec3", "vec4",
+        "unpackUnorm4x8", "usubBorrow",
     ];
 }
 
@@ -130,25 +128,28 @@ impl InstantiateTemplate {
                 }
 
                 // Only consider raw identifiers for function names
-                if let FunIdentifier::Identifier(ident) = fun {
+                if let Some(ident) = fun.as_ident_or_type_name() {
                     if BUILTIN_FUNCTION_NAMES
-                        .binary_search(&ident.0.as_str())
+                        .binary_search(&ident.as_str())
                         .is_err()
                     {
                         // Look up arguments first
                         match scope.transform_arg_call(expr, self) {
                             Ok(()) => {}
                             Err(Error::TransformAsTemplate) => {
-                                if let Expr::FunCall(FunIdentifier::Identifier(ident), args) = expr
-                                {
-                                    if let Some(template) = scope.get_template(&ident.0) {
-                                        if let Err(error) =
-                                            self.transform_call(&*template, ident, args, scope)
-                                        {
-                                            self.error = Some(error);
+                                if let Expr::FunCall(ident, args) = expr {
+                                    if let Some(ident) = ident.as_ident_or_type_name_mut() {
+                                        if let Some(template) = scope.get_template(ident) {
+                                            if let Err(error) =
+                                                self.transform_call(&*template, ident, args, scope)
+                                            {
+                                                self.error = Some(error);
+                                            }
+                                        } else {
+                                            debug!("no template for function call: {}", ident);
                                         }
                                     } else {
-                                        debug!("no template for function call: {}", ident.0);
+                                        debug!("invalid function identifier: {:?}", ident);
                                     }
                                 }
                             }
@@ -169,11 +170,11 @@ impl InstantiateTemplate {
     fn transform_call<'s>(
         &mut self,
         template: &TemplateDefinition,
-        fun: &mut Identifier,
+        fun: &mut String,
         args: &mut Vec<Expr>,
         scope: &'s mut dyn Scope,
     ) -> Result<()> {
-        debug!("found template function call: {}({:?})", fun.0, args);
+        debug!("found template function call: {}({:?})", fun, args);
 
         // We found a template whose name matches the identifier
         // Thus, transform the function call
@@ -189,7 +190,7 @@ impl InstantiateTemplate {
         }
 
         // The identifier should be replaced by the mangled name
-        fun.0 = local_scope.name().to_owned();
+        *fun = local_scope.name().to_owned();
 
         // Add the captured parameters to the end of the call
         for ep in local_scope.captured_parameters().iter() {

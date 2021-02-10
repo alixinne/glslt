@@ -80,10 +80,10 @@ pub fn main(opts: Opts) -> anyhow::Result<()> {
 
     // Transpile
     let mut s = String::new();
-    glsl::transpiler::glsl::show_translation_unit(
+    glsl_lang::transpiler::glsl::show_translation_unit(
         &mut s,
         &processed_input,
-        glsl::transpiler::glsl::FormattingState::default(),
+        glsl_lang::transpiler::glsl::FormattingState::default(),
     )?;
 
     // Write output

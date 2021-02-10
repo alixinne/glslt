@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use glsl::syntax::*;
+use glsl_lang::ast::*;
 
 use super::instantiate::InstantiateTemplate;
 use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
@@ -42,9 +42,9 @@ impl Unit {
     /// All the declarations given as input will be included in-order in the output, with the
     /// template instantiations interleaved when needed.
     pub fn into_translation_unit(self) -> Result<TranslationUnit> {
-        Ok(TranslationUnit(NonEmpty(
+        Ok(TranslationUnit(
             self.external_declarations.into_iter().collect(),
-        )))
+        ))
     }
 }
 

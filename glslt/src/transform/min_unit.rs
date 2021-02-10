@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
-use glsl::syntax::*;
-use glsl::visitor::*;
+use glsl_lang::{ast::*, visitor::*};
 
 use indexmap::IndexMap;
 use lazy_static::lazy_static;
@@ -10,7 +9,7 @@ use regex::Regex;
 use super::instantiate::InstantiateTemplate;
 use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
 
-use crate::{Error, Result};
+use crate::{glsl_ext::FunIdentifierExt, Error, Result};
 
 mod dependency_dag;
 use dependency_dag::*;
@@ -101,12 +100,12 @@ impl MinUnit {
                 .filter_map(|id| stored_decls.remove(&id)),
         );
 
-        Ok(TranslationUnit(NonEmpty(
+        Ok(TranslationUnit(
             external_declarations
                 .into_iter()
                 .map(|arc| Arc::try_unwrap(arc).unwrap_or_else(|arc| (*arc).clone()))
                 .collect(),
-        )))
+        ))
     }
 
     fn extend_dag(&mut self, tu: &impl Host) {
@@ -199,12 +198,12 @@ impl MinUnit {
             }
 
             fn visit_fun_identifier(&mut self, node: &FunIdentifier) -> Visit {
-                if let FunIdentifier::Identifier(ident) = node {
+                if let Some(ident) = node.as_ident_or_type_name() {
                     if let Some(csn) = self.current_scope_name {
                         let this = self
                             .this
                             .dag
-                            .declare_symbol(ExternalId::FunctionDefinition(ident.0.as_str()));
+                            .declare_symbol(ExternalId::FunctionDefinition(ident.as_str()));
                         self.this.dag.add_dep(csn, this);
                     }
                 }
@@ -389,22 +388,6 @@ impl TransformUnit for MinUnit {
                         // TODO: How to handle Declaration::Block?
                         self.static_declarations
                             .push(Arc::new(Node::new(other, extdecl.span)));
-                    }
-                    DeclarationData::Global(tq, identifiers) => {
-                        // TODO: How are globals used by function code?
-                        // TODO: Preserve span information
-                        for id in identifiers {
-                            self.external_declarations.insert(
-                                ExternalIdentifier::Declaration(id.0.clone()),
-                                Arc::new(Node::new(
-                                    ExternalDeclarationData::Declaration(
-                                        DeclarationData::Global(tq.clone(), vec![id.clone()])
-                                            .into(),
-                                    ),
-                                    extdecl.span,
-                                )),
-                            );
-                        }
                     }
                 },
             },

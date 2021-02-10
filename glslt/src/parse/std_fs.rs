@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 use std::path::PathBuf;
 
-use glsl::syntax::Path;
+use glsl_lang::ast::Path;
 use thiserror::Error;
 
 use super::PreprocessorFs;
@@ -40,10 +40,10 @@ pub enum StdPreprocessorFsError {
     Io(#[from] std::io::Error),
     /// Unresolved include directive
     #[error("unresolved include: {0:?}")]
-    UnresolvedInclude(glsl::syntax::Path),
+    UnresolvedInclude(Path),
     /// Parse error
     #[error("parse error: {0}")]
-    ParseError(#[from] glsl::parser::ParseError),
+    ParseError(String),
 }
 
 impl PartialEq for StdPreprocessorFsError {
@@ -62,6 +62,13 @@ impl PartialEq for StdPreprocessorFsError {
                 _ => false,
             },
         }
+    }
+}
+
+// TODO: Not use debug display for this
+impl From<glsl_lang::parse::ParseErrorStatic> for StdPreprocessorFsError {
+    fn from(err: glsl_lang::parse::ParseErrorStatic) -> Self {
+        Self::ParseError(format!("{:?}", err))
     }
 }
 

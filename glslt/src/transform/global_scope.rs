@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use glsl::syntax::*;
+use glsl_lang::ast::*;
 
 use indexmap::IndexMap;
 

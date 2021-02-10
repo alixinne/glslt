@@ -1,6 +1,6 @@
 //! GLSLT transform utilities definitions
 
-use glsl::syntax::*;
+use glsl_lang::ast::*;
 
 use crate::Result;
 
@@ -35,7 +35,7 @@ fn transform_unit<'a, T: TransformUnit>(
 ) -> Result<()> {
     for (_id, ast) in asts.enumerate() {
         // We clone all declarations since they all have somewhere to go
-        for extdecl in (ast.0).0.iter().cloned() {
+        for extdecl in ast.0.iter().cloned() {
             inst.parse_external_declaration(extdecl)?;
         }
     }

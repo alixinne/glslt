@@ -1,6 +1,6 @@
 //! Definitions of template function abstractrepresentations
 
-use glsl::syntax::*;
+use glsl_lang::ast::*;
 
 use indexmap::IndexMap;
 
@@ -39,10 +39,10 @@ fn expr_vec_to_id(exprs: &[(Expr, &str)]) -> String {
     for expr in exprs {
         sbuf.push_str(expr.1);
 
-        glsl::transpiler::glsl::show_expr(
+        glsl_lang::transpiler::glsl::show_expr(
             &mut sbuf,
             &expr.0,
-            &mut glsl::transpiler::glsl::FormattingState::default(),
+            &mut glsl_lang::transpiler::glsl::FormattingState::default(),
         )
         .unwrap();
     }

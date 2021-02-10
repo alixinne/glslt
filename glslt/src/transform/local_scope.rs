@@ -2,10 +2,14 @@
 
 use std::sync::Arc;
 
-use glsl::syntax::*;
-use glsl::visitor::{HostMut, Visit, VisitorMut};
+use glsl_lang::{
+    ast::*,
+    visitor::{HostMut, Visit, VisitorMut},
+};
 
 use indexmap::IndexMap;
+
+use crate::glsl_ext::FunIdentifierExt;
 
 use super::template::TemplateDefinition;
 use super::{
@@ -180,10 +184,10 @@ impl<'p, 'q> LocalScope<'p, 'q> {
         match e {
             Expr::FunCall(fun, src_args) => {
                 // Only consider raw identifiers for function names
-                if let FunIdentifier::Identifier(ident) = fun {
+                if let Some(ident) = fun.as_ident_or_type_name_mut() {
                     if let Some(arg) = self
                         .template_parameters_by_name
-                        .get(ident.0.as_str())
+                        .get(ident.as_str())
                         .map(|id| &self.template_parameters[*id])
                     {
                         // If the substitution is a function name, just replace it and pass
@@ -203,7 +207,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
                                                 self.name, arg_ident
                                             );
 
-                                            ident.0 = name;
+                                            *ident = name;
                                             None // Transformation complete
                                         }
                                         ResolvedArgumentExpr::Lambda(expr) => {
@@ -354,21 +358,27 @@ impl Scope for LocalScope<'_, '_> {
         instantiator: &mut InstantiateTemplate,
     ) -> crate::Result<()> {
         match expr {
-            Expr::FunCall(FunIdentifier::Identifier(ident), _) => {
-                if let Some(tplarg) = self
-                    .template_parameters_by_name
-                    .get(ident.0.as_str())
-                    .and_then(|id| self.template_parameters.get(*id))
-                {
-                    // TODO: Remove this clone, with an Rc?
-                    let c = self
-                        .declared_pointer_types()
-                        .get(tplarg.1)
-                        .ok_or_else(|| crate::Error::UndeclaredPointerType(tplarg.1.to_owned()))?
-                        .clone();
+            Expr::FunCall(ident, _) => {
+                if let Some(ident) = ident.as_ident_or_type_name() {
+                    if let Some(tplarg) = self
+                        .template_parameters_by_name
+                        .get(ident.as_str())
+                        .and_then(|id| self.template_parameters.get(*id))
+                    {
+                        // TODO: Remove this clone, with an Rc?
+                        let c = self
+                            .declared_pointer_types()
+                            .get(tplarg.1)
+                            .ok_or_else(|| {
+                                crate::Error::UndeclaredPointerType(tplarg.1.to_owned())
+                            })?
+                            .clone();
 
-                    debug!("transforming call to {:?} using prototype {:?}", expr, c);
-                    return self.transform_arg_call_typed(expr, instantiator, &c);
+                        debug!("transforming call to {:?} using prototype {:?}", expr, c);
+                        return self.transform_arg_call_typed(expr, instantiator, &c);
+                    }
+                } else {
+                    debug!("invalid function identifier: {:?}", ident);
                 }
             }
             _ => panic!("unsupported expression for LocalScope::transform_arg_call"),

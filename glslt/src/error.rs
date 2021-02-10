@@ -1,4 +1,4 @@
-use glsl::syntax::*;
+use glsl_lang::ast::*;
 use thiserror::Error;
 
 /// GLSLT transform error type
@@ -42,10 +42,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 fn prototype_to_string(prototype: &FunctionPrototype) -> String {
     let mut s = String::new();
-    glsl::transpiler::glsl::show_function_prototype(
+    glsl_lang::transpiler::glsl::show_function_prototype(
         &mut s,
         prototype,
-        &mut glsl::transpiler::glsl::FormattingState::default(),
+        &mut glsl_lang::transpiler::glsl::FormattingState::default(),
     )
     .unwrap();
     s

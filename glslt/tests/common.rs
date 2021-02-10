@@ -1,8 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
-use glsl::parser::Parse;
-use glsl::syntax::*;
-use glsl::visitor::{HostMut, Visit, VisitorMut};
+use glsl_lang::{
+    ast::*,
+    visitor::{HostMut, Visit, VisitorMut},
+};
 
 // Code from pretty_assertions
 // Use contents_eq to ignore span information when comparing syntax trees
@@ -147,10 +148,10 @@ impl VisitorMut for IdentifierReplacement<'_> {
 
 fn to_string(tu: &TranslationUnit) -> String {
     let mut s = String::new();
-    glsl::transpiler::glsl::show_translation_unit(
+    glsl_lang::transpiler::glsl::show_translation_unit(
         &mut s,
         tu,
-        glsl::transpiler::glsl::FormattingState::default(),
+        glsl_lang::transpiler::glsl::FormattingState::default(),
     )
     .unwrap();
     s
@@ -169,9 +170,11 @@ fn verify_transform_impl(
         .ok();
 
     // Parse source
-    let src = TranslationUnit::parse(src).expect("failed to parse src");
+    let (src, _) = glslt::parse::parse_source_default(src).expect("failed to parse src");
+
     // Parse expected result
-    let mut expected = TranslationUnit::parse(expected).expect("failed to parse expected");
+    let (mut expected, _) =
+        glslt::parse::parse_source_default(expected).expect("failed to parse expected");
 
     // Reformat source
     let source = to_string(&src);
@@ -214,7 +217,7 @@ pub fn verify_transform(src: &str, expected: &str) {
     verify_transform_impl(src, expected, |src| {
         // Transform source
         let mut unit = glslt::transform::Unit::new();
-        for decl in (src.0).0.into_iter() {
+        for decl in src.0.into_iter() {
             let err = format!("failed to transform declaration: {:?}", decl);
             unit.parse_external_declaration(decl).expect(&err);
         }
@@ -230,7 +233,7 @@ pub fn verify_min_transform(src: &str, expected: &str, entry_point: &str) {
     verify_transform_impl(src, expected, |src| {
         // Transform source
         let mut unit = glslt::transform::MinUnit::new();
-        for decl in (src.0).0.into_iter() {
+        for decl in src.0.into_iter() {
             let err = format!("failed to transform declaration: {:?}", decl);
             unit.parse_external_declaration(decl).expect(&err);
         }
