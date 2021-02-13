@@ -89,7 +89,7 @@ impl TransformUnit for Unit {
         }
 
         let extdecl = Arc::try_unwrap(unparsed).unwrap();
-        match extdecl.contents {
+        match extdecl.content {
             ExternalDeclarationData::FunctionDefinition(def) => {
                 // No template parameter, it's a "regular" function so it has to be
                 // processed to instantiate parameters
@@ -101,7 +101,7 @@ impl TransformUnit for Unit {
                 }
 
                 let f = self.external_declarations.last().unwrap();
-                match &f.contents {
+                match &f.content {
                     ExternalDeclarationData::FunctionDefinition(def) => {
                         return Ok(Some(
                             Node::new(

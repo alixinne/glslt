@@ -50,7 +50,7 @@ impl MinUnit {
     pub fn iter_functions(&self) -> impl Iterator<Item = Node<FnRef>> {
         self.external_declarations
             .values()
-            .filter_map(|ed| match ed.contents {
+            .filter_map(|ed| match ed.content {
                 ExternalDeclarationData::FunctionDefinition(ref fd) => Some(Node::new(
                     FnRef {
                         prototype: &fd.prototype,
@@ -290,7 +290,7 @@ impl TransformUnit for MinUnit {
         }
 
         let extdecl = Arc::try_unwrap(unparsed).unwrap();
-        match extdecl.contents {
+        match extdecl.content {
             ExternalDeclarationData::FunctionDefinition(def) => {
                 // No template parameter, it's a "regular" function so it has to be
                 // processed to instantiate parameters
@@ -302,7 +302,7 @@ impl TransformUnit for MinUnit {
                 }
 
                 let f = self.external_declarations.last().unwrap();
-                match &f.1.contents {
+                match &f.1.content {
                     ExternalDeclarationData::FunctionDefinition(def) => {
                         return Ok(Some(
                             Node::new(
@@ -320,7 +320,7 @@ impl TransformUnit for MinUnit {
             }
             other => match other {
                 ExternalDeclarationData::FunctionDefinition(_) => {}
-                ExternalDeclarationData::Preprocessor(ref pp) => match &pp.contents {
+                ExternalDeclarationData::Preprocessor(ref pp) => match &pp.content {
                     PreprocessorData::Define(PreprocessorDefine::ObjectLike { ident, .. }) => {
                         self.extend_dag(pp);
 
@@ -350,7 +350,7 @@ impl TransformUnit for MinUnit {
                         )))
                     }
                 },
-                ExternalDeclarationData::Declaration(ref decl) => match &decl.contents {
+                ExternalDeclarationData::Declaration(ref decl) => match &decl.content {
                     DeclarationData::FunctionPrototype(_) => {
                         unreachable!("prototype already consumed by template engine")
                     }

@@ -3,5 +3,7 @@ members = [ "glslt", "glslt_cli" ]
 
 [patch.crates-io]
 glsl-lang = { git = "https://github.com/vtavernier/glsl-lang" }
-glsl-lang-impl = { git = "https://github.com/vtavernier/glsl-lang" }
+lang-util = { git = "https://github.com/vtavernier/glsl-lang" }
+lang-util-derive = { git = "https://github.com/vtavernier/glsl-lang" }
+
 glslt = { path = "glslt" }

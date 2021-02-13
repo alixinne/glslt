@@ -15,7 +15,7 @@ pub struct FnRef<'a> {
     pub statement: &'a CompoundStatement,
 }
 
-impl glsl_lang::ast::NodeContents for FnRef<'_> {}
+impl glsl_lang::ast::NodeContent for FnRef<'_> {}
 
 /// Handle to a function definition somewhere in the glslt units
 #[derive(Debug, Clone)]

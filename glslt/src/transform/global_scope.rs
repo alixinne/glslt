@@ -59,7 +59,7 @@ impl GlobalScope {
     }
 
     fn parse_declaration(&mut self, decl: Declaration) -> Result<ParsedDeclaration> {
-        match decl.contents {
+        match decl.content {
             DeclarationData::FunctionPrototype(prototype) => {
                 // A function prototype is what we'll call a function pointer type
                 self.parse_function_prototype(prototype)?;
@@ -133,7 +133,7 @@ impl GlobalScope {
     ) -> Result<ParsedDeclaration> {
         let span = extdecl.span;
 
-        match extdecl.contents {
+        match extdecl.content {
             ExternalDeclarationData::Declaration(decl) => self.parse_declaration(decl),
             ExternalDeclarationData::FunctionDefinition(def) => {
                 Ok(self.parse_function_definition(def)?)
