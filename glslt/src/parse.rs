@@ -160,7 +160,7 @@ impl glsl_lang::parse::TypeTablePolicy for GlsltPolicy {
 
 fn make_parse_context(existing: Option<&ParseContext>) -> ParseContext {
     if let Some(existing) = existing {
-        existing.opts.with_policy(GlsltPolicy)
+        existing.opts.with_comments_and_policy(GlsltPolicy)
     } else {
         ParseOptions::new().with_context(ParseContextData::with_comments_and_policy(GlsltPolicy))
     }
