@@ -359,7 +359,6 @@ dependencies = [
  "env_logger",
  "glsl-lang",
  "indexmap",
- "itertools",
  "lazy_static",
  "log",
  "petgraph",

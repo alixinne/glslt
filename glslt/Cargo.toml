@@ -21,7 +21,6 @@ lazy_static = "1.4"
 petgraph = "0.5"
 bimap = "0.4"
 log = "0.4.8"
-itertools = "0.9"
 indexmap = "1.6"
 regex = "1.4"
 
