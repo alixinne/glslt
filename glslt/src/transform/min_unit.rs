@@ -3,8 +3,6 @@ use std::sync::Arc;
 use glsl_lang::{ast::*, visitor::*};
 
 use indexmap::IndexMap;
-use lazy_static::lazy_static;
-use regex::Regex;
 
 use super::instantiate::InstantiateTemplate;
 use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
@@ -122,10 +120,6 @@ impl MinUnit {
             }
 
             fn visit_preprocessor_define(&mut self, def: &PreprocessorDefine) -> Visit {
-                lazy_static! {
-                    static ref RE: Regex = Regex::new("[_a-zA-Z][_a-zA-Z0-9]*").unwrap();
-                }
-
                 // Declare the current scope name
                 let csn = self
                     .this
@@ -146,14 +140,11 @@ impl MinUnit {
 
                 // The value is not parsed by the glsl crate, so we need to extract identifiers
                 // ourselves
-                for ident in RE.captures_iter(&match def {
+                for ident in extract_idents(&match def {
                     PreprocessorDefine::ObjectLike { value, .. } => value,
                     PreprocessorDefine::FunctionLike { value, .. } => value,
                 }) {
-                    let symbol = self
-                        .this
-                        .dag
-                        .declare_symbol(ExternalId::Declaration(ident.get(0).unwrap().as_str()));
+                    let symbol = self.this.dag.declare_symbol(ExternalId::Declaration(ident));
                     self.this.dag.add_dep(csn, symbol);
                 }
 

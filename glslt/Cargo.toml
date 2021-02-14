@@ -17,12 +17,10 @@ glsl-lang = "0.1"
 
 thiserror = "1.0"
 sha-1 = "0.9"
-lazy_static = "1.4"
 petgraph = "0.5"
 bimap = "0.4"
 log = "0.4.8"
 indexmap = "1.6"
-regex = { version = "1.4", default-features = false, features = ["std"] }
 
 [dependencies.pyo3]
 version = "0.11"

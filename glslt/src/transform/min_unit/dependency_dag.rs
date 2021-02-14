@@ -1,5 +1,70 @@
 use petgraph::graph::NodeIndex;
 
+#[derive(Clone, Copy)]
+enum ExtractIdentState {
+    Init,
+    Ident { start_position: usize },
+}
+
+pub struct ExtractIdents<'i> {
+    input: &'i str,
+    current_position: usize,
+    state: ExtractIdentState,
+}
+
+impl<'i> Iterator for ExtractIdents<'i> {
+    type Item = &'i str;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // The rest of the string that wasn't parsed yet
+        let remaining = &self.input[self.current_position..];
+
+        let mut last_index = self.current_position;
+
+        for (i, ch) in remaining.char_indices() {
+            self.current_position = i;
+
+            match self.state {
+                ExtractIdentState::Init => {
+                    // Initial state, look for a valid char
+                    if ch == '_' || ('a'..'z').contains(&ch) || ('A'..'Z').contains(&ch) {
+                        self.state = ExtractIdentState::Ident { start_position: i };
+                    }
+                }
+                ExtractIdentState::Ident { start_position } => {
+                    // First char seen, look for following chars
+                    if ch == '_'
+                        || ('a'..'z').contains(&ch)
+                        || ('A'..'Z').contains(&ch)
+                        || ('0'..'9').contains(&ch)
+                    {
+                        // Stay in the current state
+                        self.state = ExtractIdentState::Ident { start_position };
+                    } else {
+                        // Not an ident, reset state
+                        self.state = ExtractIdentState::Init;
+
+                        // Return ident slice
+                        return Some(&self.input[start_position..=last_index]);
+                    }
+                }
+            }
+
+            last_index = i;
+        }
+
+        None
+    }
+}
+
+pub fn extract_idents(input: &str) -> ExtractIdents {
+    ExtractIdents {
+        input,
+        current_position: 0,
+        state: ExtractIdentState::Init,
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum ExternalIdentifier {
     /// Function definition
