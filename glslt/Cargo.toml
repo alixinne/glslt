@@ -22,7 +22,7 @@ petgraph = "0.5"
 bimap = "0.4"
 log = "0.4.8"
 indexmap = "1.6"
-regex = "1.4"
+regex = { version = "1.4", default-features = false, features = ["std"] }
 
 [dependencies.pyo3]
 version = "0.11"
