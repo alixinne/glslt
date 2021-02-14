@@ -338,15 +338,14 @@ dependencies = [
 [[package]]
 name = "glsl-lang"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#0f19e971bc2e5d1c3b2234e6f6c9cf0d36dc123e"
+source = "git+https://github.com/vtavernier/glsl-lang#3c762b0d2aa6efcef79db2a64ea8139023e1f03f"
 dependencies = [
  "lalrpop",
  "lalrpop-util",
  "lang-util",
  "lazy_static",
  "logos",
- "strum",
- "strum_macros",
+ "parse-display",
  "thiserror",
 ]
 
@@ -523,16 +522,18 @@ dependencies = [
 [[package]]
 name = "lang-util"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#0f19e971bc2e5d1c3b2234e6f6c9cf0d36dc123e"
+source = "git+https://github.com/vtavernier/glsl-lang#3c762b0d2aa6efcef79db2a64ea8139023e1f03f"
 dependencies = [
+ "lalrpop-util",
  "lang-util-derive",
+ "line-span",
  "parse-display",
 ]
 
 [[package]]
 name = "lang-util-derive"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#0f19e971bc2e5d1c3b2234e6f6c9cf0d36dc123e"
+source = "git+https://github.com/vtavernier/glsl-lang#3c762b0d2aa6efcef79db2a64ea8139023e1f03f"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -551,6 +552,12 @@ name = "libc"
 version = "0.2.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7282d924be3275cec7f6756ff4121987bc6481325397dde6ba3e7802b1a8b1c"
+
+[[package]]
+name = "line-span"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58936323cd930a4c41659aadc8f306085b667d1728ab5395954a4bc79e8f7832"
 
 [[package]]
 name = "lock_api"
@@ -959,24 +966,6 @@ checksum = "5ba9cdfda491b814720b6b06e0cac513d922fc407582032e8706e9f137976f90"
 dependencies = [
  "heck",
  "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "strum"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7318c509b5ba57f18533982607f24070a55d353e90d4cae30c467cdb2ad5ac5c"
-
-[[package]]
-name = "strum_macros"
-version = "0.20.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee8bc6b87a5112aeeab1f4a9f7ab634fe6cbefc4850006df31267f4cfb9e3149"
-dependencies = [
- "heck",
  "proc-macro2",
  "quote",
  "syn",

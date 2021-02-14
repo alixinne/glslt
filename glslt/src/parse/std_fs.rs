@@ -43,7 +43,7 @@ pub enum StdPreprocessorFsError {
     UnresolvedInclude(Path),
     /// Parse error
     #[error("parse error: {0}")]
-    ParseError(String),
+    ParseError(#[from] glsl_lang::parse::ParseError),
 }
 
 impl PartialEq for StdPreprocessorFsError {
@@ -62,13 +62,6 @@ impl PartialEq for StdPreprocessorFsError {
                 _ => false,
             },
         }
-    }
-}
-
-// TODO: Not use debug display for this
-impl From<glsl_lang::parse::ParseErrorStatic> for StdPreprocessorFsError {
-    fn from(err: glsl_lang::parse::ParseErrorStatic) -> Self {
-        Self::ParseError(format!("{:?}", err))
     }
 }
 

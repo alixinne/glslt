@@ -12,7 +12,7 @@ use glsl_lang::{
 /// Filesystem abstraction for include resolving
 pub trait PreprocessorFs {
     /// Error type for i/o errors
-    type Error: From<glsl_lang::parse::ParseErrorStatic>;
+    type Error: From<glsl_lang::parse::ParseError>;
 
     /// Read the contents of a file given by its path
     ///
@@ -126,8 +126,7 @@ where
     T: PreprocessorFs,
 {
     // Parse this file
-    let (tu, new_ctx) =
-        TranslationUnit::parse_with_options(source, &ctx).map_err(|e| e.map_token(Into::into))?;
+    let (tu, new_ctx) = TranslationUnit::parse_with_options(source, &ctx)?;
 
     // Swap the options structure with the new one (with new type names and comments)
     *ctx = new_ctx;
