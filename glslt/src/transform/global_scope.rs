@@ -24,13 +24,13 @@ pub enum ParsedDeclaration {
 #[derive(Default, Debug, Clone)]
 pub struct GlobalScope {
     /// Known pointer types
-    declared_pointer_types: IndexMap<String, FunctionPrototype>,
+    declared_pointer_types: IndexMap<SmolStr, FunctionPrototype>,
     /// Known GLSLT template functions
-    declared_templates: IndexMap<String, Arc<TemplateDefinition>>,
+    declared_templates: IndexMap<SmolStr, Arc<TemplateDefinition>>,
     /// Identifiers of function declarations
-    known_functions: IndexMap<String, FunctionPrototype>,
+    known_functions: IndexMap<SmolStr, FunctionPrototype>,
     /// Identifiers of already instantiated templates
-    instantiated_templates: HashSet<String>,
+    instantiated_templates: HashSet<SmolStr>,
     /// Pending external declarations
     instanced_templates: Vec<FunctionDefinition>,
 }
@@ -100,17 +100,17 @@ impl GlobalScope {
     }
 
     /// Get the list of defined function identifiers in this global scope
-    pub fn known_functions_mut(&mut self) -> &mut IndexMap<String, FunctionPrototype> {
+    pub fn known_functions_mut(&mut self) -> &mut IndexMap<SmolStr, FunctionPrototype> {
         &mut self.known_functions
     }
 
     /// Get the list of defined templates in this global scope
-    pub fn declared_templates(&self) -> &IndexMap<String, Arc<TemplateDefinition>> {
+    pub fn declared_templates(&self) -> &IndexMap<SmolStr, Arc<TemplateDefinition>> {
         &self.declared_templates
     }
 
     /// Get the list of defined pointer types in this global scope
-    pub fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype> {
+    pub fn declared_pointer_types(&self) -> &IndexMap<SmolStr, FunctionPrototype> {
         &self.declared_pointer_types
     }
 
@@ -165,7 +165,7 @@ impl Scope for GlobalScope {
         None
     }
 
-    fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype> {
+    fn declared_pointer_types(&self) -> &IndexMap<SmolStr, FunctionPrototype> {
         &self.declared_pointer_types
     }
 
@@ -182,7 +182,7 @@ impl Scope for GlobalScope {
             let template_name = template.prototype.name.0.as_str();
 
             // Take note we instantiated the template
-            self.instantiated_templates.insert(template_name.to_owned());
+            self.instantiated_templates.insert(template_name.into());
 
             // Add them to the instanced templates
             self.instanced_templates.push(template);

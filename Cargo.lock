@@ -338,7 +338,7 @@ dependencies = [
 [[package]]
 name = "glsl-lang"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#3c762b0d2aa6efcef79db2a64ea8139023e1f03f"
+source = "git+https://github.com/vtavernier/glsl-lang#9858aa58fe84de739a1135adbaec4a8b2dc4db38"
 dependencies = [
  "lalrpop",
  "lalrpop-util",
@@ -346,6 +346,7 @@ dependencies = [
  "lazy_static",
  "logos",
  "parse-display",
+ "smol_str",
  "thiserror",
 ]
 
@@ -522,18 +523,19 @@ dependencies = [
 [[package]]
 name = "lang-util"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#3c762b0d2aa6efcef79db2a64ea8139023e1f03f"
+source = "git+https://github.com/vtavernier/glsl-lang#9858aa58fe84de739a1135adbaec4a8b2dc4db38"
 dependencies = [
  "lalrpop-util",
  "lang-util-derive",
  "line-span",
  "parse-display",
+ "smol_str",
 ]
 
 [[package]]
 name = "lang-util-derive"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#3c762b0d2aa6efcef79db2a64ea8139023e1f03f"
+source = "git+https://github.com/vtavernier/glsl-lang#9858aa58fe84de739a1135adbaec4a8b2dc4db38"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -922,6 +924,12 @@ name = "smallvec"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
+
+[[package]]
+name = "smol_str"
+version = "0.1.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ca0f7ce3a29234210f0f4f0b56f8be2e722488b95cb522077943212da3b32eb"
 
 [[package]]
 name = "string_cache"

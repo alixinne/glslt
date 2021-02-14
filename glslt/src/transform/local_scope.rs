@@ -23,11 +23,11 @@ pub struct LocalScope<'p, 'q> {
     /// Parent scope reference
     parent: &'p mut dyn Scope,
     /// Name of the current template scope
-    name: String,
+    name: SmolStr,
     /// List of ordered template parameters
     template_parameters: Vec<(Expr, &'q str)>,
     /// Lookup table for template parameters by name
-    template_parameters_by_name: IndexMap<String, usize>,
+    template_parameters_by_name: IndexMap<SmolStr, usize>,
     /// List of parameter names captured by entering the current scope
     captured_parameters: Vec<CapturedParameter>,
 }
@@ -43,7 +43,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
     pub fn new(
         template: &'q TemplateDefinition,
         args: &mut Vec<Expr>,
-        symbol_table: &IndexMap<String, DeclaredSymbol>,
+        symbol_table: &IndexMap<SmolStr, DeclaredSymbol>,
         parent: &'p mut dyn Scope,
     ) -> crate::Result<Self> {
         // Extract template parameters for this scope
@@ -62,8 +62,8 @@ impl<'p, 'q> LocalScope<'p, 'q> {
 
         // Extract the set of captured variables
         struct Capturer<'ds> {
-            st: &'ds IndexMap<String, DeclaredSymbol>,
-            captured: IndexMap<String, &'ds DeclaredSymbol>,
+            st: &'ds IndexMap<SmolStr, DeclaredSymbol>,
+            captured: IndexMap<SmolStr, &'ds DeclaredSymbol>,
         }
 
         impl VisitorMut for Capturer<'_> {
@@ -271,7 +271,7 @@ impl Scope for LocalScope<'_, '_> {
         Some(self.parent)
     }
 
-    fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype> {
+    fn declared_pointer_types(&self) -> &IndexMap<SmolStr, FunctionPrototype> {
         self.parent.declared_pointer_types()
     }
 
@@ -369,9 +369,7 @@ impl Scope for LocalScope<'_, '_> {
                         let c = self
                             .declared_pointer_types()
                             .get(tplarg.1)
-                            .ok_or_else(|| {
-                                crate::Error::UndeclaredPointerType(tplarg.1.to_owned())
-                            })?
+                            .ok_or_else(|| crate::Error::UndeclaredPointerType(tplarg.1.into()))?
                             .clone();
 
                         debug!("transforming call to {:?} using prototype {:?}", expr, c);

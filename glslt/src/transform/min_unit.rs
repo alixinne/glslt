@@ -83,7 +83,7 @@ impl MinUnit {
 
         // TODO: Maybe wanted can include other declarations than functions?
         let wanted: Vec<_> = wanted
-            .map(|id| ExternalIdentifier::FunctionDefinition(id.to_owned()))
+            .map(|id| ExternalIdentifier::FunctionDefinition(id.into()))
             .collect();
 
         // Extract declarations

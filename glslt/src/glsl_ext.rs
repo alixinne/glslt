@@ -1,17 +1,17 @@
 //! glsl_lang extensions
 
-use glsl_lang::ast;
+use glsl_lang::ast::{self, SmolStr};
 
 /// Extensions for [`glsl_lang::ast::FunIdentifier`]
 pub trait FunIdentifierExt {
     /// Return the function name as a string reference
-    fn as_ident_or_type_name(&self) -> Option<&String>;
+    fn as_ident_or_type_name(&self) -> Option<&SmolStr>;
     /// Return the function name as a mutable string reference
-    fn as_ident_or_type_name_mut(&mut self) -> Option<&mut String>;
+    fn as_ident_or_type_name_mut(&mut self) -> Option<&mut SmolStr>;
 }
 
 impl FunIdentifierExt for ast::FunIdentifier {
-    fn as_ident_or_type_name(&self) -> Option<&String> {
+    fn as_ident_or_type_name(&self) -> Option<&SmolStr> {
         match self {
             Self::Expr(expr) => match &**expr {
                 ast::Expr::Variable(ident) => Some(&ident.0),
@@ -25,7 +25,7 @@ impl FunIdentifierExt for ast::FunIdentifier {
         }
     }
 
-    fn as_ident_or_type_name_mut(&mut self) -> Option<&mut String> {
+    fn as_ident_or_type_name_mut(&mut self) -> Option<&mut SmolStr> {
         match self {
             Self::Expr(expr) => match &mut **expr {
                 ast::Expr::Variable(ident) => Some(&mut ident.0),

@@ -12,9 +12,9 @@ use crate::{Error, Result};
 #[derive(Debug, Clone)]
 pub struct TemplateParameter {
     /// Name of the function pointer type
-    pub typename: String,
+    pub typename: SmolStr,
     /// Template variable name
-    pub symbol: Option<String>,
+    pub symbol: Option<SmolStr>,
     /// Original parameter index
     pub index: usize,
 }
@@ -79,9 +79,9 @@ impl TemplateDefinition {
     /// # Parameters
     ///
     /// * `args`: list of template parameter values used in the invocation
-    pub fn generate_id(&self, args: &[(Expr, &str)]) -> String {
+    pub fn generate_id(&self, args: &[(Expr, &str)]) -> SmolStr {
         let args_id = expr_vec_to_id(&args);
-        [crate::PREFIX, self.ast.prototype.name.0.as_str(), &args_id].join("_")
+        SmolStr::from([crate::PREFIX, self.ast.prototype.name.0.as_str(), &args_id].join("_"))
     }
 
     /// Instantiate this template definition into a GLSL function
@@ -107,7 +107,7 @@ impl TemplateDefinition {
 
         // Change the name
         debug!("renaming {} to {}", ast.prototype.name.0, scope.name());
-        ast.prototype.name.0 = scope.name().to_owned();
+        ast.prototype.name.0 = scope.name().into();
 
         // Add the captured parameters to the signature
         for ep in scope.captured_parameters() {
@@ -199,7 +199,7 @@ pub enum TryTemplate {
 /// See [crate::Error] for potential template declaration errors.
 pub fn parse_definition_as_template(
     def: FunctionDefinition,
-    declared_pointer_types: &IndexMap<String, FunctionPrototype>,
+    declared_pointer_types: &IndexMap<SmolStr, FunctionPrototype>,
 ) -> Result<TryTemplate> {
     let mut parameters = Vec::new();
     let mut non_template_parameters = Vec::new();
@@ -208,7 +208,7 @@ pub fn parse_definition_as_template(
     let raw_prototype = def.prototype.clone();
 
     let len = def.prototype.parameters.len();
-    let name = def.prototype.name.to_string();
+    let name: SmolStr = def.prototype.name.as_str().into();
 
     for (arg_id, parameter) in def.prototype.parameters.drain(0..len).enumerate() {
         let (n, t) = match &*parameter {

@@ -8,7 +8,7 @@ pub enum Error {
     #[error("function pointer {name} previously declared as {previous_declaration}")]
     DuplicatePointerDefinition {
         /// Name of the duplicated pointer definition
-        name: String,
+        name: SmolStr,
         /// Source code of the previous declaration
         previous_declaration: String,
     },
@@ -16,7 +16,7 @@ pub enum Error {
     #[error("template {name} parameter #{index} cannot have an array specifier")]
     ArrayedTemplateParameter {
         /// Name of the template parameter
-        name: String,
+        name: SmolStr,
         /// 0-based position of the parameter in the function declaration
         index: usize,
     },
@@ -28,7 +28,7 @@ pub enum Error {
     UnsupportedIDL(InitDeclaratorList),
     /// Undeclared pointer type
     #[error("undeclared pointer type: {0}")]
-    UndeclaredPointerType(String),
+    UndeclaredPointerType(SmolStr),
     /// Could not transform the call from available arguments
     #[error("try to transform this call as a template call")]
     TransformAsTemplate,

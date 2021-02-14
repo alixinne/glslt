@@ -1,3 +1,4 @@
+use glsl_lang::ast::SmolStr;
 use petgraph::graph::NodeIndex;
 
 #[derive(Clone, Copy)]
@@ -68,9 +69,9 @@ pub fn extract_idents(input: &str) -> ExtractIdents {
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum ExternalIdentifier {
     /// Function definition
-    FunctionDefinition(String),
+    FunctionDefinition(SmolStr),
     /// Standalone declaration
-    Declaration(String),
+    Declaration(SmolStr),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -84,10 +85,8 @@ pub enum ExternalId<'a> {
 impl<'a> ExternalId<'a> {
     pub fn to_owned(&self) -> ExternalIdentifier {
         match self {
-            Self::FunctionDefinition(sym) => {
-                ExternalIdentifier::FunctionDefinition(sym.to_string())
-            }
-            Self::Declaration(sym) => ExternalIdentifier::Declaration(sym.to_string()),
+            Self::FunctionDefinition(sym) => ExternalIdentifier::FunctionDefinition((*sym).into()),
+            Self::Declaration(sym) => ExternalIdentifier::Declaration((*sym).into()),
         }
     }
 }

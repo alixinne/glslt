@@ -13,7 +13,7 @@ pub trait Scope: std::fmt::Debug {
     fn parent_scope(&self) -> Option<&dyn Scope>;
 
     /// Get the list of defined pointer types in this global scope
-    fn declared_pointer_types(&self) -> &IndexMap<String, FunctionPrototype>;
+    fn declared_pointer_types(&self) -> &IndexMap<SmolStr, FunctionPrototype>;
 
     /// Get the template corresponding to the given name
     fn get_template(&self, template_name: &str) -> Option<Arc<TemplateDefinition>>;
@@ -63,7 +63,7 @@ pub struct ResolvedArgument<'fp> {
 /// Contents of a resolved argument
 pub enum ResolvedArgumentExpr {
     /// Static function name
-    FunctionName(String),
+    FunctionName(SmolStr),
     /// Lambda expression
     Lambda(Expr),
 }

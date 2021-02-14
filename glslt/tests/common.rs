@@ -47,7 +47,7 @@ use glslt::transform::TransformUnit;
 /// In-order generated identifier discovery
 #[derive(Debug, Default)]
 struct IdentifierDiscovery {
-    identifiers: Vec<String>,
+    identifiers: Vec<SmolStr>,
     known_identifiers: HashMap<String, usize>,
 }
 
@@ -58,7 +58,7 @@ impl VisitorMut for IdentifierDiscovery {
             let generated = &ident.0[glslt::PREFIX.len() + 1..];
 
             if !self.known_identifiers.contains_key(generated) {
-                self.identifiers.push(generated.to_owned());
+                self.identifiers.push(generated.into());
                 self.known_identifiers
                     .insert(generated.to_owned(), self.identifiers.len() - 1);
             }
@@ -71,8 +71,8 @@ impl VisitorMut for IdentifierDiscovery {
 struct IdentifierReplacement<'d> {
     discovery: &'d IdentifierDiscovery,
     current_idx: usize,
-    seen_identifiers: HashMap<String, String>,
-    missing_identifiers: HashSet<String>,
+    seen_identifiers: HashMap<SmolStr, SmolStr>,
+    missing_identifiers: HashSet<SmolStr>,
 }
 
 impl<'d> IdentifierReplacement<'d> {
@@ -127,7 +127,7 @@ impl VisitorMut for IdentifierReplacement<'_> {
                             self.discovery.identifiers[self.current_idx]
                         );
                         self.current_idx += 1;
-                        self.seen_identifiers.insert(generated.to_owned(), repl);
+                        self.seen_identifiers.insert(generated.into(), repl.into());
                         self.seen_identifiers.get(generated)
                     } else {
                         None

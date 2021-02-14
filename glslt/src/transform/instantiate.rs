@@ -41,9 +41,9 @@ static BUILTIN_FUNCTION_NAMES: &'static [&'static str] = &[
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CapturedParameter {
-    pub ident: String,
+    pub ident: SmolStr,
     pub symbol_id: usize,
-    pub gen_id: String,
+    pub gen_id: SmolStr,
     pub decl_type: TypeSpecifier,
     pub array: Option<ArraySpecifier>,
 }
@@ -59,7 +59,7 @@ pub struct DeclaredSymbol {
 #[derive(Debug)]
 pub struct InstantiateTemplate {
     error: Option<Error>,
-    symbol_table: IndexMap<String, DeclaredSymbol>,
+    symbol_table: IndexMap<SmolStr, DeclaredSymbol>,
     current_id: usize,
 }
 
@@ -101,11 +101,11 @@ impl InstantiateTemplate {
     }
 
     fn new_gen_id(&mut self) -> Identifier {
-        IdentifierData(format!("{}_lp{}", crate::PREFIX, {
+        IdentifierData(SmolStr::from(format!("{}_lp{}", crate::PREFIX, {
             let id = self.current_id;
             self.current_id += 1;
             id
-        }))
+        })))
         .into()
     }
 
@@ -167,7 +167,7 @@ impl InstantiateTemplate {
     fn transform_call<'s>(
         &mut self,
         template: &TemplateDefinition,
-        fun: &mut String,
+        fun: &mut SmolStr,
         args: &mut Vec<Expr>,
         scope: &'s mut dyn Scope,
     ) -> Result<()> {
@@ -187,7 +187,7 @@ impl InstantiateTemplate {
         }
 
         // The identifier should be replaced by the mangled name
-        *fun = local_scope.name().to_owned();
+        *fun = local_scope.name().into();
 
         // Add the captured parameters to the end of the call
         for ep in local_scope.captured_parameters().iter() {
@@ -201,7 +201,7 @@ impl InstantiateTemplate {
     fn add_declared_symbol(
         &mut self,
         scope: &dyn Scope,
-        name: String,
+        name: SmolStr,
         decl_type: TypeSpecifier,
         array: Option<ArraySpecifier>,
     ) {
