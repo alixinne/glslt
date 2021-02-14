@@ -338,7 +338,7 @@ dependencies = [
 [[package]]
 name = "glsl-lang"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#11a4c25681b2569195751ac0e7c55462517c2b47"
+source = "git+https://github.com/vtavernier/glsl-lang#0f19e971bc2e5d1c3b2234e6f6c9cf0d36dc123e"
 dependencies = [
  "lalrpop",
  "lalrpop-util",
@@ -523,7 +523,7 @@ dependencies = [
 [[package]]
 name = "lang-util"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#11a4c25681b2569195751ac0e7c55462517c2b47"
+source = "git+https://github.com/vtavernier/glsl-lang#0f19e971bc2e5d1c3b2234e6f6c9cf0d36dc123e"
 dependencies = [
  "lang-util-derive",
  "parse-display",
@@ -532,7 +532,7 @@ dependencies = [
 [[package]]
 name = "lang-util-derive"
 version = "0.1.0"
-source = "git+https://github.com/vtavernier/glsl-lang#11a4c25681b2569195751ac0e7c55462517c2b47"
+source = "git+https://github.com/vtavernier/glsl-lang#0f19e971bc2e5d1c3b2234e6f6c9cf0d36dc123e"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -658,9 +658,7 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7271152b3c46c07c729698e7a5248e2744466b3446d222c97a0b1315925a97b1"
 dependencies = [
- "once_cell",
  "parse-display-derive",
- "regex",
 ]
 
 [[package]]
