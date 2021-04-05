@@ -19,7 +19,7 @@ thiserror = "1.0"
 sha-1 = "0.9"
 petgraph = "0.5"
 bimap = "0.4"
-log = "0.4.8"
+log = "0.4"
 indexmap = "1.6"
 
 [dependencies.pyo3]
