@@ -1,0 +1,3 @@
+DIRS=(glslt glslt_cli)
+
+# vim: ft=sh

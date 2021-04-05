@@ -2,5 +2,7 @@
 
 set -eux
 
-perl -pi -e "if (!\$a) { \$_ =~ s/^version = .*/version = \"$1\"/; \$a = 1 }" */Cargo.toml
-cargo upgrade --workspace "glslt@=$1"
+. ci/vars
+
+perl -pi -e "s/^version = .*/version = \"$1\"/" */Cargo.toml
+cargo upgrade --workspace "glslt@$1"
