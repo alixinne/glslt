@@ -40,15 +40,19 @@ Alternatively, you may compile `glslt` from source, assuming you have the
 [Rust](https://rustup.rs/) compiler installed:
 
 ```bash
-# Fetch the source
+# From crates.io
+cargo install --force glslt_cli
+
+# From the repository
+## Fetch the source
 git clone https://github.com/vtavernier/glslt.git
 cd glslt
 
-# Run the program directly
+## Run the program directly
 cargo run -- test.glsl
 
-# Or, install the glsltcc binary permanently
-cargo install --force .
+## Or, install the glsltcc binary permanently
+cargo install --force --path .
 glsltcc test.glsl
 ```
 
