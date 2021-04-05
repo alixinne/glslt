@@ -13,8 +13,7 @@ crate](https://github.com/phaazon/glsl) (note that the fork currently used is
 <https://github.com/vtavernier/glsl/tree/dev/>).
 
 ```rust
-use glslt::glsl::parser::Parse;
-use glslt::glsl::syntax::*;
+use glslt::glsl_lang::ast::*;
 use glslt::transform::{Unit, TransformUnit};
 
 let glsl_src = r#"
@@ -36,8 +35,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 }
 "#;
 
-// Parse the GLSL source code
-let tu = TranslationUnit::parse(glsl_src).expect("failed to parse GLSLT source");
+// Parse the GLSLT source code
+let tu = glslt::parse::parse_source_default(glsl_src).expect("failed to parse GLSLT source");
 
 // Create the transform unit
 let mut unit = Unit::new();
@@ -52,10 +51,10 @@ let tu = unit.into_translation_unit().expect("failed to generate output");
 
 // Transpile the syntax tree to GLSL source
 let mut output_src = String::new();
-glsl::transpiler::glsl::show_translation_unit(
+glsl_lang::transpiler::glsl::show_translation_unit(
     &mut output_src,
     &tu,
-    glsl::transpiler::glsl::FormattingState::default(),
+    glsl_lang::transpiler::glsl::FormattingState::default(),
 ).expect("failed to generate GLSL");
 ```
 
