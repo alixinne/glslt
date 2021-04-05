@@ -361,7 +361,7 @@ impl TransformUnit for MinUnit {
 
                                 self.external_declarations.insert(key, Arc::new(node));
                             } else {
-                                return Err(Error::UnsupportedIDL(idl.clone()));
+                                return Err(Error::UnsupportedIdl(idl.clone()));
                             }
                         } else {
                             // It's a variable declaration, maybe?
@@ -371,7 +371,7 @@ impl TransformUnit for MinUnit {
                                     Arc::new(Node::new(other, extdecl.span)),
                                 );
                             } else {
-                                return Err(Error::UnsupportedIDL(idl.clone()));
+                                return Err(Error::UnsupportedIdl(idl.clone()));
                             }
                         }
                     }

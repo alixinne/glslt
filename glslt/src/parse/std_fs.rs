@@ -1,7 +1,7 @@
 //! PreprocessorFs implementation using std::fs
 
 use std::borrow::Cow;
-use std::path::PathBuf;
+use std::path::{self, PathBuf};
 
 use glsl_lang::ast::Path;
 use thiserror::Error;
@@ -68,15 +68,15 @@ impl PartialEq for StdPreprocessorFsError {
 impl PreprocessorFs for StdPreprocessorFs {
     type Error = StdPreprocessorFsError;
 
-    fn read(&self, path: &PathBuf) -> Result<Cow<str>, Self::Error> {
+    fn read(&self, path: &path::Path) -> Result<Cow<str>, Self::Error> {
         Ok(Cow::Owned(std::fs::read_to_string(path)?))
     }
 
-    fn canonicalize(&self, path: &PathBuf) -> Result<PathBuf, Self::Error> {
+    fn canonicalize(&self, path: &path::Path) -> Result<PathBuf, Self::Error> {
         Ok(std::fs::canonicalize(path)?)
     }
 
-    fn resolve(&self, base_path: &PathBuf, path: &Path) -> Result<PathBuf, Self::Error> {
+    fn resolve(&self, base_path: &path::Path, path: &Path) -> Result<PathBuf, Self::Error> {
         match &path {
             Path::Absolute(abs_path) => {
                 let path_buf = PathBuf::from(abs_path);
@@ -89,7 +89,7 @@ impl PreprocessorFs for StdPreprocessorFs {
                 let path = PathBuf::from(path);
 
                 std::iter::once(base_path)
-                    .chain(self.include.iter())
+                    .chain(self.include.iter().map(|p| p.as_path()))
                     .find_map(|dir| std::fs::canonicalize(dir.join(&path)).ok())
             }
         }

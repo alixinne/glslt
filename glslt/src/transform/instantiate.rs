@@ -8,7 +8,7 @@ use super::{template::TemplateDefinition, Scope};
 
 // Keep this sorted
 #[rustfmt::skip]
-static BUILTIN_FUNCTION_NAMES: &'static [&'static str] = &[
+static BUILTIN_FUNCTION_NAMES: &[&str] = &[
     "EmitStreamVertex", "EmitVertex", "EndPrimitive", "EndStreamPrimitive", "abs", "acos",
     "acosh", "all", "any", "asin", "asinh", "atan", "atanh", "atomicAdd", "atomicAnd",
     "atomicCompSwap", "atomicCounter", "atomicCounterDecrement", "atomicCounterIncrement",

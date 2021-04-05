@@ -171,7 +171,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
         e: &mut Expr,
         instantiator: &mut InstantiateTemplate,
         template: &TemplateDefinition,
-    ) -> crate::Result<()> {
+    ) {
         self.transform_arg_call_typed(e, instantiator, &template.ast().prototype)
     }
 
@@ -180,7 +180,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
         e: &mut Expr,
         instantiator: &mut InstantiateTemplate,
         prototype: &FunctionPrototype,
-    ) -> crate::Result<()> {
+    ) {
         match e {
             Expr::FunCall(fun, src_args) => {
                 // Only consider raw identifiers for function names
@@ -261,8 +261,6 @@ impl<'p, 'q> LocalScope<'p, 'q> {
                 panic!("LocalScope::transform_fn_call can only process function call expressions, got {:?}", other);
             }
         }
-
-        Ok(())
     }
 }
 
@@ -373,7 +371,8 @@ impl Scope for LocalScope<'_, '_> {
                             .clone();
 
                         debug!("transforming call to {:?} using prototype {:?}", expr, c);
-                        return self.transform_arg_call_typed(expr, instantiator, &c);
+                        self.transform_arg_call_typed(expr, instantiator, &c);
+                        return Ok(());
                     }
                 } else {
                     debug!("invalid function identifier: {:?}", ident);

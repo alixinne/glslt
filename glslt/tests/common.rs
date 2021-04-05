@@ -116,22 +116,20 @@ impl VisitorMut for IdentifierReplacement<'_> {
                 if self.current_idx >= self.discovery.identifiers.len() {
                     // No more identifiers, something went wrong (i.e. syntax trees don't match)
                     None
+                } else if self.discovery.identifiers[self.current_idx]
+                    .starts_with(generated.splitn(2, '_').next().unwrap())
+                {
+                    // More identifiers left, take one and generate the replaced string
+                    let repl = format!(
+                        "{}_{}",
+                        glslt::PREFIX,
+                        self.discovery.identifiers[self.current_idx]
+                    );
+                    self.current_idx += 1;
+                    self.seen_identifiers.insert(generated.into(), repl.into());
+                    self.seen_identifiers.get(generated)
                 } else {
-                    if self.discovery.identifiers[self.current_idx]
-                        .starts_with(generated.splitn(2, "_").next().unwrap())
-                    {
-                        // More identifiers left, take one and generate the replaced string
-                        let repl = format!(
-                            "{}_{}",
-                            glslt::PREFIX,
-                            self.discovery.identifiers[self.current_idx]
-                        );
-                        self.current_idx += 1;
-                        self.seen_identifiers.insert(generated.into(), repl.into());
-                        self.seen_identifiers.get(generated)
-                    } else {
-                        None
-                    }
+                    None
                 }
             };
 

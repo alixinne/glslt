@@ -25,7 +25,7 @@ pub enum Error {
     UnsupportedPreprocessor(Preprocessor),
     /// Unsupported declarator list in minifying mode
     #[error("unsupported declarator list in minifying mode: {0:?}")]
-    UnsupportedIDL(InitDeclaratorList),
+    UnsupportedIdl(InitDeclaratorList),
     /// Undeclared pointer type
     #[error("undeclared pointer type: {0}")]
     UndeclaredPointerType(SmolStr),

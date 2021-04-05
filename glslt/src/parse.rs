@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::path::{self, PathBuf};
 
 use glsl_lang::{
     ast::*,
@@ -19,14 +19,14 @@ pub trait PreprocessorFs {
     /// # Parameters
     ///
     /// * `path`: path to the file
-    fn read(&self, path: &PathBuf) -> Result<Cow<str>, Self::Error>;
+    fn read(&self, path: &path::Path) -> Result<Cow<str>, Self::Error>;
 
     /// Canonicalize the given path
     ///
     /// # Parameters
     ///
     /// * `path`: path to canonicalize
-    fn canonicalize(&self, path: &PathBuf) -> Result<PathBuf, Self::Error>;
+    fn canonicalize(&self, path: &path::Path) -> Result<PathBuf, Self::Error>;
 
     /// Resolve an include path to an actual file
     ///
@@ -34,14 +34,14 @@ pub trait PreprocessorFs {
     ///
     /// * `base_path`: directory of the current file
     /// * `path`: include path to resolve relative to `base_path`
-    fn resolve(&self, base_path: &PathBuf, path: &Path) -> Result<PathBuf, Self::Error>;
+    fn resolve(&self, base_path: &path::Path, path: &Path) -> Result<PathBuf, Self::Error>;
 }
 
 mod std_fs;
 pub use std_fs::*;
 
 fn parse_tu_internal<T>(
-    base_path: &PathBuf,
+    base_path: &path::Path,
     tu: TranslationUnit,
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
@@ -84,7 +84,7 @@ where
 }
 
 fn parse_file<T>(
-    path: &PathBuf,
+    path: &path::Path,
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
     fs: &T,
@@ -115,7 +115,7 @@ where
 }
 
 fn parse_str<T>(
-    base_path: &PathBuf,
+    base_path: &path::Path,
     source: &str,
     parsed_external_declarations: &mut Vec<ExternalDeclaration>,
     seen_files: &mut HashSet<PathBuf>,
@@ -171,12 +171,12 @@ pub fn parse_source_default(
 ) -> Result<(TranslationUnit, ParseContext), StdPreprocessorFsError> {
     let std_fs = StdPreprocessorFs::new();
     let base_path = std::env::current_dir().unwrap();
-    Ok(parse_source(&base_path, source, &std_fs, None)?)
+    parse_source(&base_path, source, &std_fs, None)
 }
 
 /// Process the includes of some raw source
 pub fn parse_source<T>(
-    base_path: &PathBuf,
+    base_path: &path::Path,
     source: &str,
     fs: &T,
     ctx: Option<&ParseContext>,
