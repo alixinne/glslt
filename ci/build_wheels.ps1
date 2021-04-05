@@ -52,6 +52,6 @@ ForEach ($PyVersion in $PyVersions) {
 	$Python = & $PyEnv which python
 
 	cd glslt
-	& $Maturin build --strip "--cargo-extra-args=--features python" --target $RustTarget --release -i $Python
+	& $Maturin build --strip "--cargo-extra-args=--features python" --target $RustTarget --release -i $Python --no-sdist
 	cd ..
 }

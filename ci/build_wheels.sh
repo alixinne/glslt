@@ -4,6 +4,9 @@ set -e -x
 curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 export PATH="$HOME/.cargo/bin:$PATH"
 
+# Maturin builds with musl
+rustup target add x86_64-unknown-linux-musl
+
 /opt/python/cp37*/bin/pip install -U maturin
 export MATURIN=/opt/_internal/cpython-3.7*/bin/maturin
 
@@ -16,7 +19,7 @@ for PYBIN in /opt/python/cp{35,36,37,38,39}*/bin; do
     export PYTHON_LIB=$(${PYBIN}/python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
     export LIBRARY_PATH="$LIBRARY_PATH:$PYTHON_LIB"
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$PYTHON_LIB"
-    $MATURIN build --strip --cargo-extra-args='--features python' --release -i $PYTHON_SYS_EXECUTABLE
+    $MATURIN build --manylinux=2010 --strip --cargo-extra-args='--features python' --release -i $PYTHON_SYS_EXECUTABLE
 done
 
 # We're building in Docker but we want outside to access the wheels directory
