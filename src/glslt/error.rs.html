@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `glslt/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../glslt/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../glslt/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1"> 1</span>
 <span id="2"> 2</span>
 <span id="3"> 3</span>
@@ -71,39 +71,18 @@
 <span id="68">68</span>
 <span id="69">69</span>
 <span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">glsl</span>::<span class="ident">syntax</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">glsl_lang</span>::<span class="ident">ast</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">thiserror</span>::<span class="ident">Error</span>;
 
 <span class="doccomment">/// GLSLT transform error type</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Error</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
-    <span class="doccomment">/// No top-level declarations were found in any of the input files</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;no top-level declarations were found in any of the input files&quot;</span>)]</span>
-    <span class="ident">EmptyInput</span>,
-    <span class="doccomment">/// I/O error</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;i/o error: {0}&quot;</span>)]</span>
-    <span class="ident">IoError</span>(<span class="attribute">#[<span class="ident">from</span>]</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span>),
-    <span class="doccomment">/// GLSL parse error</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;parse error: {0}&quot;</span>)]</span>
-    <span class="ident">ParseError</span>(<span class="attribute">#[<span class="ident">from</span>]</span> <span class="ident">glsl</span>::<span class="ident">parser</span>::<span class="ident">ParseError</span>),
     <span class="doccomment">/// Re-declaration of a function pointer type</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;function pointer {name} previously declared as {previous_declaration}&quot;</span>)]</span>
     <span class="ident">DuplicatePointerDefinition</span> {
         <span class="doccomment">/// Name of the duplicated pointer definition</span>
-        <span class="ident">name</span>: <span class="ident">String</span>,
+        <span class="ident">name</span>: <span class="ident">SmolStr</span>,
         <span class="doccomment">/// Source code of the previous declaration</span>
         <span class="ident">previous_declaration</span>: <span class="ident">String</span>,
     },
@@ -111,22 +90,19 @@
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;template {name} parameter #{index} cannot have an array specifier&quot;</span>)]</span>
     <span class="ident">ArrayedTemplateParameter</span> {
         <span class="doccomment">/// Name of the template parameter</span>
-        <span class="ident">name</span>: <span class="ident">String</span>,
+        <span class="ident">name</span>: <span class="ident">SmolStr</span>,
         <span class="doccomment">/// 0-based position of the parameter in the function declaration</span>
         <span class="ident">index</span>: <span class="ident">usize</span>,
     },
-    <span class="doccomment">/// Unresolved include directive</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;unresolved include: {0:?}&quot;</span>)]</span>
-    <span class="ident">UnresolvedInclude</span>(<span class="ident">glsl</span>::<span class="ident">syntax</span>::<span class="ident">Path</span>),
     <span class="doccomment">/// Unsupported preprocessor directive in minifying mode</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;unsupported preprocessor directive in minifying mode: {0:?}&quot;</span>)]</span>
     <span class="ident">UnsupportedPreprocessor</span>(<span class="ident">Preprocessor</span>),
     <span class="doccomment">/// Unsupported declarator list in minifying mode</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;unsupported declarator list in minifying mode: {0:?}&quot;</span>)]</span>
-    <span class="ident">UnsupportedIDL</span>(<span class="ident">InitDeclaratorList</span>),
+    <span class="ident">UnsupportedIdl</span>(<span class="ident">InitDeclaratorList</span>),
     <span class="doccomment">/// Undeclared pointer type</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;undeclared pointer type: {0}&quot;</span>)]</span>
-    <span class="ident">UndeclaredPointerType</span>(<span class="ident">String</span>),
+    <span class="ident">UndeclaredPointerType</span>(<span class="ident">SmolStr</span>),
     <span class="doccomment">/// Could not transform the call from available arguments</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;try to transform this call as a template call&quot;</span>)]</span>
     <span class="ident">TransformAsTemplate</span>,
@@ -140,10 +116,10 @@
 
 <span class="kw">fn</span> <span class="ident">prototype_to_string</span>(<span class="ident">prototype</span>: <span class="kw-2">&amp;</span><span class="ident">FunctionPrototype</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
-    <span class="ident">glsl</span>::<span class="ident">transpiler</span>::<span class="ident">glsl</span>::<span class="ident">show_function_prototype</span>(
+    <span class="ident">glsl_lang</span>::<span class="ident">transpiler</span>::<span class="ident">glsl</span>::<span class="ident">show_function_prototype</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>,
         <span class="ident">prototype</span>,
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">glsl</span>::<span class="ident">transpiler</span>::<span class="ident">glsl</span>::<span class="ident">FormattingState</span>::<span class="ident">default</span>(),
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">glsl_lang</span>::<span class="ident">transpiler</span>::<span class="ident">glsl</span>::<span class="ident">FormattingState</span>::<span class="ident">default</span>(),
     )
     .<span class="ident">unwrap</span>();
     <span class="ident">s</span>
@@ -167,4 +143,5 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "glslt";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="glslt"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

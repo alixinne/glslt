@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["glslt"] = [{"text":"impl NodeContent for <a class=\"struct\" href=\"glslt/transform/struct.FnRef.html\" title=\"struct glslt::transform::FnRef\">FnRef</a>&lt;'_&gt;","synthetic":false,"types":["glslt::transform::fn_ref::FnRef"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

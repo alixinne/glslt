@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["glslt"] = [{"text":"impl&lt;'_&gt; NodeContents for FnRef&lt;'_&gt;","synthetic":false,"types":[]}];
+implementors["glslt"] = [];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
