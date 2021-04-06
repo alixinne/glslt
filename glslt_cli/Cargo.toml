@@ -2,6 +2,7 @@
 name = "glslt_cli"
 version = "0.5.0"
 authors = ["Vincent Tavernier <vince.tavernier@gmail.com>"]
+description = "GLSLT Template compiler library"
 edition = "2018"
 license = "MIT"
 homepage = "https://github.com/vtavernier/glslt"
