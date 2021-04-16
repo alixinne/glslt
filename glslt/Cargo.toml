@@ -17,7 +17,7 @@ path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-glsl-lang = "0.1"
+glsl-lang = "0.1.3"
 
 thiserror = "1.0"
 sha-1 = "0.9"
