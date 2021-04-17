@@ -29,6 +29,8 @@ pub use transform_unit::*;
 mod unit;
 pub use unit::*;
 
+use crate::TransformConfig;
+
 fn transform_unit<'a, T: TransformUnit>(
     asts: impl std::iter::Iterator<Item = &'a TranslationUnit>,
     inst: &mut T,
@@ -54,8 +56,9 @@ fn transform_unit<'a, T: TransformUnit>(
 /// Return an error if the transformation fails. See [crate::Error] for possible failure reasons.
 pub fn transform<'a>(
     asts: impl std::iter::Iterator<Item = &'a TranslationUnit>,
+    config: TransformConfig,
 ) -> Result<TranslationUnit> {
-    let mut inst = Unit::new();
+    let mut inst = Unit::with_config(config);
 
     transform_unit(asts, &mut inst)?;
 
@@ -76,8 +79,9 @@ pub fn transform<'a>(
 pub fn transform_min<'a>(
     asts: impl std::iter::Iterator<Item = &'a TranslationUnit>,
     wanted: impl std::iter::Iterator<Item = &'a str>,
+    config: TransformConfig,
 ) -> Result<TranslationUnit> {
-    let mut inst = MinUnit::new();
+    let mut inst = MinUnit::with_config(config);
 
     transform_unit(asts, &mut inst)?;
 

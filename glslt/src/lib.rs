@@ -88,7 +88,22 @@ extern crate log;
 pub use glsl_lang;
 
 /// Prefix for generated names for functions and captured parameters
-pub const PREFIX: &str = "_glslt";
+pub const DEFAULT_PREFIX: &str = "_glslt_";
+
+/// Global trasnform parameters
+#[derive(Debug, Clone, derive_builder::Builder)]
+pub struct TransformConfig {
+    /// Identifier prefix for code generation
+    pub prefix: String,
+}
+
+impl Default for TransformConfig {
+    fn default() -> Self {
+        Self {
+            prefix: DEFAULT_PREFIX.to_owned(),
+        }
+    }
+}
 
 pub mod api;
 

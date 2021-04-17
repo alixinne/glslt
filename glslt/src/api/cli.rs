@@ -5,6 +5,8 @@ use std::path::PathBuf;
 pub use anyhow;
 pub use structopt::StructOpt;
 
+use crate::TransformConfigBuilder;
+
 /// Command-line arguments structure
 #[derive(StructOpt)]
 #[structopt(name = "glsltcc", about = "GLSL Template compiler", author)]
@@ -31,6 +33,10 @@ pub struct Opts {
     /// List of symbols to keep for minifying mode
     #[structopt(short = "K", long)]
     keep_fns: Vec<String>,
+
+    /// Identifier prefix for generated code
+    #[structopt(short, long)]
+    prefix: Option<String>,
 }
 
 /// Entry point for the glsltcc front-end
@@ -70,12 +76,21 @@ pub fn main(opts: Opts) -> anyhow::Result<()> {
     )?;
 
     // Process the input
+    let config = {
+        let mut builder = TransformConfigBuilder::default();
+        if let Some(prefix) = &opts.prefix {
+            builder.prefix(prefix.to_owned());
+        }
+        builder.build().unwrap()
+    };
+
     let processed_input = if opts.keep_fns.is_empty() {
-        crate::transform(std::iter::once(&tu))?
+        crate::transform(std::iter::once(&tu), config)?
     } else {
         crate::transform_min(
             std::iter::once(&tu),
             opts.keep_fns.iter().map(|it| it.as_str()),
+            config,
         )?
     };
 

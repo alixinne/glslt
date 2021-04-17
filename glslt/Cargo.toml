@@ -25,6 +25,7 @@ petgraph = "0.5"
 bimap = "0.4"
 log = "0.4"
 indexmap = "1.6"
+derive_builder = "0.10"
 
 [dependencies.pyo3]
 version = "0.11"

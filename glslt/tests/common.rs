@@ -42,20 +42,31 @@ macro_rules! assert_eq {
     });
 }
 
-use glslt::transform::TransformUnit;
+use glslt::{transform::TransformUnit, TransformConfig};
 
 /// In-order generated identifier discovery
-#[derive(Debug, Default)]
-struct IdentifierDiscovery {
+#[derive(Debug)]
+struct IdentifierDiscovery<'c> {
+    config: &'c TransformConfig,
     identifiers: Vec<SmolStr>,
     known_identifiers: HashMap<String, usize>,
 }
 
-impl VisitorMut for IdentifierDiscovery {
+impl<'c> IdentifierDiscovery<'c> {
+    pub fn new(config: &'c TransformConfig) -> Self {
+        Self {
+            config,
+            identifiers: Default::default(),
+            known_identifiers: Default::default(),
+        }
+    }
+}
+
+impl VisitorMut for IdentifierDiscovery<'_> {
     fn visit_identifier(&mut self, ident: &mut Identifier) -> Visit {
-        if ident.0.starts_with(glslt::PREFIX) {
+        if ident.0.starts_with(&self.config.prefix) {
             // Extract generated part
-            let generated = &ident.0[glslt::PREFIX.len() + 1..];
+            let generated = &ident.0[self.config.prefix.len()..];
 
             if !self.known_identifiers.contains_key(generated) {
                 self.identifiers.push(generated.into());
@@ -69,7 +80,7 @@ impl VisitorMut for IdentifierDiscovery {
 }
 
 struct IdentifierReplacement<'d> {
-    discovery: &'d IdentifierDiscovery,
+    discovery: &'d IdentifierDiscovery<'d>,
     current_idx: usize,
     seen_identifiers: HashMap<SmolStr, SmolStr>,
     missing_identifiers: HashSet<SmolStr>,
@@ -83,6 +94,10 @@ impl<'d> IdentifierReplacement<'d> {
             seen_identifiers: HashMap::new(),
             missing_identifiers: HashSet::new(),
         }
+    }
+
+    fn prefix(&self) -> &str {
+        &self.discovery.config.prefix
     }
 
     pub fn replace(mut self, target: &mut TranslationUnit) -> Result<(), String> {
@@ -104,9 +119,9 @@ impl<'d> IdentifierReplacement<'d> {
 
 impl VisitorMut for IdentifierReplacement<'_> {
     fn visit_identifier(&mut self, ident: &mut Identifier) -> Visit {
-        if ident.0.starts_with(glslt::PREFIX) && ident.0.len() > glslt::PREFIX.len() {
+        if ident.0.starts_with(self.prefix()) && ident.0.len() > self.prefix().len() {
             // Extract generated part
-            let generated = &ident.0[glslt::PREFIX.len() + 1..];
+            let generated = &ident.0[self.prefix().len()..];
 
             let replace_with = if let Some(repl) = self.seen_identifiers.get(generated) {
                 // We already have a known replacement string for this
@@ -121,8 +136,8 @@ impl VisitorMut for IdentifierReplacement<'_> {
                 {
                     // More identifiers left, take one and generate the replaced string
                     let repl = format!(
-                        "{}_{}",
-                        glslt::PREFIX,
+                        "{}{}",
+                        self.prefix(),
                         self.discovery.identifiers[self.current_idx]
                     );
                     self.current_idx += 1;
@@ -158,6 +173,7 @@ fn to_string(tu: &TranslationUnit) -> String {
 fn verify_transform_impl(
     src: &str,
     expected: &str,
+    config: &TransformConfig,
     transform: impl FnOnce(TranslationUnit) -> TranslationUnit,
 ) {
     env_logger::builder()
@@ -181,7 +197,7 @@ fn verify_transform_impl(
     let mut transformed = transform(src);
 
     // Visit the transformed source to find generated identifiers
-    let mut id = IdentifierDiscovery::default();
+    let mut id = IdentifierDiscovery::new(config);
     expected.visit_mut(&mut id);
 
     // Transform identifiers in the expected result (assuming same order)
@@ -212,9 +228,11 @@ fn verify_transform_impl(
 
 #[allow(dead_code)]
 pub fn verify_transform(src: &str, expected: &str) {
-    verify_transform_impl(src, expected, |src| {
+    let config = TransformConfig::default();
+
+    verify_transform_impl(src, expected, &config, |src| {
         // Transform source
-        let mut unit = glslt::transform::Unit::new();
+        let mut unit = glslt::transform::Unit::with_config(config.clone());
         for decl in src.0.into_iter() {
             let err = format!("failed to transform declaration: {:?}", decl);
             unit.parse_external_declaration(decl).expect(&err);
@@ -228,9 +246,11 @@ pub fn verify_transform(src: &str, expected: &str) {
 
 #[allow(dead_code)]
 pub fn verify_min_transform(src: &str, expected: &str, entry_point: &str) {
-    verify_transform_impl(src, expected, |src| {
+    let config = TransformConfig::default();
+
+    verify_transform_impl(src, expected, &config, |src| {
         // Transform source
-        let mut unit = glslt::transform::MinUnit::new();
+        let mut unit = glslt::transform::MinUnit::with_config(config.clone());
         for decl in src.0.into_iter() {
             let err = format!("failed to transform declaration: {:?}", decl);
             unit.parse_external_declaration(decl).expect(&err);

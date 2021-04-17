@@ -8,7 +8,7 @@ use indexmap::IndexMap;
 use super::template::{TemplateDefinition, TryTemplate};
 use super::{ResolvedArgument, ResolvedArgumentExpr, Scope};
 
-use crate::{Error, Result};
+use crate::{Error, Result, TransformConfig};
 
 /// Result of parsing an ExternalDeclaration
 pub enum ParsedDeclaration {
@@ -23,6 +23,8 @@ pub enum ParsedDeclaration {
 /// GLSLT template definition global scope
 #[derive(Default, Debug, Clone)]
 pub struct GlobalScope {
+    /// Transform config
+    config: TransformConfig,
     /// Known pointer types
     declared_pointer_types: IndexMap<SmolStr, FunctionPrototype>,
     /// Known GLSLT template functions
@@ -39,6 +41,14 @@ impl GlobalScope {
     /// Create a new template definition global scope
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Create a new template definition global scope with the specified config
+    pub fn with_config(config: TransformConfig) -> Self {
+        Self {
+            config,
+            ..Default::default()
+        }
     }
 
     fn parse_function_prototype(&mut self, prototype: FunctionPrototype) -> Result<()> {
@@ -161,6 +171,10 @@ impl GlobalScope {
 }
 
 impl Scope for GlobalScope {
+    fn config(&self) -> &TransformConfig {
+        &self.config
+    }
+
     fn parent_scope(&self) -> Option<&dyn Scope> {
         None
     }

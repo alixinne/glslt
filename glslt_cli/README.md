@@ -31,6 +31,7 @@ OPTIONS:
     -I <include>...                 System include paths
     -K, --keep-fns <keep-fns>...    List of symbols to keep for minifying mode
     -o, --output <output>           Output file (defaults to stdout)
+    -p, --prefix <prefix>           Identifier prefix for generated code
 
 ARGS:
     <input>...    Input template files

@@ -79,9 +79,11 @@ impl TemplateDefinition {
     /// # Parameters
     ///
     /// * `args`: list of template parameter values used in the invocation
-    pub fn generate_id(&self, args: &[(Expr, &str)]) -> SmolStr {
+    /// * `config`: scope in which this identifier should be generated
+    pub fn generate_id(&self, args: &[(Expr, &str)], scope: &dyn Scope) -> SmolStr {
         let args_id = expr_vec_to_id(&args);
-        SmolStr::from([crate::PREFIX, self.ast.prototype.name.0.as_str(), &args_id].join("_"))
+        let base = scope.config().prefix.clone() + self.ast.prototype.name.0.as_str();
+        SmolStr::from([base.as_str(), &args_id].join("_"))
     }
 
     /// Instantiate this template definition into a GLSL function
@@ -89,6 +91,8 @@ impl TemplateDefinition {
     /// # Parameters
     ///
     /// * `scope`: local scope this template is being instantiated from
+    /// * `outer_instantiator`: outer instantiation context
+    /// * `config`: transformation config
     pub fn instantiate(
         &self,
         scope: &mut LocalScope,

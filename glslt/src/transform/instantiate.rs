@@ -100,8 +100,8 @@ impl InstantiateTemplate {
         self.symbol_table.get(name)
     }
 
-    fn new_gen_id(&mut self) -> Identifier {
-        IdentifierData(SmolStr::from(format!("{}_lp{}", crate::PREFIX, {
+    fn new_gen_id(&mut self, scope: &dyn Scope) -> Identifier {
+        IdentifierData(SmolStr::from(format!("{}lp{}", scope.config().prefix, {
             let id = self.current_id;
             self.current_id += 1;
             id
@@ -212,7 +212,7 @@ impl InstantiateTemplate {
             }
         }
 
-        let gen_id = self.new_gen_id();
+        let gen_id = self.new_gen_id(scope);
         self.symbol_table.insert(
             name,
             DeclaredSymbol {

@@ -5,7 +5,7 @@ use glsl_lang::ast::*;
 use super::instantiate::InstantiateTemplate;
 use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
 
-use crate::Result;
+use crate::{Result, TransformConfig};
 
 /// GLSLT template instantiation context
 #[derive(Default, Debug, Clone)]
@@ -33,6 +33,18 @@ impl Unit {
     pub fn with_context(global_scope: GlobalScope) -> Self {
         Self {
             global_scope,
+            external_declarations: Vec::new(),
+        }
+    }
+
+    /// Create a new transform unit with the given configuration
+    ///
+    /// # Parameters
+    ///
+    /// * `config`: transform configuration
+    pub fn with_config(config: TransformConfig) -> Self {
+        Self {
+            global_scope: GlobalScope::with_config(config),
             external_declarations: Vec::new(),
         }
     }

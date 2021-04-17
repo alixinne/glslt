@@ -16,6 +16,7 @@ use super::{
     instantiate::{CapturedParameter, DeclaredSymbol, InstantiateTemplate},
     ResolvedArgument, ResolvedArgumentExpr, Scope,
 };
+use crate::TransformConfig;
 
 /// A local scope for resolving template arguments inside a template function
 #[derive(Debug)]
@@ -58,7 +59,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
         }
 
         // Generate scope name
-        let name = template.generate_id(&template_parameters[..]);
+        let name = template.generate_id(&template_parameters[..], parent);
 
         // Extract the set of captured variables
         struct Capturer<'ds> {
@@ -265,6 +266,10 @@ impl<'p, 'q> LocalScope<'p, 'q> {
 }
 
 impl Scope for LocalScope<'_, '_> {
+    fn config(&self) -> &TransformConfig {
+        self.parent.config()
+    }
+
     fn parent_scope(&self) -> Option<&dyn Scope> {
         Some(self.parent)
     }

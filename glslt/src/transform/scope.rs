@@ -6,9 +6,13 @@ use indexmap::IndexMap;
 
 use super::instantiate::{CapturedParameter, InstantiateTemplate};
 use super::template::TemplateDefinition;
+use crate::TransformConfig;
 
 /// Represents a template scope
 pub trait Scope: std::fmt::Debug {
+    /// Return the current transform configuration
+    fn config(&self) -> &TransformConfig;
+
     /// Return the parent scope, unless this is the global scope
     fn parent_scope(&self) -> Option<&dyn Scope>;
 

@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use super::instantiate::InstantiateTemplate;
 use super::{FnHandle, FnRef, GlobalScope, ParsedDeclaration, TransformUnit};
 
-use crate::{glsl_ext::FunIdentifierExt, Error, Result};
+use crate::{glsl_ext::FunIdentifierExt, Error, Result, TransformConfig};
 
 mod dependency_dag;
 use dependency_dag::*;
@@ -40,6 +40,18 @@ impl MinUnit {
     pub fn with_context(global_scope: GlobalScope) -> Self {
         Self {
             global_scope,
+            ..Default::default()
+        }
+    }
+
+    /// Create a new transform unit with the given configuration
+    ///
+    /// # Parameters
+    ///
+    /// * `config`: transform configuration
+    pub fn with_config(config: TransformConfig) -> Self {
+        Self {
+            global_scope: GlobalScope::with_config(config),
             ..Default::default()
         }
     }
