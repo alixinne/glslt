@@ -78,6 +78,11 @@ impl MinUnit {
             )
     }
 
+    /// Obtain an iterator to all the top-level declarations in the current unit
+    pub fn iter_declarations(&self) -> impl Iterator<Item = &ExternalDeclaration> {
+        self.external_declarations.values().map(|decl| &**decl)
+    }
+
     /// Transform this unit into a GLSL syntax tree
     ///
     /// Only the functions included in `wanted` and their transitive dependencies will be included
