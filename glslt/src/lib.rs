@@ -94,6 +94,7 @@ pub const DEFAULT_PREFIX: &str = "_glslt_";
 #[derive(Debug, Clone, derive_builder::Builder)]
 pub struct TransformConfig {
     /// Identifier prefix for code generation
+    #[builder(default = "DEFAULT_PREFIX.to_owned()")]
     pub prefix: String,
 }
 
