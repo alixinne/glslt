@@ -49,7 +49,7 @@ fn expr_vec_to_id(exprs: &[(Expr, &str)]) -> String {
 
     // Compute it's SHA-1
     use sha1::{Digest, Sha1};
-    format!("{:x}", Sha1::digest(&sbuf.as_bytes()))[0..6].to_string()
+    format!("{:x}", Sha1::digest(sbuf.as_bytes()))[0..6].to_string()
 }
 
 impl TemplateDefinition {
@@ -81,7 +81,7 @@ impl TemplateDefinition {
     /// * `args`: list of template parameter values used in the invocation
     /// * `config`: scope in which this identifier should be generated
     pub fn generate_id(&self, args: &[(Expr, &str)], scope: &dyn Scope) -> SmolStr {
-        let args_id = expr_vec_to_id(&args);
+        let args_id = expr_vec_to_id(args);
         let base = scope.config().prefix.clone() + self.ast.prototype.name.0.as_str();
         SmolStr::from([base.as_str(), &args_id].join("_"))
     }
@@ -102,8 +102,7 @@ impl TemplateDefinition {
         let ast = self.ast.clone();
 
         // We're entering a new function, thus we need a new context
-        let mut res =
-            InstantiateTemplate::new(Some(&outer_instantiator)).instantiate(scope, ast)?;
+        let mut res = InstantiateTemplate::new(Some(outer_instantiator)).instantiate(scope, ast)?;
 
         // The last function is the current instantiated one, the ones before are dependencies
         // TODO: Make this more robust

@@ -22,10 +22,10 @@ pub enum Error {
     },
     /// Unsupported preprocessor directive in minifying mode
     #[error("unsupported preprocessor directive in minifying mode: {0:?}")]
-    UnsupportedPreprocessor(Preprocessor),
+    UnsupportedPreprocessor(Box<Preprocessor>),
     /// Unsupported declarator list in minifying mode
     #[error("unsupported declarator list in minifying mode: {0:?}")]
-    UnsupportedIdl(InitDeclaratorList),
+    UnsupportedIdl(Box<InitDeclaratorList>),
     /// Undeclared pointer type
     #[error("undeclared pointer type: {0}")]
     UndeclaredPointerType(SmolStr),
@@ -64,7 +64,7 @@ impl Error {
     ) -> Self {
         Error::DuplicatePointerDefinition {
             name: name.0.clone(),
-            previous_declaration: prototype_to_string(&previous),
+            previous_declaration: prototype_to_string(previous),
         }
     }
 }

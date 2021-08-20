@@ -302,10 +302,9 @@ impl TransformUnit for MinUnit {
                             .push(Arc::new(Node::new(other, extdecl.span)));
                     }
                     rest => {
-                        return Err(Error::UnsupportedPreprocessor(Preprocessor::new(
-                            rest.clone(),
-                            pp.span,
-                        )))
+                        return Err(Error::UnsupportedPreprocessor(
+                            Preprocessor::new(rest.clone(), pp.span).into(),
+                        ))
                     }
                 },
                 ExternalDeclarationData::Declaration(ref decl) => match &decl.content {
@@ -328,7 +327,7 @@ impl TransformUnit for MinUnit {
 
                                 self.external_declarations.insert(key, Arc::new(node));
                             } else {
-                                return Err(Error::UnsupportedIdl(idl.clone()));
+                                return Err(Error::UnsupportedIdl(idl.clone().into()));
                             }
                         } else {
                             // It's a variable declaration, maybe?
@@ -338,7 +337,7 @@ impl TransformUnit for MinUnit {
                                     Arc::new(Node::new(other, extdecl.span)),
                                 );
                             } else {
-                                return Err(Error::UnsupportedIdl(idl.clone()));
+                                return Err(Error::UnsupportedIdl(idl.clone().into()));
                             }
                         }
                     }

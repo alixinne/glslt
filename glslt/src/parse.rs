@@ -55,7 +55,7 @@ pub fn parse_source<'i>(
 /// * `pb`: list of paths to concatenate
 /// * `fs`: fs implementation
 /// * `ctx`: parse options
-pub fn parse_files<'p, F: glsl_lang_pp::processor::fs::FileSystem>(
+pub fn parse_files<F: glsl_lang_pp::processor::fs::FileSystem>(
     pb: &[PathBuf],
     system_paths: &[impl AsRef<Path>],
     fs: F,

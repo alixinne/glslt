@@ -145,7 +145,7 @@ impl InstantiateTemplate {
         trace!("symbol table: {:?}", self.symbol_table);
 
         // Instantiate the template if needed
-        if !local_scope.template_instance_declared(&local_scope.name()) {
+        if !local_scope.template_instance_declared(local_scope.name()) {
             let template = template.instantiate(&mut local_scope, self)?;
             local_scope.register_template_instance(template);
         }

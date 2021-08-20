@@ -238,7 +238,7 @@ impl<'p, 'q> LocalScope<'p, 'q> {
 
                         if let Some(mut expr) = lambda_expr {
                             // Replace the parameters in the call
-                            lambda_instantiate(&mut expr, &src_args, prototype);
+                            lambda_instantiate(&mut expr, src_args, prototype);
 
                             // Replace lambda arguments in the generated expression
                             *e = expr;
