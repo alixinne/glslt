@@ -304,11 +304,6 @@ as C preprocessors: double-quoted paths will be looked up from the current file
 being parsed, and then fallback to the system include paths. Angle-quoted paths
 will be looked up from the system include paths.
 
-All files are only included once, as if they all started with `#pragma once`.
-
-**Warning**: since include directives are processed at the AST level, shaders
-which rely on included files to generate valid syntax are not supported.
-
 ### Minifying mode
 
 In its default mode, the GLSLT compiler will copy all input declarations to its
@@ -321,15 +316,11 @@ to the `glsltcc` command, GLSLT switches to the minifying mode. In this mode,
 only the functions, types, globals and `#define` directives that are transitive
 dependencies of the functions specified by the `-K` argument are kept.
 
-Note that in this mode, no preprocessor directives (outside of `#define` and
-their use) are supported. `#version`, `#extension` and precision specifiers
-will be included at the top of the generated code.
+`#version`, `#extension` and precision specifiers will be included at the top
+of the generated code, if they were present in the input.
 
 As an example, compiling the previous example with `glsltcc -K=sdSphere` will
 only return the code for the sdSphere function, since it has no dependencies.
-
-This mode hasn't been tested throughly yet, so some types of declarations may
-not be supported.
 
 ## Features
 
@@ -363,10 +354,6 @@ crate for parsing and manipulating the GLSL AST in Rust. However, since it's
 only an AST and not a full parse tree, we have currently no way of preserving
 original formatting. Comments are still parsed and are available to library
 users, but they are not currently included in the output.
-
-Furthermore, since pre-processor directives have to be passed through to the
-GPU for accurate execution, shaders which are syntactically invalid without
-pre-processing are not supported.
 
 ## Author
 
