@@ -12,30 +12,42 @@ pub trait FunIdentifierExt {
 
 impl FunIdentifierExt for ast::FunIdentifier {
     fn as_ident_or_type_name(&self) -> Option<&SmolStr> {
-        match self {
-            Self::Expr(expr) => match &**expr {
-                ast::Expr::Variable(ident) => Some(&ident.0),
+        match &**self {
+            ast::FunIdentifierData::Expr(expr) => match &***expr {
+                ast::ExprData::Variable(ident) => Some(&ident.0),
                 _ => None,
             },
-            Self::TypeSpecifier(ast::TypeSpecifier {
-                ty: ast::TypeSpecifierNonArray::TypeName(tn),
-                array_specifier: None,
-            }) => Some(&tn.0),
-            _ => None,
+            ast::FunIdentifierData::TypeSpecifier(ts) => match &***ts {
+                ast::TypeSpecifierData {
+                    ty:
+                        ast::TypeSpecifierNonArray {
+                            content: ast::TypeSpecifierNonArrayData::TypeName(tn),
+                            ..
+                        },
+                    array_specifier: None,
+                } => Some(&tn.0),
+                _ => None,
+            },
         }
     }
 
     fn as_ident_or_type_name_mut(&mut self) -> Option<&mut SmolStr> {
-        match self {
-            Self::Expr(expr) => match &mut **expr {
-                ast::Expr::Variable(ident) => Some(&mut ident.0),
+        match &mut **self {
+            ast::FunIdentifierData::Expr(expr) => match &mut ***expr {
+                ast::ExprData::Variable(ident) => Some(&mut ident.0),
                 _ => None,
             },
-            Self::TypeSpecifier(ast::TypeSpecifier {
-                ty: ast::TypeSpecifierNonArray::TypeName(tn),
-                array_specifier: None,
-            }) => Some(&mut tn.0),
-            _ => None,
+            ast::FunIdentifierData::TypeSpecifier(ts) => match &mut ***ts {
+                ast::TypeSpecifierData {
+                    ty:
+                        ast::TypeSpecifierNonArray {
+                            content: ast::TypeSpecifierNonArrayData::TypeName(tn),
+                            ..
+                        },
+                    array_specifier: None,
+                } => Some(&mut tn.0),
+                _ => None,
+            },
         }
     }
 }

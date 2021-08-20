@@ -58,14 +58,6 @@ impl<'i> Iterator for ExtractIdents<'i> {
     }
 }
 
-pub fn extract_idents(input: &str) -> ExtractIdents {
-    ExtractIdents {
-        input,
-        current_position: 0,
-        state: ExtractIdentState::Init,
-    }
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum ExternalIdentifier {
     /// Function definition

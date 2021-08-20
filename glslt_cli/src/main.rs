@@ -48,6 +48,6 @@
 
 use glslt::api::cli::*;
 
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     glslt::api::cli::main(Opts::from_args())
 }

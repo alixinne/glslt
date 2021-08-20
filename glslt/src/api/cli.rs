@@ -44,7 +44,7 @@ pub struct Opts {
 /// # Parameters
 ///
 /// * `opts`: command-line options
-pub fn main(opts: Opts) -> anyhow::Result<()> {
+pub fn main(opts: Opts) -> Result<(), Box<dyn std::error::Error>> {
     env_logger::Builder::from_env(
         env_logger::Env::new()
             .filter_or(
@@ -71,7 +71,8 @@ pub fn main(opts: Opts) -> anyhow::Result<()> {
     // Parse input files in parallel
     let (tu, _) = crate::parse::parse_files(
         &opts.input,
-        &crate::parse::StdPreprocessorFs::with_include_path(&opts.include),
+        &opts.include,
+        glsl_lang_pp::processor::fs::Std::default(),
         None,
     )?;
 

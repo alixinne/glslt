@@ -136,38 +136,6 @@ impl MinUnit {
                 Visit::Children
             }
 
-            fn visit_preprocessor_define(&mut self, def: &PreprocessorDefine) -> Visit {
-                // Declare the current scope name
-                let csn = self
-                    .this
-                    .dag
-                    .declare_symbol(ExternalId::Declaration(match def {
-                        PreprocessorDefine::ObjectLike { ident, .. } => &ident.0,
-                        PreprocessorDefine::FunctionLike { ident, .. } => &ident.0,
-                    }));
-
-                self.current_scope_name = Some(csn);
-
-                // Check the list of identifiers that should not be considered external
-                // dependencies
-                let mut scope_identifiers = std::collections::HashSet::new();
-                if let PreprocessorDefine::FunctionLike { args, .. } = def {
-                    scope_identifiers.extend(args.iter().map(|a| a.0.as_str()));
-                }
-
-                // The value is not parsed by the glsl crate, so we need to extract identifiers
-                // ourselves
-                for ident in extract_idents(&match def {
-                    PreprocessorDefine::ObjectLike { value, .. } => value,
-                    PreprocessorDefine::FunctionLike { value, .. } => value,
-                }) {
-                    let symbol = self.this.dag.declare_symbol(ExternalId::Declaration(ident));
-                    self.this.dag.add_dep(csn, symbol);
-                }
-
-                Visit::Parent
-            }
-
             fn visit_struct_specifier(&mut self, node: &StructSpecifier) -> Visit {
                 if self.current_scope_name.is_none() {
                     if let Some(name) = &node.name {
@@ -328,25 +296,7 @@ impl TransformUnit for MinUnit {
             }
             other => match other {
                 ExternalDeclarationData::FunctionDefinition(_) => {}
-                ExternalDeclarationData::Preprocessor(ref pp) => match &pp.content {
-                    PreprocessorData::Define(PreprocessorDefine::ObjectLike { ident, .. }) => {
-                        self.extend_dag(pp);
-
-                        self.external_declarations.insert(
-                            ExternalIdentifier::Declaration(ident.0.clone()),
-                            Arc::new(Node::new(other, extdecl.span)),
-                        );
-                    }
-                    PreprocessorData::Define(PreprocessorDefine::FunctionLike {
-                        ident, ..
-                    }) => {
-                        self.extend_dag(pp);
-
-                        self.external_declarations.insert(
-                            ExternalIdentifier::FunctionDefinition(ident.0.clone()),
-                            Arc::new(Node::new(other, extdecl.span)),
-                        );
-                    }
+                ExternalDeclarationData::Preprocessor(ref pp) => match &**pp {
                     PreprocessorData::Version(_) | PreprocessorData::Extension(_) => {
                         self.static_declarations
                             .push(Arc::new(Node::new(other, extdecl.span)));
@@ -365,7 +315,7 @@ impl TransformUnit for MinUnit {
                     DeclarationData::InitDeclaratorList(idl) => {
                         // TODO: Handle variable declarations at top-level using
                         // InitDeclaratorList. For now, this only handles struct declarations.
-                        if let TypeSpecifierNonArray::Struct(ss) = &idl.head.ty.ty.ty {
+                        if let TypeSpecifierNonArrayData::Struct(ss) = &*idl.head.ty.ty.ty {
                             // It's a struct declaration
                             if let Some(tn) = &ss.name {
                                 // Dependency key

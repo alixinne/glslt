@@ -1,147 +1,12 @@
 //! Parsing utilities
 
-use std::borrow::Cow;
-use std::collections::HashSet;
-use std::path::{self, PathBuf};
+use std::path::{Path, PathBuf};
 
 use glsl_lang::{
-    ast::*,
-    parse::{Parse, ParseContext, ParseContextData, ParseOptions},
+    ast,
+    parse::{ParseContext, ParseContextData, ParseOptions},
 };
-
-/// Filesystem abstraction for include resolving
-pub trait PreprocessorFs {
-    /// Error type for i/o errors
-    type Error: From<glsl_lang::parse::ParseError>;
-
-    /// Read the contents of a file given by its path
-    ///
-    /// # Parameters
-    ///
-    /// * `path`: path to the file
-    fn read(&self, path: &path::Path) -> Result<Cow<str>, Self::Error>;
-
-    /// Canonicalize the given path
-    ///
-    /// # Parameters
-    ///
-    /// * `path`: path to canonicalize
-    fn canonicalize(&self, path: &path::Path) -> Result<PathBuf, Self::Error>;
-
-    /// Resolve an include path to an actual file
-    ///
-    /// # Parameters
-    ///
-    /// * `base_path`: directory of the current file
-    /// * `path`: include path to resolve relative to `base_path`
-    fn resolve(&self, base_path: &path::Path, path: &Path) -> Result<PathBuf, Self::Error>;
-}
-
-mod std_fs;
-pub use std_fs::*;
-
-fn parse_tu_internal<T>(
-    base_path: &path::Path,
-    tu: TranslationUnit,
-    parsed_external_declarations: &mut Vec<ExternalDeclaration>,
-    seen_files: &mut HashSet<PathBuf>,
-    fs: &T,
-    ctx: &mut ParseContext,
-) -> Result<(), T::Error>
-where
-    T: PreprocessorFs,
-{
-    // Extend the root TU
-    for extdecl in tu.0.into_iter() {
-        let Node { content, span } = extdecl;
-
-        match content {
-            ExternalDeclarationData::Preprocessor(pp) => match pp.content {
-                PreprocessorData::Include(inc) => {
-                    let resolved_path = fs.resolve(&base_path, &inc.path)?;
-                    if !seen_files.contains(&resolved_path) {
-                        parse_file(
-                            &resolved_path,
-                            parsed_external_declarations,
-                            seen_files,
-                            fs,
-                            ctx,
-                        )?;
-                    }
-                }
-                other => parsed_external_declarations.push(ExternalDeclaration::new(
-                    ExternalDeclarationData::Preprocessor(Preprocessor::new(other, span)),
-                    span,
-                )),
-            },
-            other => {
-                parsed_external_declarations.push(Node::new(other, span));
-            }
-        }
-    }
-
-    Ok(())
-}
-
-fn parse_file<T>(
-    path: &path::Path,
-    parsed_external_declarations: &mut Vec<ExternalDeclaration>,
-    seen_files: &mut HashSet<PathBuf>,
-    fs: &T,
-    ctx: &mut ParseContext,
-) -> Result<(), T::Error>
-where
-    T: PreprocessorFs,
-{
-    let canonical_path = fs.canonicalize(path)?;
-
-    // Get the parent directory of the current file
-    let base_path = canonical_path
-        .parent()
-        .expect("failed to find current directory")
-        .to_owned();
-
-    // We've seen this path now
-    seen_files.insert(canonical_path.clone());
-
-    parse_str(
-        &base_path,
-        &fs.read(&canonical_path)?,
-        parsed_external_declarations,
-        seen_files,
-        fs,
-        ctx,
-    )
-}
-
-fn parse_str<T>(
-    base_path: &path::Path,
-    source: &str,
-    parsed_external_declarations: &mut Vec<ExternalDeclaration>,
-    seen_files: &mut HashSet<PathBuf>,
-    fs: &T,
-    ctx: &mut ParseContext,
-) -> Result<(), T::Error>
-where
-    T: PreprocessorFs,
-{
-    // Parse this file
-    let (tu, new_ctx) = TranslationUnit::parse_with_options(source, &ctx)?;
-
-    // Swap the options structure with the new one (with new type names and comments)
-    *ctx = new_ctx;
-    ctx.opts.source_id += 1;
-
-    // Forward the parse process
-    parse_tu_internal(
-        base_path,
-        tu,
-        parsed_external_declarations,
-        seen_files,
-        fs,
-        ctx,
-    )
-}
+use glsl_lang_pp::processor::event::Located;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct GlsltPolicy;
@@ -165,43 +30,22 @@ fn make_parse_context(existing: Option<&ParseContext>) -> ParseContext {
     }
 }
 
-/// Parse the given source with default filesystem inclusion
+/// Parse the given source with the default options and no filesystem inclusion
 pub fn parse_source_default(
     source: &str,
-) -> Result<(TranslationUnit, ParseContext), StdPreprocessorFsError> {
-    let std_fs = StdPreprocessorFs::new();
-    let base_path = std::env::current_dir().unwrap();
-    parse_source(&base_path, source, &std_fs, None)
+) -> glsl_lang::parse::ParseResult<&str, ast::TranslationUnit> {
+    parse_source(source, None)
 }
 
-/// Process the includes of some raw source
-pub fn parse_source<T>(
-    base_path: &path::Path,
-    source: &str,
-    fs: &T,
+/// Parse the given source without filesystem inclusion
+pub fn parse_source<'i>(
+    source: &'i str,
     ctx: Option<&ParseContext>,
-) -> Result<(TranslationUnit, ParseContext), T::Error>
-where
-    T: PreprocessorFs,
-{
-    let mut parsed_external_declarations = Vec::new();
-    let mut seen_files = HashSet::new();
+) -> glsl_lang::parse::ParseResult<&'i str, ast::TranslationUnit> {
+    use glsl_lang::parse::IntoLexerExt;
 
-    let mut ctx = make_parse_context(ctx);
-
-    parse_str(
-        base_path,
-        source,
-        &mut parsed_external_declarations,
-        &mut seen_files,
-        fs,
-        &mut ctx,
-    )?;
-
-    Ok((
-        TranslationUnit(parsed_external_declarations.into_iter().collect()),
-        ctx,
-    ))
+    let parse_context = make_parse_context(ctx);
+    source.builder().opts(&parse_context).parse()
 }
 
 /// Parse a set of files into a single translation unit
@@ -211,31 +55,39 @@ where
 /// * `pb`: list of paths to concatenate
 /// * `fs`: fs implementation
 /// * `ctx`: parse options
-pub fn parse_files<T>(
+pub fn parse_files<'p, F: glsl_lang_pp::processor::fs::FileSystem>(
     pb: &[PathBuf],
-    fs: &T,
+    system_paths: &[impl AsRef<Path>],
+    fs: F,
     ctx: Option<&ParseContext>,
-) -> Result<(TranslationUnit, ParseContext), T::Error>
-where
-    T: PreprocessorFs,
-{
-    let mut parsed_external_declarations = Vec::new();
-    let mut seen_files = HashSet::new();
+) -> Result<
+    (ast::TranslationUnit, ParseContext),
+    lang_util::error::ParseError<glsl_lang::lexer::v2::LexicalError<F::Error>>,
+> {
+    use glsl_lang::{lexer::v2::fs::PreprocessorExt, parse::IntoLexerExt};
+
+    let mut processor = glsl_lang_pp::processor::fs::Processor::new_with_fs(fs);
+    processor
+        .system_paths_mut()
+        .extend(system_paths.iter().map(|path| path.as_ref().to_owned()));
+
+    let mut external_declarations = Vec::new();
 
     let mut ctx = make_parse_context(ctx);
 
     for path in pb {
-        parse_file(
-            path,
-            &mut parsed_external_declarations,
-            &mut seen_files,
-            fs,
-            &mut ctx,
-        )?;
+        let (tu, new_ctx, _) = processor
+            .open(path, None)
+            .map_err(|err| {
+                glsl_lang::lexer::v2::LexicalError::Io(Located::new_at_file(err, path.to_owned()))
+            })?
+            .builder::<'_, '_, ast::TranslationUnit>()
+            .opts(&ctx)
+            .parse()?;
+
+        ctx = new_ctx;
+        external_declarations.extend(tu.0);
     }
 
-    Ok((
-        TranslationUnit(parsed_external_declarations.into_iter().collect()),
-        ctx,
-    ))
+    Ok((ast::TranslationUnit(external_declarations), ctx))
 }

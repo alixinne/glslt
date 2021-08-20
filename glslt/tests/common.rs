@@ -5,43 +5,6 @@ use glsl_lang::{
     visitor::{HostMut, Visit, VisitorMut},
 };
 
-// Code from pretty_assertions
-// Use contents_eq to ignore span information when comparing syntax trees
-
-#[macro_export]
-macro_rules! assert_eq {
-    ($left:expr , $right:expr,) => ({
-        assert_eq!($left, $right)
-    });
-    ($left:expr , $right:expr) => ({
-        match (&($left), &($right)) {
-            (left_val, right_val) => {
-                if !left_val.content_eq(&right_val) {
-                    panic!("assertion failed: `(left == right)`\
-                          \n\
-                          \n{}\
-                          \n",
-                           pretty_assertions::Comparison::new(left_val, right_val))
-                }
-            }
-        }
-    });
-    ($left:expr , $right:expr, $($arg:tt)*) => ({
-        match (&($left), &($right)) {
-            (left_val, right_val) => {
-                if !left_val.content_eq(&right_val) {
-                    panic!("assertion failed: `(left == right)`: {}\
-                          \n\
-                          \n{}\
-                          \n",
-                           format_args!($($arg)*),
-                           pretty_assertions::Comparison::new(left_val, right_val))
-                }
-            }
-        }
-    });
-}
-
 use glslt::{transform::TransformUnit, TransformConfig};
 
 /// In-order generated identifier discovery
@@ -184,10 +147,10 @@ fn verify_transform_impl(
         .ok();
 
     // Parse source
-    let (src, _) = glslt::parse::parse_source_default(src).expect("failed to parse src");
+    let (src, _, _) = glslt::parse::parse_source_default(src).expect("failed to parse src");
 
     // Parse expected result
-    let (mut expected, _) =
+    let (mut expected, _, _) =
         glslt::parse::parse_source_default(expected).expect("failed to parse expected");
 
     // Reformat source

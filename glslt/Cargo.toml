@@ -17,7 +17,9 @@ path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-glsl-lang = "0.2.0"
+glsl-lang = { version = "0.2.0", features = ["lexer-v2"], default-features = false }
+glsl-lang-pp = "0.2.0"
+lang-util = "0.2.0"
 
 thiserror = "1.0"
 sha-1 = "0.9"

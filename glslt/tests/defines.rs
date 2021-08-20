@@ -4,6 +4,11 @@ mod common;
 
 #[test]
 fn dependent_defines() {
+    // Note: this test used to validate that glslt propagates defines correctly when glsl-lang
+    // didn't have a proper preprocessor. Now that it does, these two source strings actually
+    // parse into the same AST and as such don't require special handling. We keep this for non
+    // regression though.
+
     let src = r#"#define M_PI 3.14
 #define M_2PI (2. * M_PI)
 
