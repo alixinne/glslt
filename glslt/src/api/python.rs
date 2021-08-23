@@ -112,12 +112,11 @@ impl PyUnit {
     /// Transform this unit into a translation unit (GLSL syntax tree)
     #[text_signature = "($self, /)"]
     pub fn to_translation_unit(&self) -> PyResult<PyTranslationUnit> {
-        Ok(self
-            .unit
+        self.unit
             .clone()
             .into_translation_unit()
             .map_err(|e| RuntimeError::py_err(format!("{}", e)))
-            .map(Into::into)?)
+            .map(Into::into)
     }
 }
 
@@ -139,12 +138,11 @@ impl PyMinUnit {
     /// * `wanted`: list of function names to be included in the dependency tree
     #[text_signature = "($self, wanted, /)"]
     pub fn to_translation_unit(&self, wanted: Vec<String>) -> PyResult<PyTranslationUnit> {
-        Ok(self
-            .unit
+        self.unit
             .clone()
             .into_translation_unit(wanted.iter().map(|s| s.as_str()))
             .map_err(|e| RuntimeError::py_err(format!("{}", e)))
-            .map(Into::into)?)
+            .map(Into::into)
     }
 }
 
@@ -158,11 +156,11 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
     #[pyfn(m, "parse_string")]
     #[text_signature = "(source, /)"]
     pub fn parse_string_py(_py: Python, source: &str) -> PyResult<PyTranslationUnit> {
-        // TODO: Don't use debug formatting
-
-        crate::parse::parse_source_default(source)
-            .map(|(tu, _)| tu.into())
-            .map_err(|e| RuntimeError::py_err(format!("{:?}", e)))
+        crate::parse::builder()
+            .source(source)
+            .run()
+            .map(|(tu, _, _)| tu.into())
+            .map_err(|e| RuntimeError::py_err(format!("{}", e)))
     }
 
     /// Parse a set of input files into an abstract syntax tree
@@ -178,18 +176,13 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
         files: Vec<String>,
         include_paths: Vec<String>,
     ) -> PyResult<PyTranslationUnit> {
-        crate::parse::parse_files(
-            &files.into_iter().map(PathBuf::from).collect::<Vec<_>>(),
-            &crate::parse::StdPreprocessorFs::with_include_path(
-                &include_paths
-                    .into_iter()
-                    .map(PathBuf::from)
-                    .collect::<Vec<_>>(),
-            ),
-            None,
-        )
-        .map(|(tu, _)| Into::into(tu))
-        .map_err(|e| RuntimeError::py_err(format!("{}", e)))
+        crate::parse::builder()
+            .filesystem(glsl_lang_pp::processor::fs::Std::default())
+            .system_paths(include_paths.into_iter().map(PathBuf::from))
+            .inputs(files.into_iter().map(PathBuf::from))
+            .run()
+            .map(|(tu, _)| Into::into(tu))
+            .map_err(|e| RuntimeError::py_err(format!("{}", e)))
     }
 
     /// glsltcc entry point
