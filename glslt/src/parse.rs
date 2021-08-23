@@ -2,11 +2,14 @@
 
 use std::path::{Path, PathBuf};
 
+use lang_util::located::LocatedBuilder;
+
 use glsl_lang::{
     ast,
     parse::{ParseContext, ParseContextData, ParseOptions},
 };
-use glsl_lang_pp::processor::event::Located;
+
+use glsl_lang_pp::{ext_name, processor::nodes::ExtensionBehavior};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct GlsltPolicy;
@@ -79,8 +82,20 @@ pub fn parse_files<F: glsl_lang_pp::processor::fs::FileSystem>(
         let (tu, new_ctx, _) = processor
             .open(path, None)
             .map_err(|err| {
-                glsl_lang::lexer::v2::LexicalError::Io(Located::new_at_file(err, path.to_owned()))
+                LocatedBuilder::new().path(path).finish(
+                    lang_util::error::ParseErrorKind::LexicalError {
+                        error: glsl_lang::lexer::v2::LexicalError::Io(
+                            LocatedBuilder::new().path(path).finish(err),
+                        ),
+                    },
+                )
             })?
+            .with_state(
+                glsl_lang_pp::processor::ProcessorState::builder().extension(
+                    ext_name!("GL_GOOGLE_include_directive"),
+                    ExtensionBehavior::Enable,
+                ),
+            )
             .builder::<'_, '_, ast::TranslationUnit>()
             .opts(&ctx)
             .parse()?;

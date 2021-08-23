@@ -341,7 +341,9 @@ impl TransformUnit for MinUnit {
                             }
                         }
                     }
-                    DeclarationData::Precision(_, _) | DeclarationData::Block(_) => {
+                    DeclarationData::Precision(_, _)
+                    | DeclarationData::Block(_)
+                    | DeclarationData::Invariant(_) => {
                         // TODO: How to handle Declaration::Block?
                         self.static_declarations
                             .push(Arc::new(Node::new(other, extdecl.span)));
