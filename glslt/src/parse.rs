@@ -56,6 +56,7 @@ pub fn parse_source<'i>(
 /// # Parameters
 ///
 /// * `pb`: list of paths to concatenate
+/// * `system_paths`: list of system include paths
 /// * `fs`: fs implementation
 /// * `ctx`: parse options
 pub fn parse_files<F: glsl_lang_pp::processor::fs::FileSystem>(
