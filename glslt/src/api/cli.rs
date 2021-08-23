@@ -9,7 +9,7 @@ use crate::TransformConfigBuilder;
 
 /// Command-line arguments structure
 #[derive(StructOpt)]
-#[structopt(name = "glsltcc", about = "GLSL Template compiler", author)]
+#[structopt(name = "glsltc", about = "GLSL Template compiler", author)]
 pub struct Opts {
     /// Input template files
     input: Vec<PathBuf>,
@@ -39,7 +39,7 @@ pub struct Opts {
     prefix: Option<String>,
 }
 
-/// Entry point for the glsltcc front-end
+/// Entry point for the glsltc front-end
 ///
 /// # Parameters
 ///

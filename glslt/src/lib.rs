@@ -1,6 +1,6 @@
 //! glslt is the main library that supports the GLSL Template compiler transforms. If you are
 //! building a system that relies on transforming GLSLT code, you'll want to interact with this
-//! library directly instead of the command-line interface provided by `glsltcc`.
+//! library directly instead of the command-line interface provided by `glsltc`.
 //!
 //! # Usage
 //!

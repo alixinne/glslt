@@ -185,7 +185,7 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
             .map_err(|e| RuntimeError::py_err(format!("{}", e)))
     }
 
-    /// glsltcc entry point
+    /// glsltc entry point
     #[pyfn(m, "main")]
     pub fn main_py(_py: Python) -> PyResult<()> {
         use super::cli::*;

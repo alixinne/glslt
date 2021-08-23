@@ -34,7 +34,7 @@ common interfaces, as function pointers (or callbacks) would provide.
 
 Check out the [releases](https://github.com/vtavernier/glslt/releases) for
 pre-compiled binaries for stable versions. Installing the Python module (see
-below) also installs the corresponding `glsltcc` binary.
+below) also installs the corresponding `glsltc` binary.
 
 Alternatively, you may compile `glslt` from source, assuming you have the
 [Rust](https://rustup.rs/) compiler installed:
@@ -51,9 +51,9 @@ cd glslt
 ## Run the program directly
 cargo run -- test.glsl
 
-## Or, install the glsltcc binary permanently
+## Or, install the glsltc binary permanently
 cargo install --force --path .
-glsltcc test.glsl
+glsltc test.glsl
 ```
 
 To install the Python module for the latest stable version, you can use `pip`:
@@ -121,10 +121,10 @@ templates are *instantiated* with their actual template parameters. This is
 where this tool comes in:
 
 ```bash
-# Assuming you installed the pre-built glsltcc binary, if running from source use `cargo run --` instead.
+# Assuming you installed the pre-built glsltc binary, if running from source use `cargo run --` instead.
 #
 # test.glsl is our input example, output.glsl is the generated code.
-glsltcc -o output.glsl test.glsl
+glsltc -o output.glsl test.glsl
 ```
 
 The resulting code will look like this:
@@ -312,14 +312,14 @@ before they are used.
 
 However, if you are using the GLSLT compiler with a large template library,
 this will generate a lot of unused code. By using the `-K, --keep-fns` argument
-to the `glsltcc` command, GLSLT switches to the minifying mode. In this mode,
+to the `glsltc` command, GLSLT switches to the minifying mode. In this mode,
 only the functions, types, globals and `#define` directives that are transitive
 dependencies of the functions specified by the `-K` argument are kept.
 
 `#version`, `#extension` and precision specifiers will be included at the top
 of the generated code, if they were present in the input.
 
-As an example, compiling the previous example with `glsltcc -K=sdSphere` will
+As an example, compiling the previous example with `glsltc -K=sdSphere` will
 only return the code for the sdSphere function, since it has no dependencies.
 
 ## Features

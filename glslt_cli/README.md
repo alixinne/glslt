@@ -1,6 +1,6 @@
 # glslt_cli
 
-glsltcc is the default compiler front-end for the GLSLT language. To use the GLSLT transforms
+glsltc is the default compiler front-end for the GLSLT language. To use the GLSLT transforms
 from Rust or Python code, see the documentation for the
 [glslt](https://vtavernier.github.io/glslt/doc/glslt/) crate.
 
@@ -14,12 +14,12 @@ Alternatively, you may compile GLSLT from source and install it using `cargo ins
 ## Command-line usage
 
 ```bash
-glsltcc 0.5.0
+glsltc 0.5.0
 Vincent Tavernier <vince.tavernier@gmail.com>
 GLSL Template compiler
 
 USAGE:
-    glsltcc [FLAGS] [OPTIONS] [--] [input]...
+    glsltc [FLAGS] [OPTIONS] [--] [input]...
 
 FLAGS:
     -h, --help       Prints help information
@@ -41,11 +41,11 @@ ARGS:
 
 ```bash
 # Transform the GLSLT code in `sdf.glsl` to the output file `output.glsl`
-glsltcc -o output.glsl sdf.glsl
+glsltc -o output.glsl sdf.glsl
 
 # Transform the GLSLT code in `sdf.glsl` to the output file `output.glsl`. Only keep
 # transitive dependencies of the `mainImage` function (minifying mode).
-glsltcc -o output.glsl -K=mainImage sdf.glsl
+glsltc -o output.glsl -K=mainImage sdf.glsl
 ```
 
 ## Author
