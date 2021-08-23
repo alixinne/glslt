@@ -398,7 +398,7 @@ dependencies = [
 [[package]]
 name = "glsl-lang"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#4709bd51be6db87f6367c2cedbdb48325c3c88fc"
+source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#aa3230486432bf6d214e2ccb905bb3aee064d045"
 dependencies = [
  "encoding_rs",
  "glsl-lang-pp",
@@ -414,7 +414,7 @@ dependencies = [
 [[package]]
 name = "glsl-lang-pp"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#4709bd51be6db87f6367c2cedbdb48325c3c88fc"
+source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#aa3230486432bf6d214e2ccb905bb3aee064d045"
 dependencies = [
  "arrayvec 0.7.1",
  "bimap 0.6.1",
@@ -613,7 +613,7 @@ dependencies = [
 [[package]]
 name = "lang-util"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#4709bd51be6db87f6367c2cedbdb48325c3c88fc"
+source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#aa3230486432bf6d214e2ccb905bb3aee064d045"
 dependencies = [
  "derive_more",
  "lalrpop-util",
@@ -626,7 +626,7 @@ dependencies = [
 [[package]]
 name = "lang-util-derive"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#4709bd51be6db87f6367c2cedbdb48325c3c88fc"
+source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#aa3230486432bf6d214e2ccb905bb3aee064d045"
 dependencies = [
  "darling",
  "proc-macro2",

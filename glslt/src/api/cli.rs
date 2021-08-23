@@ -69,12 +69,11 @@ pub fn main(opts: Opts) -> Result<(), Box<dyn std::error::Error>> {
     .ok();
 
     // Parse input files in parallel
-    let (tu, _) = crate::parse::parse_files(
-        &opts.input,
-        &opts.include,
-        glsl_lang_pp::processor::fs::Std::default(),
-        None,
-    )?;
+    let (tu, _) = crate::parse::ParseBuilder::new()
+        .filesystem(glsl_lang_pp::processor::fs::Std::default())
+        .system_paths(&opts.include)
+        .inputs(&opts.input)
+        .run()?;
 
     // Process the input
     let config = {

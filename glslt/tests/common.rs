@@ -147,11 +147,16 @@ fn verify_transform_impl(
         .ok();
 
     // Parse source
-    let (src, _, _) = glslt::parse::parse_source_default(src).expect("failed to parse src");
+    let (src, _, _) = glslt::parse::builder()
+        .source(src)
+        .run()
+        .expect("failed to parse src");
 
     // Parse expected result
-    let (mut expected, _, _) =
-        glslt::parse::parse_source_default(expected).expect("failed to parse expected");
+    let (mut expected, _, _) = glslt::parse::builder()
+        .source(expected)
+        .run()
+        .expect("failed to parse expected");
 
     // Reformat source
     let source = to_string(&src);
