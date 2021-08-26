@@ -96,9 +96,9 @@ checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
 
 [[package]]
 name = "bitflags"
-version = "1.3.1"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2da1976d75adbe5fbc88130ecd119529cf1cc6a93ae1546d8696ee66f0d21af1"
+checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "block-buffer"
@@ -389,7 +389,7 @@ dependencies = [
 [[package]]
 name = "glsl-lang"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#a794ffc09900b071c1211352c5eb2b7fe6fee145"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
 dependencies = [
  "glsl-lang-pp",
  "lalrpop",
@@ -404,7 +404,7 @@ dependencies = [
 [[package]]
 name = "glsl-lang-pp"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#a794ffc09900b071c1211352c5eb2b7fe6fee145"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
 dependencies = [
  "arrayvec 0.7.1",
  "bimap 0.6.1",
@@ -602,7 +602,7 @@ dependencies = [
 [[package]]
 name = "lang-util"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#a794ffc09900b071c1211352c5eb2b7fe6fee145"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
 dependencies = [
  "derive_more",
  "lalrpop-util",
@@ -615,7 +615,7 @@ dependencies = [
 [[package]]
 name = "lang-util-derive"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang?branch=dev#a794ffc09900b071c1211352c5eb2b7fe6fee145"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -654,15 +654,15 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.99"
+version = "0.2.101"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7f823d141fe0a24df1e23b4af4e3c7ba9e5966ec514ea068c93024aa7deb765"
+checksum = "3cb00336871be5ed2c8ed44b60ae9959dc5b9f08539422ed43f09e34ecaeba21"
 
 [[package]]
 name = "line-span"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58936323cd930a4c41659aadc8f306085b667d1728ab5395954a4bc79e8f7832"
+checksum = "806de604a37f6d73a83c850af7b3ba33a44f330d12fd5e4ac216645b54da912b"
 
 [[package]]
 name = "lock_api"
@@ -684,9 +684,9 @@ dependencies = [
 
 [[package]]
 name = "memchr"
-version = "2.4.0"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b16bd47d9e329435e309c58469fe0791c2d0d1ba96ec0954152a5ae2b04387dc"
+checksum = "308cc39be01b73d0d18f82a0e7b2a3df85245f84af96fdddc5d202d27e47b86a"
 
 [[package]]
 name = "memoffset"
@@ -1084,9 +1084,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.127"
+version = "1.0.129"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f03b9878abf6d14e6779d3f24f07b2cfa90352cfec4acc5aab8f1ac7f146fae8"
+checksum = "d1f72836d2aa753853178eda473a3b9d8e4eefdaf20523b919677e6de489f8f1"
 
 [[package]]
 name = "sha-1"
@@ -1188,9 +1188,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.74"
+version = "1.0.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1873d832550d4588c3dbc20f01361ab00bfe741048f71e3fecf145a7cc18b29c"
+checksum = "b7f58f7e8eaa0009c5fec437aabf511bd9933e4b2d7407bd05273c01a8906ea7"
 dependencies = [
  "proc-macro2",
  "quote",
