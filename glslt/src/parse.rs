@@ -210,7 +210,7 @@ impl<'c, F: FileSystem> FileSystemParseBuilderWithFile<'c, F> {
 
         for path in &self.files {
             let (tu, new_ctx, _) = process_file(
-                processor.open(path, None).map_err(|err| {
+                processor.open(path).map_err(|err| {
                     LocatedBuilder::new().path(path).finish(
                         lang_util::error::ParseErrorKind::LexicalError {
                             error: glsl_lang::lexer::v2::LexicalError::Io(
