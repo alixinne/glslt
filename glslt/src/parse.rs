@@ -11,7 +11,8 @@ use glsl_lang::{
 
 use glsl_lang_pp::{
     ext_name,
-    processor::{fs::FileSystem, nodes::ExtensionBehavior},
+    exts::Registry,
+    processor::{fs::FileSystem, nodes::ExtensionBehavior, ProcessorStateBuilder},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -139,6 +140,7 @@ impl<'c, F: FileSystem> FileSystemParseBuilder<'c, F> {
             system_paths: self.system_paths,
             source,
             path: path.as_ref().to_owned(),
+            registry: None,
         }
     }
 
@@ -160,6 +162,7 @@ impl<'c, F: FileSystem> FileSystemParseBuilder<'c, F> {
                 .into_iter()
                 .map(|path| path.as_ref().to_owned())
                 .collect(),
+            registry: None,
         }
     }
 }
@@ -170,12 +173,14 @@ pub struct FileSystemParseBuilderWithFile<'c, F: FileSystem> {
     f: F,
     system_paths: Vec<PathBuf>,
     files: Vec<PathBuf>,
+    registry: Option<&'c Registry>,
 }
 
-fn process_file<'p, F: FileSystem>(
-    f: glsl_lang::lexer::v2::fs::File<'p, F>,
+fn process_file<'r, 'p, F: FileSystem>(
+    f: glsl_lang::lexer::v2::fs::File<'r, 'p, F>,
     ctx: &ParseContext,
-) -> glsl_lang::parse::ParseResult<glsl_lang::lexer::v2::fs::File<'p, F>, ast::TranslationUnit> {
+) -> glsl_lang::parse::ParseResult<glsl_lang::lexer::v2::fs::File<'r, 'p, F>, ast::TranslationUnit>
+{
     use glsl_lang::parse::IntoLexerExt;
 
     f.with_state(
@@ -190,14 +195,23 @@ fn process_file<'p, F: FileSystem>(
 }
 
 impl<'c, F: FileSystem> FileSystemParseBuilderWithFile<'c, F> {
+    /// Set the extension registry
+    pub fn registry(mut self, registry: impl Into<&'c Registry>) -> Self {
+        self.registry = Some(registry.into());
+        self
+    }
+
     /// Set the input path for this operation
     pub fn run(
-        self,
+        mut self,
     ) -> Result<
         (ast::TranslationUnit, ParseContext),
         lang_util::error::ParseError<glsl_lang::lexer::v2::LexicalError<F::Error>>,
     > {
         use glsl_lang::lexer::v2::fs::PreprocessorExt;
+
+        // Move registry out to prevent reborrow
+        let registry = self.registry.take();
 
         let mut processor = glsl_lang_pp::processor::fs::Processor::new_with_fs(self.f);
         processor
@@ -210,15 +224,25 @@ impl<'c, F: FileSystem> FileSystemParseBuilderWithFile<'c, F> {
 
         for path in &self.files {
             let (tu, new_ctx, _) = process_file(
-                processor.open(path).map_err(|err| {
-                    LocatedBuilder::new().path(path).finish(
-                        lang_util::error::ParseErrorKind::LexicalError {
-                            error: glsl_lang::lexer::v2::LexicalError::Io(
-                                LocatedBuilder::new().path(path).finish(err),
-                            ),
-                        },
-                    )
-                })?,
+                processor
+                    .open(path)
+                    .map(|file| {
+                        if let Some(registry) = registry {
+                            file.with_registry(registry)
+                                .with_state(ProcessorStateBuilder::new(registry).finish())
+                        } else {
+                            file
+                        }
+                    })
+                    .map_err(|err| {
+                        LocatedBuilder::new().path(path).finish(
+                            lang_util::error::ParseErrorKind::LexicalError {
+                                error: glsl_lang::lexer::v2::LexicalError::Io(
+                                    LocatedBuilder::new().path(path).finish(err),
+                                ),
+                            },
+                        )
+                    })?,
                 &ctx,
             )?;
 
@@ -237,9 +261,16 @@ pub struct FileSystemParseBuilderWithSource<'c, 'i, F: FileSystem> {
     system_paths: Vec<PathBuf>,
     source: &'i str,
     path: PathBuf,
+    registry: Option<&'i Registry>,
 }
 
 impl<'c, 'i, F: FileSystem> FileSystemParseBuilderWithSource<'c, 'i, F> {
+    /// Set the extension registry
+    pub fn registry(mut self, registry: impl Into<&'i Registry>) -> Self {
+        self.registry = Some(registry.into());
+        self
+    }
+
     /// Set the input path for this operation
     pub fn run(
         self,
@@ -255,7 +286,18 @@ impl<'c, 'i, F: FileSystem> FileSystemParseBuilderWithSource<'c, 'i, F> {
             .extend(self.system_paths.into_iter());
 
         let ctx = make_parse_context(self.ctx);
-        let (tu, ctx, _) = process_file(processor.open_source(self.source, self.path), &ctx)?;
+        let (tu, ctx, _) = process_file(
+            {
+                let file = processor.open_source(self.source, self.path);
+                if let Some(registry) = self.registry {
+                    file.with_registry(registry)
+                        .with_state(ProcessorStateBuilder::new(registry).finish())
+                } else {
+                    file
+                }
+            },
+            &ctx,
+        )?;
         Ok((tu, ctx))
     }
 }
