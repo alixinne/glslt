@@ -35,7 +35,7 @@ impl PyTranslationUnit {
             &self.tu,
             glsl_lang::transpiler::glsl::FormattingState::default(),
         )
-        .map_err(|e| PyRuntimeError::new_err(format!("{}", e)))?;
+        .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
         Ok(r)
     }
 }
@@ -51,12 +51,10 @@ trait HasTransformUnitExt {
 
 impl<T: HasTransformUnit> HasTransformUnitExt for T {
     fn add_unit(&mut self, unit: PyTranslationUnit) -> PyResult<()> {
-        // TODO: Don't use debug formatting
-
         for decl in unit.tu.0.into_iter() {
             self.unit_mut()
                 .parse_external_declaration(decl)
-                .map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))?;
+                .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
         }
 
         Ok(())
@@ -112,7 +110,7 @@ impl PyUnit {
         self.unit
             .clone()
             .into_translation_unit()
-            .map_err(|e| PyRuntimeError::new_err(format!("{}", e)))
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))
             .map(Into::into)
     }
 }
@@ -150,7 +148,7 @@ impl PyMinUnit {
         self.unit
             .clone()
             .into_translation_unit(wanted.iter().map(|s| s.as_str()))
-            .map_err(|e| PyRuntimeError::new_err(format!("{}", e)))
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))
             .map(Into::into)
     }
 }
@@ -169,7 +167,7 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
             .source(source)
             .run()
             .map(|(tu, _, _)| tu.into())
-            .map_err(|e| PyRuntimeError::new_err(format!("{}", e)))
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))
     }
 
     /// Parse a set of input files into an abstract syntax tree
@@ -191,7 +189,7 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
             .inputs(files.into_iter().map(PathBuf::from))
             .run()
             .map(|(tu, _)| Into::into(tu))
-            .map_err(|e| PyRuntimeError::new_err(format!("{}", e)))
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))
     }
 
     /// glsltc entry point
@@ -200,7 +198,7 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
     pub fn main_py(_py: Python) -> PyResult<()> {
         use super::cli::*;
         main(Opts::from_iter(std::env::args().skip(1)))
-            .map_err(|e| PyRuntimeError::new_err(format!("{}", e)))
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))
     }
 
     m.add_class::<PyTranslationUnit>()?;
