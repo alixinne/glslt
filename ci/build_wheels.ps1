@@ -23,7 +23,7 @@ $Maturin = "$(python -m site --user-site)\\..\\Scripts\\maturin"
 
 # Install pyenv
 if (-Not (Test-CommandExists pyenv)) {
-	choco install pyenv-win --version 2.64.3
+	choco install pyenv-win --version 2.64.9
 }
 
 # Refresh environment
@@ -37,7 +37,7 @@ $env:PATH = "$env:PATH;$env:USERPROFILE\.pyenv\pyenv-win\bin;$env:USERPROFILE\.p
 $PyVersionSuffix = ""
 
 # List of Python versions to build for
-$PyVersions = "3.5.4", "3.6.8", "3.7.7", "3.8.2"
+$PyVersions = "3.6.8", "3.7.9", "3.8.9", "3.9.6"
 ForEach ($PyVersion in $PyVersions) {
 	# Compute short version name
 	$ShortPyVersion = $PyVersion.Split(".")

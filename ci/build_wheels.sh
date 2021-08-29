@@ -14,7 +14,7 @@ export MATURIN=/opt/_internal/cpython-3.7*/bin/maturin
 cd /io/glslt
 
 # Compile wheels
-for PYBIN in /opt/python/cp{35,36,37,38,39}*/bin; do
+for PYBIN in /opt/python/cp{36,37,38,39}*/bin; do
     export PYTHON_SYS_EXECUTABLE="$PYBIN/python"
     export PYTHON_LIB=$(${PYBIN}/python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
     export LIBRARY_PATH="$LIBRARY_PATH:$PYTHON_LIB"
