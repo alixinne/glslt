@@ -2,7 +2,6 @@
 
 use std::path::PathBuf;
 
-pub use anyhow;
 pub use structopt::StructOpt;
 
 use crate::TransformConfigBuilder;
