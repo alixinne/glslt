@@ -23,14 +23,14 @@ lang-util = "0.2.0"
 
 thiserror = "1.0"
 sha-1 = "0.9"
-petgraph = "0.5"
-bimap = "0.4"
+petgraph = "0.6"
+bimap = "0.6"
 log = "0.4"
-indexmap = "1.6"
+indexmap = "1.7"
 derive_builder = "0.10"
 
 [dependencies.pyo3]
-version = "0.11"
+version = "0.14"
 features = [ "extension-module" ]
 optional = true
 
@@ -39,7 +39,7 @@ version = "0.3"
 optional = true
 
 [dependencies.env_logger]
-version = "0.7"
+version = "0.9"
 optional = true
 
 [features]
@@ -47,7 +47,7 @@ python = ["pyo3", "cli"]
 cli = ["structopt", "env_logger"]
 
 [dev-dependencies]
-env_logger = "0.7"
+env_logger = "0.9"
 pretty_assertions = "0.6"
 
 [package.metadata.maturin.scripts]

@@ -66,15 +66,6 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "bimap"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "783204f24fd7724ea274d327619cfa6a6018047bb0561a68aadff6f56787591b"
-dependencies = [
- "cfg-if 0.1.10",
-]
-
-[[package]]
-name = "bimap"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50ae17cabbc8a38a1e3e4c1a6a664e9a09672dc14d0896fa8d865d3a5a446b07"
@@ -117,12 +108,6 @@ checksum = "29b6ad25ae296159fb0da12b970b2fe179b234584d7cd294c891e2bbb284466b"
 dependencies = [
  "num-traits",
 ]
-
-[[package]]
-name = "cfg-if"
-version = "0.1.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
 name = "cfg-if"
@@ -288,7 +273,7 @@ version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b98cf8ebf19c3d1b223e151f99a4f9f0690dca41414773390fc824184ac833e1"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "dirs-sys-next",
 ]
 
@@ -320,9 +305,9 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
-version = "0.7.1"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
+checksum = "0b2cf0344971ee6c64c31be0d530793fba457d322dfec2810c453d0ef228f9c3"
 dependencies = [
  "atty",
  "humantime",
@@ -336,6 +321,12 @@ name = "fixedbitset"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
+
+[[package]]
+name = "fixedbitset"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "398ea4fabe40b9b0d885340a2a991a44c8a645624075ad966d21f88688e2b69e"
 
 [[package]]
 name = "fnv"
@@ -359,7 +350,7 @@ version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fc3cb4d91f53b50155bdcfd23f6a4c39ae1969c2ae85982b135750cccaf5fce"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "libc",
  "wasi 0.9.0+wasi-snapshot-preview1",
 ]
@@ -370,20 +361,9 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcd999463524c52659517fe2cea98493cfe485d10565e7b0fb07dbba7ad2753"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "libc",
  "wasi 0.10.2+wasi-snapshot-preview1",
-]
-
-[[package]]
-name = "ghost"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a5bcf1bbeab73aa4cf2fde60a846858dc036163c7c33bec309f8d17de785479"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -407,7 +387,7 @@ version = "0.2.0"
 source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
 dependencies = [
  "arrayvec 0.7.1",
- "bimap 0.6.1",
+ "bimap",
  "cbitset",
  "derive_more",
  "itertools",
@@ -426,7 +406,7 @@ dependencies = [
 name = "glslt"
 version = "0.5.0"
 dependencies = [
- "bimap 0.4.0",
+ "bimap",
  "derive_builder",
  "env_logger",
  "glsl-lang",
@@ -434,7 +414,7 @@ dependencies = [
  "indexmap",
  "lang-util",
  "log",
- "petgraph",
+ "petgraph 0.6.0",
  "pretty_assertions",
  "pyo3",
  "sha-1",
@@ -482,12 +462,9 @@ dependencies = [
 
 [[package]]
 name = "humantime"
-version = "1.3.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df004cfca50ef23c36850aaaa59ad52cc70d0e90243c3c7737a4dd32dc7a3c4f"
-dependencies = [
- "quick-error",
-]
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "ident_case"
@@ -534,29 +511,7 @@ version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bee0328b1209d157ef001c94dd85b4f8f64139adb0eac2659f4b08382b2f474d"
 dependencies = [
- "cfg-if 1.0.0",
-]
-
-[[package]]
-name = "inventory"
-version = "0.1.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f0f7efb804ec95e33db9ad49e4252f049e37e8b0a4652e3cd61f7999f2eff7f"
-dependencies = [
- "ctor",
- "ghost",
- "inventory-impl",
-]
-
-[[package]]
-name = "inventory-impl"
-version = "0.1.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75c094e94816723ab936484666968f5b58060492e880f3c8d00489a1e244fa51"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "cfg-if",
 ]
 
 [[package]]
@@ -580,7 +535,7 @@ dependencies = [
  "ena",
  "itertools",
  "lalrpop-util",
- "petgraph",
+ "petgraph 0.5.1",
  "pico-args",
  "regex",
  "regex-syntax",
@@ -634,7 +589,7 @@ version = "5.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f404a90a744e32e8be729034fc33b90cf2a56418fbf594d69aa3c0214ad414e5"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "lexical-core",
 ]
 
@@ -646,7 +601,7 @@ checksum = "6607c62aa161d23d17a9072cc5da0be67cdfc89d3afb1e8d9c842bebc2525ffe"
 dependencies = [
  "arrayvec 0.5.2",
  "bitflags",
- "cfg-if 1.0.0",
+ "cfg-if",
  "ryu",
  "static_assertions",
 ]
@@ -678,7 +633,7 @@ version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
 ]
 
 [[package]]
@@ -712,6 +667,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "once_cell"
+version = "1.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
+
+[[package]]
 name = "opaque-debug"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -743,7 +704,7 @@ version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa7a782938e745763fe6907fc6ba86946d72f49fe7e21de074e08128a99fb018"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "instant",
  "libc",
  "redox_syscall",
@@ -785,7 +746,17 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "467d164a6de56270bd7c4d070df81d07beace25012d5103ced4e9ff08d6afdb7"
 dependencies = [
- "fixedbitset",
+ "fixedbitset 0.2.0",
+ "indexmap",
+]
+
+[[package]]
+name = "petgraph"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a13a2fa9d0b63e5f22328828741e523766fff0ee9e779316902290dff3f824f"
+dependencies = [
+ "fixedbitset 0.4.0",
  "indexmap",
 ]
 
@@ -879,47 +850,51 @@ dependencies = [
 
 [[package]]
 name = "pyo3"
-version = "0.11.1"
+version = "0.14.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ca8710ffa8211c9a62a8a3863c4267c710dc42a82a7fd29c97de465d7ea6b7d"
+checksum = "a192cd06356bb941c663c969a7f3e27c7c8e187efe772c1406a447f122443f71"
 dependencies = [
- "ctor",
+ "cfg-if",
  "indoc",
- "inventory",
  "libc",
  "parking_lot",
  "paste",
- "pyo3cls",
+ "pyo3-build-config",
+ "pyo3-macros",
  "unindent",
 ]
 
 [[package]]
-name = "pyo3-derive-backend"
-version = "0.11.1"
+name = "pyo3-build-config"
+version = "0.14.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58ad070bf6967b0d29ea74931ffcf9c6bbe8402a726e9afbeafadc0a287cc2b3"
+checksum = "650911ce22a793e9af67a0a880741ab1519e4f84740642716cbe83e129d17a2e"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
+name = "pyo3-macros"
+version = "0.14.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92d6659c1e336eec5a6ebc53bd80705e31ea0b95bff03bf384e868984b8ce573"
+dependencies = [
+ "pyo3-macros-backend",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "pyo3-macros-backend"
+version = "0.14.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b425a4975523acb80087d24903cffce30287a1324ab29714ce33006043c7dbe"
 dependencies = [
  "proc-macro2",
+ "pyo3-build-config",
  "quote",
  "syn",
 ]
-
-[[package]]
-name = "pyo3cls"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3fa17e1ea569d0bf3b7c00f2a9eea831ca05e55dd76f1794c541abba1c64baa"
-dependencies = [
- "pyo3-derive-backend",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "quick-error"
-version = "1.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 
 [[package]]
 name = "quote"
@@ -1094,7 +1069,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a0c8611594e2ab4ebbf06ec7cbbf0a99450b8570e96cbf5188b5d5f6ef18d81"
 dependencies = [
  "block-buffer",
- "cfg-if 1.0.0",
+ "cfg-if",
  "cpufeatures",
  "digest",
  "opaque-debug",
