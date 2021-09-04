@@ -133,6 +133,16 @@ fn to_string(tu: &TranslationUnit) -> String {
     s
 }
 
+fn parse(input: &str) -> glsl_lang::ast::TranslationUnit {
+    use glsl_lang::parse::IntoParseBuilderExt;
+    input
+        .builder()
+        .context(&glslt::parse::make_parse_context(None))
+        .parse()
+        .expect("failed to parse source")
+        .0
+}
+
 fn verify_transform_impl(
     src: &str,
     expected: &str,
@@ -147,16 +157,10 @@ fn verify_transform_impl(
         .ok();
 
     // Parse source
-    let (src, _, _) = glslt::parse::builder()
-        .source(src)
-        .run()
-        .expect("failed to parse src");
+    let src = parse(src);
 
     // Parse expected result
-    let (mut expected, _, _) = glslt::parse::builder()
-        .source(expected)
-        .run()
-        .expect("failed to parse expected");
+    let mut expected = parse(expected);
 
     // Reformat source
     let source = to_string(&src);

@@ -67,12 +67,8 @@ pub fn main(opts: Opts) -> Result<(), Box<dyn std::error::Error>> {
     .try_init()
     .ok();
 
-    // Parse input files in parallel
-    let (tu, _) = crate::parse::ParseBuilder::new()
-        .filesystem(glsl_lang_pp::processor::fs::Std::default())
-        .system_paths(&opts.include)
-        .inputs(&opts.input)
-        .run()?;
+    // Parse input files
+    let tu = super::common::parse_inputs_as_tu(&opts.include, &opts.input)?;
 
     // Process the input
     let config = {

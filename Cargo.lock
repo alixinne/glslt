@@ -369,22 +369,33 @@ dependencies = [
 [[package]]
 name = "glsl-lang"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c0f23061477a42bc5471660e6594620f434ba1e4"
 dependencies = [
- "glsl-lang-pp",
+ "glsl-lang-lexer",
+ "glsl-lang-types",
  "lalrpop",
  "lalrpop-util",
  "lang-util",
  "lazy_static",
- "smol_str",
- "text-size",
+ "thiserror",
+]
+
+[[package]]
+name = "glsl-lang-lexer"
+version = "0.2.0"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c0f23061477a42bc5471660e6594620f434ba1e4"
+dependencies = [
+ "glsl-lang-pp",
+ "glsl-lang-types",
+ "lalrpop-util",
+ "lang-util",
  "thiserror",
 ]
 
 [[package]]
 name = "glsl-lang-pp"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c0f23061477a42bc5471660e6594620f434ba1e4"
 dependencies = [
  "arrayvec 0.7.1",
  "bimap",
@@ -395,10 +406,18 @@ dependencies = [
  "lazy_static",
  "lexical",
  "rowan",
- "smol_str",
  "static_assertions",
  "string_cache",
  "string_cache_codegen",
+ "thiserror",
+]
+
+[[package]]
+name = "glsl-lang-types"
+version = "0.2.0"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c0f23061477a42bc5471660e6594620f434ba1e4"
+dependencies = [
+ "lang-util",
  "thiserror",
 ]
 
@@ -556,7 +575,7 @@ dependencies = [
 [[package]]
 name = "lang-util"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c0f23061477a42bc5471660e6594620f434ba1e4"
 dependencies = [
  "derive_more",
  "lalrpop-util",
@@ -569,7 +588,7 @@ dependencies = [
 [[package]]
 name = "lang-util-derive"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#5983d695a5613a457b2cacf9daba0d5de6706f19"
+source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c0f23061477a42bc5471660e6594620f434ba1e4"
 dependencies = [
  "darling",
  "proc-macro2",

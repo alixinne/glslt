@@ -6,6 +6,8 @@ glslt = { path = "glslt" }
 
 glsl-lang = { git = "https://github.com/vtavernier/glsl-lang.git", branch = "dev" }
 glsl-lang-pp = { git = "https://github.com/vtavernier/glsl-lang.git", branch = "dev" }
+glsl-lang-lexer = { git = "https://github.com/vtavernier/glsl-lang.git", branch = "dev" }
+glsl-lang-types = { git = "https://github.com/vtavernier/glsl-lang.git", branch = "dev" }
 lang-util = { git = "https://github.com/vtavernier/glsl-lang.git", branch = "dev" }
 lang-util-derive = { git = "https://github.com/vtavernier/glsl-lang.git", branch = "dev" }
 

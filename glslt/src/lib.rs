@@ -10,7 +10,7 @@
 //! crate](https://github.com/vtavernier/glsl-lang).
 //!
 //! ```rust
-//! use glslt::glsl_lang::ast::*;
+//! use glslt::glsl_lang::{ast::*, parse::IntoParseBuilderExt};
 //! use glslt::transform::{Unit, TransformUnit};
 //!
 //! let glsl_src = r#"
@@ -33,13 +33,18 @@
 //! "#;
 //!
 //! // Parse the GLSLT source code
-//! let tu = glslt::parse::parse_source_default(glsl_src).expect("failed to parse GLSLT source");
+//! let tu: TranslationUnit = glsl_src
+//!     .builder()
+//!     .context(&glslt::parse::make_parse_context(None))
+//!     .parse()
+//!     .expect("failed to parse GLSLT source")
+//!     .0;
 //!
 //! // Create the transform unit
 //! let mut unit = Unit::new();
 //!
 //! // Parse declarations
-//! for decl in (tu.0).0.into_iter() {
+//! for decl in tu.0.into_iter() {
 //!     unit.parse_external_declaration(decl).expect("failed to parse declaration");
 //! }
 //!

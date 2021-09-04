@@ -1,7 +1,5 @@
 //! Python module interface for the GLSLT compiler
 
-use std::path::PathBuf;
-
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 
@@ -163,10 +161,8 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
     #[pyfn(m)]
     #[pyo3(name = "parse_string", text_signature = "(source, /)")]
     pub fn parse_string_py(_py: Python, source: &str) -> PyResult<PyTranslationUnit> {
-        crate::parse::builder()
-            .source(source)
-            .run()
-            .map(|(tu, _, _)| tu.into())
+        super::common::parse_string(source)
+            .map(Into::into)
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))
     }
 
@@ -183,12 +179,8 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
         files: Vec<String>,
         include_paths: Vec<String>,
     ) -> PyResult<PyTranslationUnit> {
-        crate::parse::builder()
-            .filesystem(glsl_lang_pp::processor::fs::Std::default())
-            .system_paths(include_paths.into_iter().map(PathBuf::from))
-            .inputs(files.into_iter().map(PathBuf::from))
-            .run()
-            .map(|(tu, _)| Into::into(tu))
+        super::common::parse_inputs_as_tu(include_paths, files)
+            .map(Into::into)
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))
     }
 
