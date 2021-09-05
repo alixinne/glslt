@@ -43,16 +43,16 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
 
       - name: Build CLI binary
-        run: cargo rustc -p glslt_cli --bin glsltcc --target ${{ matrix.target }} --release
+        run: cargo rustc -p glslt_cli --bin glsltc --target ${{ matrix.target }} --release
 
       - name: Strip CLI binary
-        run: strip target/${{ matrix.target }}/release/glsltcc
+        run: strip target/${{ matrix.target }}/release/glsltc
         if: matrix.os == 'ubuntu-latest'
 
       - name: Prepare release
         run: |
           RELEASE_NAME=$(git describe --tags --abbrev=0)
-          (cd target/${{ matrix.target }}/release && tar czf ${{ github.workspace }}/target/wheels/glslt-$RELEASE_NAME-${{ matrix.target }}.tar.gz glsltcc)
+          (cd target/${{ matrix.target }}/release && tar czf ${{ github.workspace }}/target/wheels/glslt-$RELEASE_NAME-${{ matrix.target }}.tar.gz glsltc)
         if: matrix.os == 'ubuntu-latest'
 
       - name: Prepare release
@@ -60,7 +60,7 @@ jobs:
           del target\wheels\glslt*.tar.gz
           $ReleaseName = & git describe --tags --abbrev=0
           cd target/${{ matrix.target }}/release
-          7z a ${{ github.workspace }}/target/wheels/glslt-$ReleaseName-${{ matrix.target }}.7z glsltcc.exe
+          7z a ${{ github.workspace }}/target/wheels/glslt-$ReleaseName-${{ matrix.target }}.7z glsltc.exe
         if: matrix.os == 'windows-latest'
 
       - name: Upload to GitHub release
