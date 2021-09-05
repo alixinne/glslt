@@ -301,8 +301,8 @@ the transformation algorithm, and thus, to outer lambdas.
 
 `#include` directives are supported and will be processed, using the same rules
 as C preprocessors: double-quoted paths will be looked up from the current file
-being parsed, and then fallback to the system include paths. Angle-quoted paths
-will be looked up from the system include paths.
+being parsed. Angle-quoted paths will be looked up from the system include
+paths.
 
 ### Minifying mode
 
@@ -313,8 +313,8 @@ before they are used.
 However, if you are using the GLSLT compiler with a large template library,
 this will generate a lot of unused code. By using the `-K, --keep-fns` argument
 to the `glsltc` command, GLSLT switches to the minifying mode. In this mode,
-only the functions, types, globals and `#define` directives that are transitive
-dependencies of the functions specified by the `-K` argument are kept.
+only the functions, types, and globals that are transitive dependencies of the
+functions specified by the `-K` argument are kept.
 
 `#version`, `#extension` and precision specifiers will be included at the top
 of the generated code, if they were present in the input.
