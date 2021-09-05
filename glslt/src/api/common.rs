@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use glsl_lang::{ast, lexer::v2::fs::PreprocessorExt, parse::IntoParseBuilderExt};
+use glsl_lang::{ast, lexer::v2_full::fs::PreprocessorExt, parse::IntoParseBuilderExt};
 
 use glsl_lang_pp::{ext_name, processor::nodes::ExtensionBehavior};
 
