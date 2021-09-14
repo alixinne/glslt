@@ -28,3 +28,9 @@ void main() {
         "main",
     );
 }
+
+#[test]
+fn version_directive() {
+    let src = r#"#version 460 core"#;
+    common::verify_min_transform(src, src, "main");
+}

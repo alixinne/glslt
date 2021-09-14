@@ -82,6 +82,8 @@ name of an already-declared function as a parameter for a templated function.
 Here is an example:
 
 ```glsl
+#version 460 core
+
 // A pointer to a function that has no args and returns an int
 //
 // We use function prototypes for this matter since they're
@@ -130,6 +132,7 @@ glsltc -o output.glsl test.glsl
 The resulting code will look like this:
 
 ```glsl
+#version 460 core
 int fnReturnsOne() {
     return 1;
 }

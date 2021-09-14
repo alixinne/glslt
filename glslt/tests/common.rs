@@ -135,12 +135,13 @@ fn to_string(tu: &TranslationUnit) -> String {
 
 fn parse(input: &str) -> glsl_lang::ast::TranslationUnit {
     use glsl_lang::parse::IntoParseBuilderExt;
-    input
+    let (mut tu, _, lexer) = input
         .builder()
         .context(&glslt::parse::make_parse_context(None))
         .parse()
-        .expect("failed to parse source")
-        .0
+        .expect("failed to parse source");
+    lexer.into_directives().inject(&mut tu);
+    tu
 }
 
 fn verify_transform_impl(

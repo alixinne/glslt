@@ -18,7 +18,7 @@ pub fn parse_inputs_as_tu(
     let mut context = crate::parse::make_parse_context(None);
 
     for input in inputs {
-        let (tu, ctx, _): (ast::TranslationUnit, _, _) = processor
+        let (mut tu, ctx, lexer): (ast::TranslationUnit, _, _) = processor
             .open(input.as_ref())?
             .with_state(
                 glsl_lang_pp::processor::ProcessorState::builder().extension(
@@ -30,6 +30,7 @@ pub fn parse_inputs_as_tu(
             .context(&context)
             .parse()?;
         context = ctx;
+        lexer.into_directives().inject(&mut tu);
         external_decls.extend(tu.0.into_iter());
     }
 
@@ -42,5 +43,7 @@ pub fn parse_string(
     source: impl AsRef<str>,
 ) -> Result<ast::TranslationUnit, Box<dyn std::error::Error>> {
     let context = crate::parse::make_parse_context(None);
-    Ok(source.as_ref().builder().context(&context).parse()?.0)
+    let (mut tu, _, lexer) = source.as_ref().builder().context(&context).parse()?;
+    lexer.into_directives().inject(&mut tu);
+    Ok(tu)
 }

@@ -1,3 +1,5 @@
+#version 460 core
+
 // A pointer to a function that has no args and returns an int
 //
 // We use function prototypes for this matter since they're
