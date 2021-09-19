@@ -1,4 +1,4 @@
-//! Tests for deep dependency in struct field types
+//! Tests for deep dependency in struct field types and blocks
 
 mod common;
 
@@ -29,4 +29,21 @@ void main() {
 }"#,
         "main",
     );
+}
+
+#[test]
+fn uniform_blocks() {
+    // Blocks should be kept since their existence has side effects (i.e. they affect program
+    // linking)
+
+    let src = r#"uniform Block {
+    float x;
+    float y;
+};
+
+void main() {
+    gl_FragColor = x;
+}"#;
+
+    common::verify_min_transform(src, src, "main");
 }
