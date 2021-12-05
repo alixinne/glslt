@@ -181,9 +181,9 @@ impl TemplateDefinition {
 /// Result of parsing a function definition
 pub enum TryTemplate {
     /// GLSLT template function
-    Template(TemplateDefinition),
+    Template(Box<TemplateDefinition>),
     /// GLSL function
-    Function(FunctionDefinition),
+    Function(Box<FunctionDefinition>),
 }
 
 /// Try parsing a function definition as a template
@@ -250,12 +250,15 @@ pub fn parse_definition_as_template(
     let def = Node::new(def, span);
 
     if parameters.is_empty() {
-        Ok(TryTemplate::Function(def))
+        Ok(TryTemplate::Function(def.into()))
     } else {
-        Ok(TryTemplate::Template(TemplateDefinition {
-            ast: def,
-            parameters,
-            raw_prototype,
-        }))
+        Ok(TryTemplate::Template(
+            TemplateDefinition {
+                ast: def,
+                parameters,
+                raw_prototype,
+            }
+            .into(),
+        ))
     }
 }

@@ -95,7 +95,7 @@ impl VisitorMut for IdentifierReplacement<'_> {
                     // No more identifiers, something went wrong (i.e. syntax trees don't match)
                     None
                 } else if self.discovery.identifiers[self.current_idx]
-                    .starts_with(generated.splitn(2, '_').next().unwrap())
+                    .starts_with(generated.split_once('_').map_or(generated, |x| x.0))
                 {
                     // More identifiers left, take one and generate the replaced string
                     let repl = format!(

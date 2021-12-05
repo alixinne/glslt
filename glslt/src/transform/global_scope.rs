@@ -98,13 +98,13 @@ impl GlobalScope {
 
                 // We found a template parameter, so it's a template function
                 self.declared_templates
-                    .insert(name.clone(), Arc::new(template));
+                    .insert(name.clone(), Arc::new(*template));
 
                 let parsed = self.declared_templates.get(&name).unwrap();
                 Ok(ParsedDeclaration::ConsumedAsTemplate(parsed.clone()))
             }
             TryTemplate::Function(def) => Ok(ParsedDeclaration::Unparsed(Arc::new(
-                ExternalDeclaration::new(ExternalDeclarationData::FunctionDefinition(def), span),
+                ExternalDeclaration::new(ExternalDeclarationData::FunctionDefinition(*def), span),
             ))),
         }
     }
