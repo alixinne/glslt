@@ -96,10 +96,9 @@ pub use glsl_lang;
 pub const DEFAULT_PREFIX: &str = "_glslt_";
 
 /// Global trasnform parameters
-#[derive(Debug, Clone, derive_builder::Builder)]
+#[derive(Debug, Clone)]
 pub struct TransformConfig {
     /// Identifier prefix for code generation
-    #[builder(default = "DEFAULT_PREFIX.to_owned()")]
     pub prefix: String,
 }
 
@@ -107,6 +106,37 @@ impl Default for TransformConfig {
     fn default() -> Self {
         Self {
             prefix: DEFAULT_PREFIX.to_owned(),
+        }
+    }
+}
+
+/// Builder for [`TransformConfig`](struct.TransformConfig.html).
+#[derive(Default, Debug, Clone)]
+pub struct TransformConfigBuilder {
+    /// Identifier prefix for code generation
+    prefix: Option<String>,
+}
+
+impl TransformConfigBuilder {
+    /// Identifier prefix for code generation
+    #[allow(unused_mut)]
+    pub fn prefix(&mut self, value: String) -> &mut Self {
+        let mut new = self;
+        new.prefix = Some(value);
+        new
+    }
+
+    ///Builds a new `TransformConfig`.
+    ///
+    ///# Errors
+    ///
+    ///If a required field has not been initialized.
+    pub fn build(self) -> TransformConfig {
+        TransformConfig {
+            prefix: match self.prefix {
+                Some(value) => value,
+                None => DEFAULT_PREFIX.to_owned(),
+            },
         }
     }
 }

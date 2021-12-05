@@ -76,7 +76,7 @@ pub fn main(opts: Opts) -> Result<(), Box<dyn std::error::Error>> {
         if let Some(prefix) = &opts.prefix {
             builder.prefix(prefix.to_owned());
         }
-        builder.build().unwrap()
+        builder.build()
     };
 
     let processed_input = if opts.keep_fns.is_empty() {
