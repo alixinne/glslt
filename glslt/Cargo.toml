@@ -30,7 +30,7 @@ indexmap = "1.7"
 derive_builder = "0.10"
 
 [dependencies.pyo3]
-version = "0.14"
+version = "0.15"
 features = [ "extension-module" ]
 optional = true
 
@@ -48,7 +48,7 @@ cli = ["structopt", "env_logger", "glsl-lang-pp", "glsl-lang/lexer-v2-full"]
 
 [dev-dependencies]
 env_logger = "0.9"
-pretty_assertions = "0.6"
+pretty_assertions = "1.0"
 
 [package.metadata.maturin.scripts]
 glsltc = "glslt:main"
