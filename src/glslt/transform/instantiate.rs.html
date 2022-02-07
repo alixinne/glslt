@@ -1,7 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `glslt/src/transform/instantiate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>instantiate.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../glslt/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `glslt&#x2F;src&#x2F;transform&#x2F;instantiate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>instantiate.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../glslt/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -246,83 +244,13 @@
 <span id="243">243</span>
 <span id="244">244</span>
 <span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">glsl_lang</span>::{<span class="ident">ast</span>::<span class="kw-2">*</span>, <span class="ident">visitor</span>::<span class="kw-2">*</span>};
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">glsl_lang</span>::{<span class="ident">ast</span>::<span class="kw-2">*</span>, <span class="ident">visitor</span>::<span class="kw-2">*</span>};
 
-<span class="kw">use</span> <span class="ident">indexmap</span>::<span class="ident">IndexMap</span>;
+<span class="kw">use</span> <span class="ident">indexmap::IndexMap</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">glsl_ext</span>::<span class="ident">FunIdentifierExt</span>, <span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">glsl_ext::FunIdentifierExt</span>, <span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">template</span>::<span class="ident">TemplateDefinition</span>, <span class="ident">Scope</span>};
-
-<span class="comment">// Keep this sorted</span>
-<span class="attribute">#[<span class="ident">rustfmt</span>::<span class="ident">skip</span>]</span>
-<span class="kw">static</span> <span class="ident">BUILTIN_FUNCTION_NAMES</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[
-    <span class="string">&quot;EmitStreamVertex&quot;</span>, <span class="string">&quot;EmitVertex&quot;</span>, <span class="string">&quot;EndPrimitive&quot;</span>, <span class="string">&quot;EndStreamPrimitive&quot;</span>, <span class="string">&quot;abs&quot;</span>, <span class="string">&quot;acos&quot;</span>,
-    <span class="string">&quot;acosh&quot;</span>, <span class="string">&quot;all&quot;</span>, <span class="string">&quot;any&quot;</span>, <span class="string">&quot;asin&quot;</span>, <span class="string">&quot;asinh&quot;</span>, <span class="string">&quot;atan&quot;</span>, <span class="string">&quot;atanh&quot;</span>, <span class="string">&quot;atomicAdd&quot;</span>, <span class="string">&quot;atomicAnd&quot;</span>,
-    <span class="string">&quot;atomicCompSwap&quot;</span>, <span class="string">&quot;atomicCounter&quot;</span>, <span class="string">&quot;atomicCounterDecrement&quot;</span>, <span class="string">&quot;atomicCounterIncrement&quot;</span>,
-    <span class="string">&quot;atomicExchange&quot;</span>, <span class="string">&quot;atomicMax&quot;</span>, <span class="string">&quot;atomicMin&quot;</span>, <span class="string">&quot;atomicOr&quot;</span>, <span class="string">&quot;atomicXor&quot;</span>, <span class="string">&quot;barrier&quot;</span>, <span class="string">&quot;bitCount&quot;</span>,
-    <span class="string">&quot;bitfieldExtract&quot;</span>, <span class="string">&quot;bitfieldInsert&quot;</span>, <span class="string">&quot;bitfieldReverse&quot;</span>, <span class="string">&quot;ceil&quot;</span>, <span class="string">&quot;clamp&quot;</span>, <span class="string">&quot;cos&quot;</span>, <span class="string">&quot;cosh&quot;</span>,
-    <span class="string">&quot;cross&quot;</span>, <span class="string">&quot;dFdx&quot;</span>, <span class="string">&quot;dFdxCoarse&quot;</span>, <span class="string">&quot;dFdxFine&quot;</span>, <span class="string">&quot;dFdy&quot;</span>, <span class="string">&quot;dFdyCoarse&quot;</span>, <span class="string">&quot;dFdyFine&quot;</span>, <span class="string">&quot;degrees&quot;</span>,
-    <span class="string">&quot;determinant&quot;</span>, <span class="string">&quot;distance&quot;</span>, <span class="string">&quot;dot&quot;</span>, <span class="string">&quot;equal&quot;</span>, <span class="string">&quot;exp&quot;</span>, <span class="string">&quot;exp2&quot;</span>, <span class="string">&quot;faceforward&quot;</span>, <span class="string">&quot;findLSB&quot;</span>,
-    <span class="string">&quot;findMSB&quot;</span>, <span class="string">&quot;floatBitsToInt&quot;</span>, <span class="string">&quot;floatBitsToUint&quot;</span>, <span class="string">&quot;floor&quot;</span>, <span class="string">&quot;fma&quot;</span>, <span class="string">&quot;fract&quot;</span>, <span class="string">&quot;frexp&quot;</span>, <span class="string">&quot;fwidth&quot;</span>,
-    <span class="string">&quot;fwidthCoarse&quot;</span>, <span class="string">&quot;fwidthFine&quot;</span>, <span class="string">&quot;greaterThan&quot;</span>, <span class="string">&quot;greaterThanEqual&quot;</span>, <span class="string">&quot;groupMemoryBarrier&quot;</span>,
-    <span class="string">&quot;imageAtomicAdd&quot;</span>, <span class="string">&quot;imageAtomicAnd&quot;</span>, <span class="string">&quot;imageAtomicCompSwap&quot;</span>, <span class="string">&quot;imageAtomicExchange&quot;</span>,
-    <span class="string">&quot;imageAtomicMax&quot;</span>, <span class="string">&quot;imageAtomicMin&quot;</span>, <span class="string">&quot;imageAtomicOr&quot;</span>, <span class="string">&quot;imageAtomicXor&quot;</span>, <span class="string">&quot;imageLoad&quot;</span>,
-    <span class="string">&quot;imageSamples&quot;</span>, <span class="string">&quot;imageSize&quot;</span>, <span class="string">&quot;imageStore&quot;</span>, <span class="string">&quot;imulExtended&quot;</span>, <span class="string">&quot;intBitsToFloat&quot;</span>,
-    <span class="string">&quot;interpolateAtCentroid&quot;</span>, <span class="string">&quot;interpolateAtOffset&quot;</span>, <span class="string">&quot;interpolateAtSample&quot;</span>, <span class="string">&quot;inverse&quot;</span>,
-    <span class="string">&quot;inversesqrt&quot;</span>, <span class="string">&quot;isinf&quot;</span>, <span class="string">&quot;isnan&quot;</span>, <span class="string">&quot;ldexp&quot;</span>, <span class="string">&quot;length&quot;</span>, <span class="string">&quot;lessThan&quot;</span>, <span class="string">&quot;lessThanEqual&quot;</span>, <span class="string">&quot;log&quot;</span>,
-    <span class="string">&quot;log2&quot;</span>, <span class="string">&quot;matrixCompMult&quot;</span>, <span class="string">&quot;max&quot;</span>, <span class="string">&quot;memoryBarrier&quot;</span>, <span class="string">&quot;memoryBarrierAtomicCounter&quot;</span>,
-    <span class="string">&quot;memoryBarrierBuffer&quot;</span>, <span class="string">&quot;memoryBarrierImage&quot;</span>, <span class="string">&quot;memoryBarrierShared&quot;</span>, <span class="string">&quot;min&quot;</span>, <span class="string">&quot;mix&quot;</span>, <span class="string">&quot;mod&quot;</span>,
-    <span class="string">&quot;modf&quot;</span>, <span class="string">&quot;noise&quot;</span>, <span class="string">&quot;noise1&quot;</span>, <span class="string">&quot;noise2&quot;</span>, <span class="string">&quot;noise3&quot;</span>, <span class="string">&quot;noise4&quot;</span>, <span class="string">&quot;normalize&quot;</span>, <span class="string">&quot;not&quot;</span>, <span class="string">&quot;notEqual&quot;</span>,
-    <span class="string">&quot;outerProduct&quot;</span>, <span class="string">&quot;packDouble2x32&quot;</span>, <span class="string">&quot;packHalf2x16&quot;</span>, <span class="string">&quot;packSnorm2x16&quot;</span>, <span class="string">&quot;packSnorm4x8&quot;</span>,
-    <span class="string">&quot;packUnorm&quot;</span>, <span class="string">&quot;packUnorm2x16&quot;</span>, <span class="string">&quot;packUnorm4x8&quot;</span>, <span class="string">&quot;pow&quot;</span>, <span class="string">&quot;radians&quot;</span>, <span class="string">&quot;reflect&quot;</span>, <span class="string">&quot;refract&quot;</span>,
-    <span class="string">&quot;removedTypes&quot;</span>, <span class="string">&quot;round&quot;</span>, <span class="string">&quot;roundEven&quot;</span>, <span class="string">&quot;sign&quot;</span>, <span class="string">&quot;sin&quot;</span>, <span class="string">&quot;sinh&quot;</span>, <span class="string">&quot;smoothstep&quot;</span>, <span class="string">&quot;sqrt&quot;</span>, <span class="string">&quot;step&quot;</span>,
-    <span class="string">&quot;tan&quot;</span>, <span class="string">&quot;tanh&quot;</span>, <span class="string">&quot;texelFetch&quot;</span>, <span class="string">&quot;texelFetchOffset&quot;</span>, <span class="string">&quot;texture&quot;</span>, <span class="string">&quot;textureGather&quot;</span>,
-    <span class="string">&quot;textureGatherOffset&quot;</span>, <span class="string">&quot;textureGatherOffsets&quot;</span>, <span class="string">&quot;textureGrad&quot;</span>, <span class="string">&quot;textureGradOffset&quot;</span>,
-    <span class="string">&quot;textureLod&quot;</span>, <span class="string">&quot;textureLodOffset&quot;</span>, <span class="string">&quot;textureOffset&quot;</span>, <span class="string">&quot;textureProj&quot;</span>, <span class="string">&quot;textureProjGrad&quot;</span>,
-    <span class="string">&quot;textureProjGradOffset&quot;</span>, <span class="string">&quot;textureProjLod&quot;</span>, <span class="string">&quot;textureProjLodOffset&quot;</span>, <span class="string">&quot;textureProjOffset&quot;</span>,
-    <span class="string">&quot;textureQueryLevels&quot;</span>, <span class="string">&quot;textureQueryLod&quot;</span>, <span class="string">&quot;textureSamples&quot;</span>, <span class="string">&quot;textureSize&quot;</span>, <span class="string">&quot;transpose&quot;</span>,
-    <span class="string">&quot;trunc&quot;</span>, <span class="string">&quot;uaddCarry&quot;</span>, <span class="string">&quot;uintBitsToFloat&quot;</span>, <span class="string">&quot;umulExtended&quot;</span>, <span class="string">&quot;unpackDouble2x32&quot;</span>,
-    <span class="string">&quot;unpackHalf2x16&quot;</span>, <span class="string">&quot;unpackSnorm2x16&quot;</span>, <span class="string">&quot;unpackSnorm4x8&quot;</span>, <span class="string">&quot;unpackUnorm&quot;</span>, <span class="string">&quot;unpackUnorm2x16&quot;</span>,
-    <span class="string">&quot;unpackUnorm4x8&quot;</span>, <span class="string">&quot;usubBorrow&quot;</span>,
-];
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">template::TemplateDefinition</span>, <span class="ident">Scope</span>};
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CapturedParameter</span> {
@@ -349,26 +277,26 @@
 }
 
 <span class="kw">impl</span> <span class="ident">InstantiateTemplate</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">outer</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">InstantiateTemplate</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">outer</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">InstantiateTemplate</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">error</span>: <span class="prelude-val">None</span>,
-            <span class="ident">symbol_table</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+            <span class="ident">symbol_table</span>: <span class="ident">Default::default</span>(),
             <span class="ident">current_id</span>: <span class="ident">outer</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">current_id</span>).<span class="ident">unwrap_or</span>(<span class="number">0</span>),
         }
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">instantiate</span>(
         <span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">scope</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">Scope</span>,
+        <span class="ident">scope</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Scope</span>,
         <span class="kw-2">mut</span> <span class="ident">def</span>: <span class="ident">FunctionDefinition</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FunctionDefinition</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FunctionDefinition</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="comment">// Transform definition. The visitor is responsible for instantiating templates</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tgt</span> <span class="op">=</span> <span class="ident">InstantiateTemplateUnit</span> {
-            <span class="ident">instantiator</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+            <span class="ident">instantiator</span>: <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
             <span class="ident">scope</span>,
         };
 
-        <span class="ident">def</span>.<span class="ident">visit_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tgt</span>);
+        <span class="ident">def</span>.<span class="ident">visit_mut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">tgt</span>);
 
         <span class="comment">// Push new function declarations</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">tgt</span>.<span class="ident">scope</span>.<span class="ident">take_instanced_templates</span>();
@@ -381,12 +309,12 @@
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_symbol</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">DeclaredSymbol</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_symbol</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">DeclaredSymbol</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">symbol_table</span>.<span class="ident">get</span>(<span class="ident">name</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">new_gen_id</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Identifier</span> {
-        <span class="ident">IdentifierData</span>(<span class="ident">SmolStr</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}_lp{}&quot;</span>, <span class="kw">crate</span>::<span class="ident">PREFIX</span>, {
+    <span class="kw">fn</span> <span class="ident">new_gen_id</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">scope</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Scope</span>) -&gt; <span class="ident">Identifier</span> {
+        <span class="ident">IdentifierData</span>(<span class="ident">SmolStr::from</span>(<span class="macro">format!</span>(<span class="string">&quot;{}lp{}&quot;</span>, <span class="ident">scope</span>.<span class="ident">config</span>().<span class="ident">prefix</span>, {
             <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">current_id</span>;
             <span class="self">self</span>.<span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             <span class="ident">id</span>
@@ -394,16 +322,16 @@
         .<span class="ident">into</span>()
     }
 
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="kw">crate</span>::<span class="ident">transform</span>) <span class="kw">fn</span> <span class="ident">visit_fun_call</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">expr</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Expr</span>,
+    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::transform</span>) <span class="kw">fn</span> <span class="ident">visit_fun_call</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
+        <span class="ident">expr</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Expr</span>,
         <span class="ident">scope</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">Scope</span>,
     ) {
-        <span class="kw">match</span> <span class="ident">expr</span> {
-            <span class="ident">Expr</span>::<span class="ident">FunCall</span>(<span class="ident">fun</span>, <span class="ident">args</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">expr</span> {
+            <span class="ident">ExprData::FunCall</span>(<span class="ident">fun</span>, <span class="ident">args</span>) =&gt; {
                 <span class="comment">// First visit the arguments to transform inner lambdas first</span>
                 <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="ident">args</span>.<span class="ident">iter_mut</span>() {
-                    <span class="ident">arg</span>.<span class="ident">visit_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">InstantiateTemplateUnit</span> {
+                    <span class="ident">arg</span>.<span class="ident">visit_mut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">InstantiateTemplateUnit</span> {
                         <span class="ident">instantiator</span>: <span class="self">self</span>,
                         <span class="ident">scope</span>,
                     });
@@ -411,15 +339,12 @@
 
                 <span class="comment">// Only consider raw identifiers for function names</span>
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ident</span>) <span class="op">=</span> <span class="ident">fun</span>.<span class="ident">as_ident_or_type_name</span>() {
-                    <span class="kw">if</span> <span class="ident">BUILTIN_FUNCTION_NAMES</span>
-                        .<span class="ident">binary_search</span>(<span class="kw-2">&amp;</span><span class="ident">ident</span>.<span class="ident">as_str</span>())
-                        .<span class="ident">is_err</span>()
-                    {
+                    <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="kw">crate</span>::util::is_builtin_glsl_function</span>(<span class="ident">ident</span>.<span class="ident">as_str</span>()) {
                         <span class="comment">// Look up arguments first</span>
                         <span class="kw">match</span> <span class="ident">scope</span>.<span class="ident">transform_arg_call</span>(<span class="ident">expr</span>, <span class="self">self</span>) {
-                            <span class="prelude-val">Ok</span>(()) <span class="op">=</span><span class="op">&gt;</span> {}
-                            <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">TransformAsTemplate</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Expr</span>::<span class="ident">FunCall</span>(<span class="ident">ident</span>, <span class="ident">args</span>) <span class="op">=</span> <span class="ident">expr</span> {
+                            <span class="prelude-val">Ok</span>(()) =&gt; {}
+                            <span class="prelude-val">Err</span>(<span class="ident">Error::TransformAsTemplate</span>) =&gt; {
+                                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ExprData::FunCall</span>(<span class="ident">ident</span>, <span class="ident">args</span>) <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">expr</span> {
                                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ident</span>) <span class="op">=</span> <span class="ident">ident</span>.<span class="ident">as_ident_or_type_name_mut</span>() {
                                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">template</span>) <span class="op">=</span> <span class="ident">scope</span>.<span class="ident">get_template</span>(<span class="ident">ident</span>) {
                                             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span>
@@ -428,46 +353,46 @@
                                                 <span class="self">self</span>.<span class="ident">error</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">error</span>);
                                             }
                                         } <span class="kw">else</span> {
-                                            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;no template for function call: {}&quot;</span>, <span class="ident">ident</span>);
+                                            <span class="macro">debug!</span>(<span class="string">&quot;no template for function call: {}&quot;</span>, <span class="ident">ident</span>);
                                         }
                                     } <span class="kw">else</span> {
-                                        <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;invalid function identifier: {:?}&quot;</span>, <span class="ident">ident</span>);
+                                        <span class="macro">debug!</span>(<span class="string">&quot;invalid function identifier: {:?}&quot;</span>, <span class="ident">ident</span>);
                                     }
                                 }
                             }
-                            <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Err</span>(<span class="ident">error</span>) =&gt; {
                                 <span class="self">self</span>.<span class="ident">error</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">error</span>);
                             }
                         }
                     }
                 }
             }
-            <span class="ident">other</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(
-                <span class="string">&quot;expected Expr::FunCall in InstantiateTemplate::visit_fun_call, got {:?}&quot;</span>,
+            <span class="ident">other</span> =&gt; <span class="macro">panic!</span>(
+                <span class="string">&quot;expected ExprData::FunCall in InstantiateTemplate::visit_fun_call, got {:?}&quot;</span>,
                 <span class="ident">other</span>
             ),
         }
     }
 
     <span class="kw">fn</span> <span class="ident">transform_call</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
         <span class="ident">template</span>: <span class="kw-2">&amp;</span><span class="ident">TemplateDefinition</span>,
-        <span class="ident">fun</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SmolStr</span>,
-        <span class="ident">args</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>,
+        <span class="ident">fun</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SmolStr</span>,
+        <span class="ident">args</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>,
         <span class="ident">scope</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">Scope</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;found template function call: {}({:?})&quot;</span>, <span class="ident">fun</span>, <span class="ident">args</span>);
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="macro">debug!</span>(<span class="string">&quot;found template function call: {}({:?})&quot;</span>, <span class="ident">fun</span>, <span class="ident">args</span>);
 
         <span class="comment">// We found a template whose name matches the identifier</span>
         <span class="comment">// Thus, transform the function call</span>
 
         <span class="comment">// Create the local scope</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">local_scope</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">LocalScope</span>::<span class="ident">new</span>(<span class="ident">template</span>, <span class="ident">args</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">symbol_table</span>, <span class="ident">scope</span>)<span class="question-mark">?</span>;
-        <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;symbol table: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">symbol_table</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">local_scope</span> <span class="op">=</span> <span class="ident"><span class="kw">super</span>::LocalScope::new</span>(<span class="ident">template</span>, <span class="ident">args</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">symbol_table</span>, <span class="ident">scope</span>)<span class="question-mark">?</span>;
+        <span class="macro">trace!</span>(<span class="string">&quot;symbol table: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">symbol_table</span>);
 
         <span class="comment">// Instantiate the template if needed</span>
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">local_scope</span>.<span class="ident">template_instance_declared</span>(<span class="kw-2">&amp;</span><span class="ident">local_scope</span>.<span class="ident">name</span>()) {
-            <span class="kw">let</span> <span class="ident">template</span> <span class="op">=</span> <span class="ident">template</span>.<span class="ident">instantiate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">local_scope</span>, <span class="self">self</span>)<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">local_scope</span>.<span class="ident">template_instance_declared</span>(<span class="ident">local_scope</span>.<span class="ident">name</span>()) {
+            <span class="kw">let</span> <span class="ident">template</span> <span class="op">=</span> <span class="ident">template</span>.<span class="ident">instantiate</span>(<span class="kw-2">&amp;mut</span> <span class="ident">local_scope</span>, <span class="self">self</span>)<span class="question-mark">?</span>;
             <span class="ident">local_scope</span>.<span class="ident">register_template_instance</span>(<span class="ident">template</span>);
         }
 
@@ -477,27 +402,27 @@
         <span class="comment">// Add the captured parameters to the end of the call</span>
         <span class="kw">for</span> <span class="ident">ep</span> <span class="kw">in</span> <span class="ident">local_scope</span>.<span class="ident">captured_parameters</span>().<span class="ident">iter</span>() {
             <span class="comment">// TODO: Preserve span information</span>
-            <span class="ident">args</span>.<span class="ident">push</span>(<span class="ident">Expr</span>::<span class="ident">Variable</span>(<span class="ident">IdentifierData</span>(<span class="ident">ep</span>.<span class="ident">ident</span>.<span class="ident">clone</span>()).<span class="ident">into</span>()));
+            <span class="ident">args</span>.<span class="ident">push</span>(<span class="ident">ExprData::Variable</span>(<span class="ident">IdentifierData</span>(<span class="ident">ep</span>.<span class="ident">ident</span>.<span class="ident">clone</span>()).<span class="ident">into</span>()).<span class="ident">into_node</span>());
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">fn</span> <span class="ident">add_declared_symbol</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
         <span class="ident">scope</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Scope</span>,
         <span class="ident">name</span>: <span class="ident">SmolStr</span>,
         <span class="ident">decl_type</span>: <span class="ident">TypeSpecifier</span>,
         <span class="ident">array</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ArraySpecifier</span><span class="op">&gt;</span>,
     ) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">TypeSpecifierNonArray</span>::<span class="ident">TypeName</span>(<span class="ident">tn</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">decl_type</span>.<span class="ident">ty</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">TypeSpecifierNonArrayData::TypeName</span>(<span class="ident">tn</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">decl_type</span>.<span class="ident">ty</span> {
             <span class="kw">if</span> <span class="ident">scope</span>.<span class="ident">declared_pointer_types</span>().<span class="ident">contains_key</span>(<span class="ident">tn</span>.<span class="number">0</span>.<span class="ident">as_str</span>()) {
                 <span class="comment">// This is a template function argument, do not register it for capture</span>
                 <span class="kw">return</span>;
             }
         }
 
-        <span class="kw">let</span> <span class="ident">gen_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_gen_id</span>();
+        <span class="kw">let</span> <span class="ident">gen_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_gen_id</span>(<span class="ident">scope</span>);
         <span class="self">self</span>.<span class="ident">symbol_table</span>.<span class="ident">insert</span>(
             <span class="ident">name</span>,
             <span class="ident">DeclaredSymbol</span> {
@@ -517,9 +442,9 @@
 
 <span class="kw">impl</span> <span class="ident">VisitorMut</span> <span class="kw">for</span> <span class="ident">InstantiateTemplateUnit</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">visit_function_parameter_declarator</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FunctionParameterDeclarator</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Visit</span> {
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
+        <span class="ident">p</span>: <span class="kw-2">&amp;mut</span> <span class="ident">FunctionParameterDeclarator</span>,
+    ) -&gt; <span class="ident">Visit</span> {
         <span class="comment">// Register a declared parameter</span>
         <span class="self">self</span>.<span class="ident">instantiator</span>.<span class="ident">add_declared_symbol</span>(
             <span class="self">self</span>.<span class="ident">scope</span>,
@@ -528,10 +453,10 @@
             <span class="ident">p</span>.<span class="ident">ident</span>.<span class="ident">array_spec</span>.<span class="ident">clone</span>(),
         );
 
-        <span class="ident">Visit</span>::<span class="ident">Children</span>
+        <span class="ident">Visit::Children</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_init_declarator_list</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">idl</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">InitDeclaratorList</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Visit</span> {
+    <span class="kw">fn</span> <span class="ident">visit_init_declarator_list</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">idl</span>: <span class="kw-2">&amp;mut</span> <span class="ident">InitDeclaratorList</span>) -&gt; <span class="ident">Visit</span> {
         <span class="comment">// Register all declared variables</span>
         <span class="self">self</span>.<span class="ident">instantiator</span>.<span class="ident">add_declared_symbol</span>(
             <span class="self">self</span>.<span class="ident">scope</span>,
@@ -550,20 +475,20 @@
             );
         }
 
-        <span class="ident">Visit</span>::<span class="ident">Children</span>
+        <span class="ident">Visit::Children</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_expr</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">e</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Expr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Visit</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Expr</span>::<span class="ident">FunCall</span>(<span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">e</span> {
+    <span class="kw">fn</span> <span class="ident">visit_expr</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">e</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Expr</span>) -&gt; <span class="ident">Visit</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ExprData::FunCall</span>(<span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">e</span> {
             <span class="self">self</span>.<span class="ident">instantiator</span>.<span class="ident">visit_fun_call</span>(<span class="ident">e</span>, <span class="self">self</span>.<span class="ident">scope</span>);
 
             <span class="comment">// We already visited arguments in pre-order</span>
-            <span class="kw">return</span> <span class="ident">Visit</span>::<span class="ident">Parent</span>;
+            <span class="kw">return</span> <span class="ident">Visit::Parent</span>;
         }
 
-        <span class="ident">Visit</span>::<span class="ident">Children</span>
+        <span class="ident">Visit::Children</span>
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="glslt"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="glslt" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
+</body></html>

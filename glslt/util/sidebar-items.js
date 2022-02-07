@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["is_builtin_glsl_function","Return `true` if `name` is the name of a built-in GLSL function"]]});

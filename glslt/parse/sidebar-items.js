@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["StdPreprocessorFsError","std::fs resolver error"]],"fn":[["parse_files","Parse a set of files into a single translation unit"],["parse_source","Process the includes of some raw source"],["parse_source_default","Parse the given source with default filesystem inclusion"]],"struct":[["StdPreprocessorFs","Implementation of [super::PreprocessorFs] for [std::fs]"]],"trait":[["PreprocessorFs","Filesystem abstraction for include resolving"]]});
+initSidebarItems({"fn":[["make_parse_context","Create a parsing context that follows GLSLT’s type rules"]]});
