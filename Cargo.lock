@@ -87,9 +87,9 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "block-buffer"
-version = "0.9.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4152116fd6e9dadb291ae18fc1ec3575ed6d84c29642d97890f4b4a3417297e4"
+checksum = "03588e54c62ae6d763e2a80090d50353b785795361b4ff5b3bf0a5097fc31c0b"
 dependencies = [
  "generic-array",
 ]
@@ -150,6 +150,15 @@ name = "crunchy"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
+
+[[package]]
+name = "crypto-common"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "683d6b536309245c849479fba3da410962a43ed8e51c26b729208ec0ac2798d0"
+dependencies = [
+ "generic-array",
+]
 
 [[package]]
 name = "ctor"
@@ -217,10 +226,12 @@ checksum = "0e25ea47919b1560c4e3b7fe0aaab9becf5b84a10325ddf7db0f0ba5e1026499"
 
 [[package]]
 name = "digest"
-version = "0.9.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066"
+checksum = "b697d66081d42af4fba142d56918a3cb21dc8eb63372c6b85d14f44fb9c5979b"
 dependencies = [
+ "block-buffer",
+ "crypto-common",
  "generic-array",
 ]
 
@@ -326,7 +337,8 @@ dependencies = [
 [[package]]
 name = "glsl-lang"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c127db15e5957f5dbef98fd48c6e40a2755ad8e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ded93bca8b174c8efb0189d2c399a79dfb03a552a297b812c5d10ad38940b085"
 dependencies = [
  "glsl-lang-lexer",
  "glsl-lang-types",
@@ -340,7 +352,8 @@ dependencies = [
 [[package]]
 name = "glsl-lang-lexer"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c127db15e5957f5dbef98fd48c6e40a2755ad8e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba12114190b9df8b901215d3c85ca742579b70ef633508cbb14d55d78e263327"
 dependencies = [
  "glsl-lang-pp",
  "glsl-lang-types",
@@ -352,7 +365,8 @@ dependencies = [
 [[package]]
 name = "glsl-lang-pp"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c127db15e5957f5dbef98fd48c6e40a2755ad8e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3480a8488f62207ec896bf2f89a295c0a9bcd97262294afaa6d989fc4ad4f4fc"
 dependencies = [
  "arrayvec",
  "bimap",
@@ -372,7 +386,8 @@ dependencies = [
 [[package]]
 name = "glsl-lang-types"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c127db15e5957f5dbef98fd48c6e40a2755ad8e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8708f82f6e20b385696de82b22e885b4ef8b733e28650b5687d1f72d655cab3"
 dependencies = [
  "lang-util",
  "thiserror",
@@ -443,9 +458,9 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "indexmap"
-version = "1.7.0"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc633605454125dec4b66843673f01c7df2b89479b32e0ed634e43a91cff62a5"
+checksum = "282a6247722caba404c065016bbfa522806e51714c34f5dfc3e4a3a46fcb4223"
 dependencies = [
  "autocfg",
  "hashbrown",
@@ -494,8 +509,9 @@ dependencies = [
 
 [[package]]
 name = "lalrpop"
-version = "0.19.6"
-source = "git+https://github.com/vtavernier/lalrpop.git?branch=fix/573#4426deb4c03a914498759555d33abe5cdaeb30a0"
+version = "0.19.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "852b75a095da6b69da8c5557731c3afd06525d4f655a4fc1c799e2ec8bc4dce4"
 dependencies = [
  "ascii-canvas",
  "atty",
@@ -516,8 +532,9 @@ dependencies = [
 
 [[package]]
 name = "lalrpop-util"
-version = "0.19.6"
-source = "git+https://github.com/vtavernier/lalrpop.git?branch=fix/573#4426deb4c03a914498759555d33abe5cdaeb30a0"
+version = "0.19.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6d265705249fe209280676d8f68887859fa42e1d34f342fc05bd47726a5e188"
 dependencies = [
  "regex",
 ]
@@ -525,7 +542,8 @@ dependencies = [
 [[package]]
 name = "lang-util"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c127db15e5957f5dbef98fd48c6e40a2755ad8e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87ebf674d251fa95a7767e9328cebd7d20ec431290aabb2bca9dc1fb770485de"
 dependencies = [
  "derive_more",
  "lalrpop-util",
@@ -538,7 +556,8 @@ dependencies = [
 [[package]]
 name = "lang-util-derive"
 version = "0.2.0"
-source = "git+https://github.com/vtavernier/glsl-lang.git?branch=dev#c127db15e5957f5dbef98fd48c6e40a2755ad8e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd08136609412042a760d397ae741ab1a77020bb76a01d18e4e2c458a03b076f"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -692,12 +711,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
 
 [[package]]
-name = "opaque-debug"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
-
-[[package]]
 name = "output_vt100"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -809,9 +822,9 @@ checksum = "925383efa346730478fb4838dbe9137d2a47675ad789c546d150a6e1dd4ab31c"
 
 [[package]]
 name = "pretty_assertions"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0cfe1b2403f172ba0f234e500906ee0a3e493fb81092dac23ebefe129301cc"
+checksum = "76d5b548b725018ab5496482b45cb8bef21e9fed1858a6d674e3a8a0f0bb5d50"
 dependencies = [
  "ansi_term",
  "ctor",
@@ -1056,15 +1069,13 @@ checksum = "f12d06de37cf59146fbdecab66aa99f9fe4f78722e3607577a5375d66bd0c913"
 
 [[package]]
 name = "sha-1"
-version = "0.9.8"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99cd6713db3cf16b6c84e06321e049a9b9f699826e16096d23bbcc44d15d51a6"
+checksum = "028f48d513f9678cda28f6e4064755b3fbb2af6acd672f2c209b62323f7aea0f"
 dependencies = [
- "block-buffer",
  "cfg-if",
  "cpufeatures",
  "digest",
- "opaque-debug",
 ]
 
 [[package]]
