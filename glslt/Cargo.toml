@@ -48,6 +48,3 @@ cli = ["structopt", "env_logger", "glsl-lang-pp", "glsl-lang/lexer-v2-full"]
 [dev-dependencies]
 env_logger = "0.9"
 pretty_assertions = "1.1"
-
-[package.metadata.maturin.scripts]
-glsltc = "glslt:main"
