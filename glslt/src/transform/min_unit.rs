@@ -251,19 +251,15 @@ impl TransformUnit for MinUnit {
         &mut self,
         extdecl: ExternalDeclaration,
     ) -> Result<Option<FnHandle>> {
-        let unparsed;
-
-        match self.global_scope.parse_external_declaration(extdecl)? {
+        let unparsed = match self.global_scope.parse_external_declaration(extdecl)? {
             ParsedDeclaration::ConsumedAsType => {
                 return Ok(None);
             }
             ParsedDeclaration::ConsumedAsTemplate(r) => {
                 return Ok(Some(r.into()));
             }
-            ParsedDeclaration::Unparsed(extdecl) => {
-                unparsed = extdecl;
-            }
-        }
+            ParsedDeclaration::Unparsed(extdecl) => extdecl,
+        };
 
         let extdecl = Arc::try_unwrap(unparsed).unwrap();
         match extdecl.content {
