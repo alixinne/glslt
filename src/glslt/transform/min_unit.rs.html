@@ -356,10 +356,6 @@
 <span id="351">351</span>
 <span id="352">352</span>
 <span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 
 <span class="kw">use</span> <span class="ident">glsl_lang</span>::{<span class="ident">ast</span>::<span class="kw-2">*</span>, <span class="ident">visitor</span>::<span class="kw-2">*</span>};
@@ -613,19 +609,15 @@
         <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
         <span class="ident">extdecl</span>: <span class="ident">ExternalDeclaration</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FnHandle</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">unparsed</span>;
-
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">global_scope</span>.<span class="ident">parse_external_declaration</span>(<span class="ident">extdecl</span>)<span class="question-mark">?</span> {
+        <span class="kw">let</span> <span class="ident">unparsed</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">global_scope</span>.<span class="ident">parse_external_declaration</span>(<span class="ident">extdecl</span>)<span class="question-mark">?</span> {
             <span class="ident">ParsedDeclaration::ConsumedAsType</span> =&gt; {
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
             }
             <span class="ident">ParsedDeclaration::ConsumedAsTemplate</span>(<span class="ident">r</span>) =&gt; {
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">r</span>.<span class="ident">into</span>()));
             }
-            <span class="ident">ParsedDeclaration::Unparsed</span>(<span class="ident">extdecl</span>) =&gt; {
-                <span class="ident">unparsed</span> <span class="op">=</span> <span class="ident">extdecl</span>;
-            }
-        }
+            <span class="ident">ParsedDeclaration::Unparsed</span>(<span class="ident">extdecl</span>) =&gt; <span class="ident">extdecl</span>,
+        };
 
         <span class="kw">let</span> <span class="ident">extdecl</span> <span class="op">=</span> <span class="ident">Arc::try_unwrap</span>(<span class="ident">unparsed</span>).<span class="ident">unwrap</span>();
         <span class="kw">match</span> <span class="ident">extdecl</span>.<span class="ident">content</span> {
