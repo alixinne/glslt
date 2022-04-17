@@ -159,6 +159,7 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
+<span id="157">157</span>
 </pre><pre class="rust"><code><span class="doccomment">//! glslt is the main library that supports the GLSL Template compiler transforms. If you are</span>
 <span class="doccomment">//! building a system that relies on transforming GLSLT code, you&#39;ll want to interact with this</span>
 <span class="doccomment">//! library directly instead of the command-line interface provided by `glsltc`.</span>
@@ -309,6 +310,7 @@
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">glsl_ext</span>;
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parse&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">parse</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">transform</span>;
