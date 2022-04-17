@@ -43,7 +43,8 @@ optional = true
 
 [features]
 python = ["pyo3", "cli"]
-cli = ["structopt", "env_logger", "glsl-lang-pp", "glsl-lang/lexer-v2-full"]
+cli = ["structopt", "env_logger", "parse"]
+parse = ["glsl-lang-pp", "glsl-lang/lexer-v2-full"]
 
 [dev-dependencies]
 env_logger = "0.9"

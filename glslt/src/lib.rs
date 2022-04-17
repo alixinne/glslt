@@ -148,6 +148,7 @@ pub use error::*;
 
 pub mod glsl_ext;
 
+#[cfg(feature = "parse")]
 pub mod parse;
 
 pub mod transform;
