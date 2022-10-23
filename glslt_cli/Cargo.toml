@@ -17,6 +17,6 @@ name = "glsltc"
 path = "src/main.rs"
 
 [dependencies]
-glslt = { version = "0.6.3", features = ["cli"] }
+glslt = { version = "0.6.4", features = ["cli"] }
 
 anyhow = "1.0"
