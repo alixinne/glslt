@@ -28,16 +28,16 @@ impl<'i> Iterator for ExtractIdents<'i> {
             match self.state {
                 ExtractIdentState::Init => {
                     // Initial state, look for a valid char
-                    if ch == '_' || ('a'..'z').contains(&ch) || ('A'..'Z').contains(&ch) {
+                    if ch == '_' || ('a'..='z').contains(&ch) || ('A'..='Z').contains(&ch) {
                         self.state = ExtractIdentState::Ident { start_position: i };
                     }
                 }
                 ExtractIdentState::Ident { start_position } => {
                     // First char seen, look for following chars
                     if ch == '_'
-                        || ('a'..'z').contains(&ch)
-                        || ('A'..'Z').contains(&ch)
-                        || ('0'..'9').contains(&ch)
+                        || ('a'..='z').contains(&ch)
+                        || ('A'..='Z').contains(&ch)
+                        || ('0'..='9').contains(&ch)
                     {
                         // Stay in the current state
                         self.state = ExtractIdentState::Ident { start_position };
