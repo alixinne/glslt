@@ -33,9 +33,10 @@ version = "0.15"
 features = [ "extension-module" ]
 optional = true
 
-[dependencies.structopt]
-version = "0.3"
+[dependencies.clap]
+version = "4"
 optional = true
+features = ["derive"]
 
 [dependencies.env_logger]
 version = "0.9"
@@ -43,7 +44,7 @@ optional = true
 
 [features]
 python = ["pyo3", "cli"]
-cli = ["structopt", "env_logger", "parse"]
+cli = ["clap", "env_logger", "parse"]
 parse = ["glsl-lang-pp", "glsl-lang/lexer-v2-full"]
 
 [dev-dependencies]

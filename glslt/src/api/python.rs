@@ -189,7 +189,7 @@ fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
     #[pyo3(name = "main")]
     pub fn main_py(_py: Python) -> PyResult<()> {
         use super::cli::*;
-        main(Opts::from_iter(std::env::args().skip(1)))
+        main(Opts::parse_from(std::env::args().skip(1)))
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))
     }
 

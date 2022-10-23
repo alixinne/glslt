@@ -14,27 +14,21 @@ Alternatively, you may compile GLSLT from source and install it using `cargo ins
 ## Command-line usage
 
 ```bash
-glsltc 0.5.0
-Vincent Tavernier <vince.tavernier@gmail.com>
 GLSL Template compiler
 
-USAGE:
-    glsltc [FLAGS] [OPTIONS] [--] [input]...
+Usage: glsltc [OPTIONS] [INPUT]...
 
-FLAGS:
-    -h, --help       Prints help information
-    -q, --quiet      Quiet mode
-    -V, --version    Prints version information
-    -v, --verbose    Verbose mode. Repeat to increase verbosity
+Arguments:
+  [INPUT]...  Input template files
 
-OPTIONS:
-    -I <include>...                 System include paths
-    -K, --keep-fns <keep-fns>...    List of symbols to keep for minifying mode
-    -o, --output <output>           Output file (defaults to stdout)
-    -p, --prefix <prefix>           Identifier prefix for generated code
-
-ARGS:
-    <input>...    Input template files
+Options:
+  -q, --quiet                Quiet mode
+  -v, --verbose...           Verbose mode. Repeat to increase verbosity
+  -o, --output <OUTPUT>      Output file (defaults to stdout)
+  -I <INCLUDE>               System include paths
+  -K, --keep-fns <KEEP_FNS>  List of symbols to keep for minifying mode
+  -p, --prefix <PREFIX>      Identifier prefix for generated code
+  -h, --help                 Print help information
 ```
 
 ## Examples

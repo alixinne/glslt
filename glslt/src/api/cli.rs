@@ -2,39 +2,40 @@
 
 use std::path::PathBuf;
 
-pub use structopt::StructOpt;
-
 use crate::TransformConfigBuilder;
 
+// Re-export clap Parser
+pub use clap::Parser;
+
 /// Command-line arguments structure
-#[derive(StructOpt)]
-#[structopt(name = "glsltc", about = "GLSL Template compiler", author)]
+#[derive(clap::Parser)]
+#[command(name = "glsltc", about = "GLSL Template compiler", author)]
 pub struct Opts {
     /// Input template files
     input: Vec<PathBuf>,
 
     /// Quiet mode
-    #[structopt(short, long)]
+    #[arg(short, long)]
     quiet: bool,
 
     /// Verbose mode. Repeat to increase verbosity
-    #[structopt(short, long, parse(from_occurrences))]
-    verbose: u32,
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
 
     /// Output file (defaults to stdout)
-    #[structopt(short, long)]
+    #[arg(short, long)]
     output: Option<PathBuf>,
 
     /// System include paths
-    #[structopt(short = "I")]
+    #[arg(short = 'I')]
     include: Vec<PathBuf>,
 
     /// List of symbols to keep for minifying mode
-    #[structopt(short = "K", long)]
+    #[arg(short = 'K', long)]
     keep_fns: Vec<String>,
 
     /// Identifier prefix for generated code
-    #[structopt(short, long)]
+    #[arg(short, long)]
     prefix: Option<String>,
 }
 
