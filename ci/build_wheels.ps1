@@ -15,7 +15,7 @@ Function Test-CommandExists {
 
 # Install maturin
 if (-Not (Test-CommandExists maturin)) {
-	pip install --user -U maturin
+	pip install --user -U maturin==0.13.6
 }
 
 # Get full path to maturin
@@ -58,6 +58,6 @@ ForEach ($PyVersion in $PyVersions) {
 	$Python = & $PyEnv which python
 
 	cd glslt
-	& $Maturin build --strip "--cargo-extra-args=--features python" --target $RustTarget --release -i $Python --no-sdist
+	& $Maturin build --strip --features python --target $RustTarget --release -i $Python --no-sdist
 	cd ..
 }

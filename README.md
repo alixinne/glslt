@@ -67,10 +67,10 @@ module, use `maturin`:
 
 ```bash
 # Install maturin (only needed once)
-pip install maturin
+pip install maturin==0.13.6
 
 # Assuming you are in a virtualenv
-(cd glslt && maturin develop --cargo-extra-args='--features python' -b pyo3)
+(cd glslt && maturin develop --features python -b pyo3)
 ```
 
 ## Usage
