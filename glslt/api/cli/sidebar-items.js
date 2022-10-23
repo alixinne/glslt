@@ -1,1 +1,1 @@
-initSidebarItems({"derive":[["StructOpt","Generates the `StructOpt` impl."]],"fn":[["main","Entry point for the glsltc front-end"]],"struct":[["Opts","Command-line arguments structure"]],"trait":[["StructOpt","A struct that is converted from command line arguments."]]});
+window.SIDEBAR_ITEMS = {"derive":[["Parser","Generates the `Parser` implementation."]],"fn":[["main","Entry point for the glsltc front-end"]],"struct":[["Opts","Command-line arguments structure"]],"trait":[["Parser","Parse command-line arguments into `Self`."]]};

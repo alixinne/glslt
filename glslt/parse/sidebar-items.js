@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["make_parse_context","Create a parsing context that follows GLSLT’s type rules"]]});
+window.SIDEBAR_ITEMS = {"fn":[["make_parse_context","Create a parsing context that follows GLSLT’s type rules"]]};

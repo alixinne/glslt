@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["cli","Command-line interface to glslt"]]});
+window.SIDEBAR_ITEMS = {"mod":[["cli","Command-line interface to glslt"]]};
