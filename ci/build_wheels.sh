@@ -19,7 +19,7 @@ build_pybin () {
     export PYTHON_LIB=$(${PYBIN}/python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
     export LIBRARY_PATH="$LIBRARY_PATH:$PYTHON_LIB"
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$PYTHON_LIB"
-    $MATURIN build --manylinux=2010 --strip --features python --release -i $PYTHON_SYS_EXECUTABLE "$@"
+    $MATURIN build --manylinux=2014 --strip --features python --release -i $PYTHON_SYS_EXECUTABLE "$@"
 }
 
 # Build for previous versions of Python

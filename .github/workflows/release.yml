@@ -37,7 +37,7 @@ jobs:
       - name: Build linux wheels
         uses: addnab/docker-run-action@v1
         with:
-          image: quay.io/pypa/manylinux2010_${{ matrix.target_arch }}
+          image: quay.io/pypa/manylinux2014_${{ matrix.target_arch }}
           run: /io/ci/build_wheels.sh
           options: -v ${{ github.workspace }}:/io
         if: matrix.os == 'ubuntu-latest'
