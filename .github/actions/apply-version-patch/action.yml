@@ -1,0 +1,25 @@
+name: apply-version-patch
+description: Apply a version patch contained in a release artifact
+inputs:
+  new_release:
+    description: Was a new release created
+  version:
+    description: Git tag of the created release
+  patch_file:
+    description: Path to the patch file in the artifact
+  artifact_name:
+    description: Artifact name to retrieve
+runs:
+  using: composite
+  steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.artifact_name }}
+      if: inputs.new_release == 'true'
+
+    - run: |
+        git apply ${{ inputs.patch_file }}
+        git tag ${{ inputs.version }}
+      shell: bash
+      if: inputs.new_release == 'true'
+

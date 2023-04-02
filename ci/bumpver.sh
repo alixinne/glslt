@@ -4,5 +4,9 @@ set -eux
 
 . ci/vars
 
-perl -pi -e "s/^version = .*/version = \"$1\"/" */Cargo.toml
-cargo upgrade --workspace "glslt@$1"
+# Update Cargo.toml
+sed -i "0,/^version = .*/{s//version = \"$1\"/}" ./*/Cargo.toml
+sed -i "0,/^glslt = { version/{s/glslt = { version = [^,]*/glslt = { version = \"$1\"/}" ./*/Cargo.toml
+
+# Update lockfile
+cargo update -p glslt

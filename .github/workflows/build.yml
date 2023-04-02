@@ -1,0 +1,378 @@
+name: Build, test and release crate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+
+env:
+  GIT_USER: glslt
+  GIT_USER_EMAIL: glslt@vtavernier.github.io
+
+jobs:
+  version:
+    name: Compute next version
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      new_release: ${{ steps.outputs.outputs.new_release }}
+      version: ${{ steps.outputs.outputs.version }}
+      patch_file: ${{ steps.outputs.outputs.patch_file }}
+      artifact_name: ${{ steps.outputs.outputs.artifact_name }}
+      check_success: ${{ steps.outputs.outputs.check_success }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check conventional commits
+        uses: cocogitto/cocogitto-action@v3.2
+        # We handle the failure explicitely so this doesn't block the build
+        continue-on-error: true
+        id: check
+        with:
+          check-latest-tag-only: true
+          git-user: ${{ env.GIT_USER }}
+          git-user-email: ${{ env.GIT_USER_EMAIL }}
+
+      - name: Compute release changes
+        uses: cocogitto/cocogitto-action@v3.2
+        # We need to continue on errors since no release is an error for cocogitto-action
+        continue-on-error: true
+        id: release
+        with:
+          check: false
+          release: true
+          git-user: ${{ env.GIT_USER }}
+          git-user-email: ${{ env.GIT_USER_EMAIL }}
+        # Only try to release on success
+        if: steps.check.outcome == 'success'
+
+      - name: Compute workflow outputs
+        id: outputs
+        run: |
+          if [[ "${{ steps.check.outcome }}" == "success" && "${{ steps.release.outcome }}" == "success" ]]; then
+            echo "A new release will be created: ${{ steps.release.outputs.version }}"
+
+            # Generate changelog
+            cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
+
+            echo "new_release=true" >> $GITHUB_OUTPUT
+            echo "version=${{ steps.release.outputs.version }}" >> $GITHUB_OUTPUT
+            echo "patch_file=$(git format-patch HEAD^)" >> $GITHUB_OUTPUT
+            echo "artifact_name=release-commit" >> $GITHUB_OUTPUT
+            echo "check_success=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.check.outcome }}" != "success" ]]; then
+            echo "::error title=Cocogitto check failed::There were errors in the changelog. Continuing with the build, but this won't be released."
+
+            echo "new_release=false" >> $GITHUB_OUTPUT
+            echo "check_success=false" >> $GITHUB_OUTPUT
+          else
+            echo "No new release will be created."
+
+            echo "new_release=false" >> $GITHUB_OUTPUT
+            echo "check_success=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload commit artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.outputs.outputs.artifact_name }}
+          path: |
+            ${{ steps.outputs.outputs.patch_file }}
+            GITHUB_CHANGELOG.md
+        if: steps.outputs.outputs.new_release == 'true'
+
+  check:
+    name: Check crate
+
+    needs:
+      - version
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/apply-version-patch
+        with:
+          new_release: ${{ needs.version.outputs.new_release }}
+          version: ${{ needs.version.outputs.version }}
+          patch_file: ${{ needs.version.outputs.patch_file }}
+          artifact_name: ${{ needs.version.outputs.artifact_name }}
+
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}
+          path: |
+            ~/.cargo/bin/cargo-readme
+
+      - name: Install cargo-readme
+        run: |
+          cargo-readme -V || (
+            cargo install --force cargo-readme && cargo-readme -V
+          )
+
+      - name: Check READMEs
+        run: ./ci/readme.sh -c
+
+      - name: Check formatting
+        run: cargo fmt -- --check
+
+      - name: Check clippy lints
+        run: cargo clippy -- -D warnings -A clippy::result_large_err
+
+  test:
+    name: Test crate
+
+    needs:
+      - version
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-pc-windows-msvc
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_BUILD_TARGET: ${{ matrix.target }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/apply-version-patch
+        with:
+          new_release: ${{ needs.version.outputs.new_release }}
+          version: ${{ needs.version.outputs.version }}
+          patch_file: ${{ needs.version.outputs.patch_file }}
+          artifact_name: ${{ needs.version.outputs.artifact_name }}
+
+      - name: Run tests
+        run: cargo test
+
+  build-wheels:
+    name: Build wheels
+
+    needs:
+      - version
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-pc-windows-msvc
+        include:
+          - target: x86_64-unknown-linux-gnu
+            target_arch: x86_64
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-msvc
+            target_arch: x86_64
+            os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_BUILD_TARGET: ${{ matrix.target }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/apply-version-patch
+        with:
+          new_release: ${{ needs.version.outputs.new_release }}
+          version: ${{ needs.version.outputs.version }}
+          patch_file: ${{ needs.version.outputs.patch_file }}
+          artifact_name: ${{ needs.version.outputs.artifact_name }}
+
+      - name: Build windows wheels
+        run: ./ci/build_wheels.ps1 ${{ matrix.target }}
+        if: matrix.os == 'windows-latest'
+
+      - name: Build linux wheels
+        uses: addnab/docker-run-action@v1
+        with:
+          image: quay.io/pypa/manylinux2014_${{ matrix.target_arch }}
+          run: /io/ci/build_wheels.sh
+          options: -v ${{ github.workspace }}:/io
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Upload wheel artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels-${{ matrix.target }}
+          path: |
+            target/wheels/*.tar.gz
+            target/wheels/*.whl
+
+  build-binaries:
+    name: Build binaries
+
+    needs:
+      - version
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-pc-windows-msvc
+        include:
+          - target: x86_64-unknown-linux-gnu
+            target_arch: x86_64
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-msvc
+            target_arch: x86_64
+            os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_BUILD_TARGET: ${{ matrix.target }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/apply-version-patch
+        with:
+          new_release: ${{ needs.version.outputs.new_release }}
+          version: ${{ needs.version.outputs.version }}
+          patch_file: ${{ needs.version.outputs.patch_file }}
+          artifact_name: ${{ needs.version.outputs.artifact_name }}
+
+      - name: Build CLI binary
+        run: cargo rustc -p glslt_cli --bin glsltc --release
+
+      - name: Strip CLI binary
+        run: strip target/${{ matrix.target }}/release/glsltc
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Prepare release
+        run: |
+          RELEASE_NAME=$(git describe --tags --abbrev=0)
+          (cd target/${{ matrix.target }}/release && tar czf ${{ github.workspace }}/target/glslt-$RELEASE_NAME-${{ matrix.target }}.tar.gz glsltc)
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Prepare release
+        run: |
+          del target\glslt*.tar.gz
+          $ReleaseName = & git describe --tags --abbrev=0
+          cd target/${{ matrix.target }}/release
+          7z a ${{ github.workspace }}/target/glslt-$ReleaseName-${{ matrix.target }}.7z glsltc.exe
+        if: matrix.os == 'windows-latest'
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.target }}
+          path: |
+            target/*.tar.gz
+            target/*.7z
+
+  release:
+    name: Release crate
+
+    needs:
+      - version
+      - check
+      - test
+      - build-binaries
+      - build-wheels
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: ./.github/actions/apply-version-patch
+        with:
+          new_release: ${{ needs.version.outputs.new_release }}
+          version: ${{ needs.version.outputs.version }}
+          patch_file: ${{ needs.version.outputs.patch_file }}
+          artifact_name: ${{ needs.version.outputs.artifact_name }}
+
+      - name: Download build artifacts (x86_64-unknown-linux-gnu)
+        uses: actions/download-artifact@v3
+        with:
+          name: build-x86_64-unknown-linux-gnu
+          path: dist/
+
+      - name: Download build artifacts (x86_64-pc-windows-msvc)
+        uses: actions/download-artifact@v3
+        with:
+          name: build-x86_64-pc-windows-msvc
+          path: dist/
+
+      - name: Download wheels artifacts (x86_64-unknown-linux-gnu)
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels-x86_64-unknown-linux-gnu
+          path: wheels/
+
+      - name: Download wheels artifacts (x86_64-pc-windows-msvc)
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels-x86_64-pc-windows-msvc
+          path: wheels/
+
+      - name: Print release file list
+        run: |
+          echo "::group::Binaries"
+          ls -al dist
+          echo "::endgroup::"
+
+          echo "::group::Wheels"
+          ls -al wheels
+          echo "::endgroup::"
+
+      - name: Install twine
+        run: pip install twine==4.0.2
+
+      - name: Check PyPI distribution
+        run: twine check wheels/*
+
+      - name: Check conventional commits
+        run: |
+          if [[ "${{ needs.version.outputs.check_success }}" != "true" ]]; then
+            echo "::error title=Cocogitto check failed::The changelog is invalid, please check the output of the version step and try again."
+            exit 1
+          fi
+
+      - name: Push repository changes
+        run: |
+          git push origin
+          git push origin ${{ needs.version.outputs.version }}
+        if: needs.version.outputs.new_release == 'true' && github.ref == 'refs/heads/master'
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GH_PAT }}
+          body_path: GITHUB_CHANGELOG.md
+          tag_name: ${{ needs.version.outputs.version }}
+          files: dist/glslt-${{ needs.version.outputs.version }}-*
+        if: needs.version.outputs.new_release == 'true' && github.ref == 'refs/heads/master'
+
+      - name: Push package manager artifacts
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+        run: ./ci/release.sh
+        if: needs.version.outputs.new_release == 'true' && github.ref == 'refs/heads/master'
+
+# vim: ft=yaml:ts=2:sw=2:et
