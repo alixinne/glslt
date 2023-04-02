@@ -76,11 +76,7 @@ impl InstantiateTemplate {
         .into()
     }
 
-    pub(in crate::transform) fn visit_fun_call<'s>(
-        &mut self,
-        expr: &mut Expr,
-        scope: &'s mut dyn Scope,
-    ) {
+    pub(in crate::transform) fn visit_fun_call(&mut self, expr: &mut Expr, scope: &mut dyn Scope) {
         match &mut **expr {
             ExprData::FunCall(fun, args) => {
                 // First visit the arguments to transform inner lambdas first
@@ -102,7 +98,7 @@ impl InstantiateTemplate {
                                     if let Some(ident) = ident.as_ident_or_type_name_mut() {
                                         if let Some(template) = scope.get_template(ident) {
                                             if let Err(error) =
-                                                self.transform_call(&*template, ident, args, scope)
+                                                self.transform_call(&template, ident, args, scope)
                                             {
                                                 self.error = Some(error);
                                             }
@@ -128,12 +124,12 @@ impl InstantiateTemplate {
         }
     }
 
-    fn transform_call<'s>(
+    fn transform_call(
         &mut self,
         template: &TemplateDefinition,
         fun: &mut SmolStr,
         args: &mut Vec<Expr>,
-        scope: &'s mut dyn Scope,
+        scope: &mut dyn Scope,
     ) -> Result<()> {
         debug!("found template function call: {}({:?})", fun, args);
 
