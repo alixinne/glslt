@@ -360,4 +360,4 @@ users, but they are not currently included in the output.
 
 ## Author
 
-Vincent Tavernier <vince.tavernier@gmail.com>
+Vincent Tavernier <v.tavernier@pm.me>
