@@ -18,7 +18,7 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 glsl-lang = "0.4.1"
-glsl-lang-pp = { version = "0.4.1", optional = true }
+glsl-lang-pp = { version = "0.5.1", optional = true }
 lang-util = "0.4.1"
 
 thiserror = "1.0"

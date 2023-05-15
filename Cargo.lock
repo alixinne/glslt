@@ -427,7 +427,7 @@ dependencies = [
  "glsl-lang-types",
  "lalrpop",
  "lalrpop-util",
- "lang-util",
+ "lang-util 0.4.1",
  "lazy_static",
  "thiserror",
 ]
@@ -438,10 +438,10 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea8bf8a93e8e728a9117d9d3000d4b9601d235b30da090869a064f63eba91b6d"
 dependencies = [
- "glsl-lang-pp",
+ "glsl-lang-pp 0.4.1",
  "glsl-lang-types",
  "lalrpop-util",
- "lang-util",
+ "lang-util 0.4.1",
  "thiserror",
 ]
 
@@ -456,9 +456,30 @@ dependencies = [
  "cbitset",
  "derive_more",
  "itertools",
- "lang-util",
+ "lang-util 0.4.1",
  "lazy_static",
  "lexical",
+ "rowan",
+ "static_assertions",
+ "string_cache",
+ "string_cache_codegen",
+ "thiserror",
+]
+
+[[package]]
+name = "glsl-lang-pp"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f28dab400c637d421d78b218e0d5982f4c6a5567e10faf440373d7f123cff1ed"
+dependencies = [
+ "arrayvec",
+ "bimap",
+ "cbitset",
+ "derive_more",
+ "itertools",
+ "lang-util 0.5.1",
+ "lexical",
+ "once_cell",
  "rowan",
  "static_assertions",
  "string_cache",
@@ -472,7 +493,7 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5be19cbc3d58c83ceb77d1bef452b99f12c1f6d90286507bd899607604dacfd1"
 dependencies = [
- "lang-util",
+ "lang-util 0.4.1",
  "thiserror",
 ]
 
@@ -484,9 +505,9 @@ dependencies = [
  "clap",
  "env_logger",
  "glsl-lang",
- "glsl-lang-pp",
+ "glsl-lang-pp 0.5.1",
  "indexmap",
- "lang-util",
+ "lang-util 0.4.1",
  "log",
  "petgraph",
  "pretty_assertions",
@@ -656,7 +677,20 @@ checksum = "ec5e86f613298b30274cd901cb2e4b776c7807fa769174bdaa82b951421f2579"
 dependencies = [
  "derive_more",
  "lalrpop-util",
- "lang-util-derive",
+ "lang-util-derive 0.4.1",
+ "line-span",
+ "smol_str",
+ "text-size",
+]
+
+[[package]]
+name = "lang-util"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "587b328c2e2ad16e7d69f4d4a95a1621e5b56749f65c2092882fb6d5905f3f87"
+dependencies = [
+ "derive_more",
+ "lang-util-derive 0.5.1",
  "line-span",
  "smol_str",
  "text-size",
@@ -667,6 +701,18 @@ name = "lang-util-derive"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "101e888fda754d051a58fedf0044b2b8f7a07da5028ac042a89c8541506bd1d8"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "lang-util-derive"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25b966dfab07f9ae98fbff502a734d7a8ae36c9db9e05cefbc33582ace4f1ff9"
 dependencies = [
  "darling",
  "proc-macro2",
