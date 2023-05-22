@@ -427,7 +427,7 @@ dependencies = [
  "glsl-lang-types",
  "lalrpop",
  "lalrpop-util",
- "lang-util",
+ "lang-util 0.4.1",
  "lazy_static",
  "thiserror",
 ]
@@ -441,7 +441,7 @@ dependencies = [
  "glsl-lang-pp",
  "glsl-lang-types",
  "lalrpop-util",
- "lang-util",
+ "lang-util 0.4.1",
  "thiserror",
 ]
 
@@ -456,7 +456,7 @@ dependencies = [
  "cbitset",
  "derive_more",
  "itertools",
- "lang-util",
+ "lang-util 0.4.1",
  "lazy_static",
  "lexical",
  "rowan",
@@ -472,7 +472,7 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5be19cbc3d58c83ceb77d1bef452b99f12c1f6d90286507bd899607604dacfd1"
 dependencies = [
- "lang-util",
+ "lang-util 0.4.1",
  "thiserror",
 ]
 
@@ -486,7 +486,7 @@ dependencies = [
  "glsl-lang",
  "glsl-lang-pp",
  "indexmap",
- "lang-util",
+ "lang-util 0.5.1",
  "log",
  "petgraph",
  "pretty_assertions",
@@ -656,7 +656,20 @@ checksum = "ec5e86f613298b30274cd901cb2e4b776c7807fa769174bdaa82b951421f2579"
 dependencies = [
  "derive_more",
  "lalrpop-util",
- "lang-util-derive",
+ "lang-util-derive 0.4.1",
+ "line-span",
+ "smol_str",
+ "text-size",
+]
+
+[[package]]
+name = "lang-util"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "587b328c2e2ad16e7d69f4d4a95a1621e5b56749f65c2092882fb6d5905f3f87"
+dependencies = [
+ "derive_more",
+ "lang-util-derive 0.5.1",
  "line-span",
  "smol_str",
  "text-size",
@@ -667,6 +680,18 @@ name = "lang-util-derive"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "101e888fda754d051a58fedf0044b2b8f7a07da5028ac042a89c8541506bd1d8"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "lang-util-derive"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25b966dfab07f9ae98fbff502a734d7a8ae36c9db9e05cefbc33582ace4f1ff9"
 dependencies = [
  "darling",
  "proc-macro2",
