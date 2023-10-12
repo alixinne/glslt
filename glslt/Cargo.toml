@@ -29,7 +29,7 @@ log = "0.4"
 indexmap = { version = "1.8", features = ["std"] }
 
 [dependencies.pyo3]
-version = "0.15"
+version = "0.20"
 features = [ "extension-module" ]
 optional = true
 
