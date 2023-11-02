@@ -30,7 +30,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check conventional commits
-        uses: cocogitto/cocogitto-action@v3.2
+        uses: cocogitto/cocogitto-action@v3.5
         # We handle the failure explicitely so this doesn't block the build
         continue-on-error: true
         id: check
@@ -40,7 +40,7 @@ jobs:
           git-user-email: ${{ env.GIT_USER_EMAIL }}
 
       - name: Compute release changes
-        uses: cocogitto/cocogitto-action@v3.2
+        uses: cocogitto/cocogitto-action@v3.5
         # We need to continue on errors since no release is an error for cocogitto-action
         continue-on-error: true
         id: release
