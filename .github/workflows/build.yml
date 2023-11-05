@@ -20,7 +20,7 @@ jobs:
     outputs:
       new_release: ${{ steps.outputs.outputs.new_release }}
       version: ${{ steps.outputs.outputs.version }}
-      patch_file: ${{ steps.outputs.outputs.patch_file }}
+      bundle_file: ${{ steps.outputs.outputs.bundle_file }}
       artifact_name: ${{ steps.outputs.outputs.artifact_name }}
       check_success: ${{ steps.outputs.outputs.check_success }}
 
@@ -66,9 +66,13 @@ jobs:
             # Generate changelog
             cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
 
+            # Generate bundle for latest commit
+            bundle_file=release.bundle
+            git bundle create $bundle_file HEAD
+
             echo "new_release=true" >> $GITHUB_OUTPUT
             echo "version=${{ steps.release.outputs.version }}" >> $GITHUB_OUTPUT
-            echo "patch_file=$(git format-patch HEAD^)" >> $GITHUB_OUTPUT
+            echo "bundle_file=$bundle_file" >> $GITHUB_OUTPUT
             echo "artifact_name=release-commit" >> $GITHUB_OUTPUT
             echo "check_success=true" >> $GITHUB_OUTPUT
           elif [[ "${{ steps.check.outcome }}" != "success" ]]; then
@@ -88,7 +92,7 @@ jobs:
         with:
           name: ${{ steps.outputs.outputs.artifact_name }}
           path: |
-            ${{ steps.outputs.outputs.patch_file }}
+            ${{ steps.outputs.outputs.bundle_file }}
             GITHUB_CHANGELOG.md
         if: steps.outputs.outputs.new_release == 'true'
 
@@ -102,11 +106,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/apply-version-patch
+      - uses: ./.github/actions/apply-version-bundle
         with:
           new_release: ${{ needs.version.outputs.new_release }}
           version: ${{ needs.version.outputs.version }}
-          patch_file: ${{ needs.version.outputs.patch_file }}
+          bundle_file: ${{ needs.version.outputs.bundle_file }}
           artifact_name: ${{ needs.version.outputs.artifact_name }}
 
       - uses: actions/cache@v3
@@ -159,11 +163,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/apply-version-patch
+      - uses: ./.github/actions/apply-version-bundle
         with:
           new_release: ${{ needs.version.outputs.new_release }}
           version: ${{ needs.version.outputs.version }}
-          patch_file: ${{ needs.version.outputs.patch_file }}
+          bundle_file: ${{ needs.version.outputs.bundle_file }}
           artifact_name: ${{ needs.version.outputs.artifact_name }}
 
       - name: Run tests
@@ -196,11 +200,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/apply-version-patch
+      - uses: ./.github/actions/apply-version-bundle
         with:
           new_release: ${{ needs.version.outputs.new_release }}
           version: ${{ needs.version.outputs.version }}
-          patch_file: ${{ needs.version.outputs.patch_file }}
+          bundle_file: ${{ needs.version.outputs.bundle_file }}
           artifact_name: ${{ needs.version.outputs.artifact_name }}
 
       - name: Build windows wheels
@@ -250,11 +254,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/apply-version-patch
+      - uses: ./.github/actions/apply-version-bundle
         with:
           new_release: ${{ needs.version.outputs.new_release }}
           version: ${{ needs.version.outputs.version }}
-          patch_file: ${{ needs.version.outputs.patch_file }}
+          bundle_file: ${{ needs.version.outputs.bundle_file }}
           artifact_name: ${{ needs.version.outputs.artifact_name }}
 
       - name: Build CLI binary
@@ -303,11 +307,11 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
 
-      - uses: ./.github/actions/apply-version-patch
+      - uses: ./.github/actions/apply-version-bundle
         with:
           new_release: ${{ needs.version.outputs.new_release }}
           version: ${{ needs.version.outputs.version }}
-          patch_file: ${{ needs.version.outputs.patch_file }}
+          bundle_file: ${{ needs.version.outputs.bundle_file }}
           artifact_name: ${{ needs.version.outputs.artifact_name }}
 
       - name: Download build artifacts (x86_64-unknown-linux-gnu)
