@@ -1,6 +1,6 @@
 [package]
 name = "glslt_cli"
-version = "0.7.1"
+version = "0.7.2"
 authors = ["Vincent Tavernier <v.tavernier@pm.me>"]
 description = "GLSLT Template compiler library"
 edition = "2018"
@@ -17,6 +17,6 @@ name = "glsltc"
 path = "src/main.rs"
 
 [dependencies]
-glslt = { version = "0.7.1", features = ["cli"] }
+glslt = { version = "0.7.2", features = ["cli"] }
 
 anyhow = "1.0"
