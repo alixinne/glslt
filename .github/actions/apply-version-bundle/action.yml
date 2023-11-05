@@ -1,12 +1,12 @@
-name: apply-version-patch
-description: Apply a version patch contained in a release artifact
+name: apply-version-bundle
+description: Apply a version bundle contained in a release artifact
 inputs:
   new_release:
     description: Was a new release created
   version:
     description: Git tag of the created release
-  patch_file:
-    description: Path to the patch file in the artifact
+  bundle_file:
+    description: Path to the bundle file in the artifact
   artifact_name:
     description: Artifact name to retrieve
 runs:
@@ -18,9 +18,7 @@ runs:
       if: inputs.new_release == 'true'
 
     - run: |
-        git config user.name "$GIT_USER"
-        git config user.email "$GIT_USER_EMAIL"
-        git am --committer-date-is-author-date ${{ inputs.patch_file }}
+        git pull ${{ inputs.bundle_file }} HEAD:$(git rev-parse --abbrev-ref HEAD)
         git tag ${{ inputs.version }}
       shell: bash
       if: inputs.new_release == 'true'
