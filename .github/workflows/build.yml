@@ -208,7 +208,7 @@ jobs:
         if: matrix.os == 'windows-latest'
 
       - name: Build linux wheels
-        uses: addnab/docker-run-action@v1
+        uses: addnab/docker-run-action@v3
         with:
           image: quay.io/pypa/manylinux2014_${{ matrix.target_arch }}
           run: /io/ci/build_wheels.sh
