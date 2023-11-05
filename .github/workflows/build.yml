@@ -29,6 +29,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Store repository head
+        id: head_before_release
+        shell: bash
+        run: echo head=$(git rev-parse HEAD) >> $GITHUB_OUTPUT
+
       - name: Check conventional commits
         uses: cocogitto/cocogitto-action@v3.5
         # We handle the failure explicitely so this doesn't block the build
@@ -55,7 +60,7 @@ jobs:
       - name: Compute workflow outputs
         id: outputs
         run: |
-          if [[ "${{ steps.check.outcome }}" == "success" && "${{ steps.release.outcome }}" == "success" ]]; then
+          if [[ "${{ steps.check.outcome }}" == "success" && "${{ steps.release.outcome }}" == "success" && "$(git rev-parse HEAD)" != "${{ steps.head_before_release.outputs.head }}" ]]; then
             echo "A new release will be created: ${{ steps.release.outputs.version }}"
 
             # Generate changelog
@@ -261,14 +266,14 @@ jobs:
 
       - name: Prepare release
         run: |
-          RELEASE_NAME=$(git describe --tags --abbrev=0)
+          RELEASE_NAME=$(git describe --tags --abbrev=0 --always)
           (cd target/${{ matrix.target }}/release && tar czf ${{ github.workspace }}/target/glslt-$RELEASE_NAME-${{ matrix.target }}.tar.gz glsltc)
         if: matrix.os == 'ubuntu-latest'
 
       - name: Prepare release
         run: |
           del target\glslt*.tar.gz
-          $ReleaseName = & git describe --tags --abbrev=0
+          $ReleaseName = & git describe --tags --abbrev=0 --always
           cd target/${{ matrix.target }}/release
           7z a ${{ github.workspace }}/target/glslt-$ReleaseName-${{ matrix.target }}.7z glsltc.exe
         if: matrix.os == 'windows-latest'
