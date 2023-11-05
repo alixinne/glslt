@@ -167,7 +167,7 @@ impl TemplateDefinition {
         });
 
         // Put regular args back into the function call
-        args.extend(other.into_iter());
+        args.extend(other);
 
         // Return template args with their values and type names
         Ok(res
@@ -243,9 +243,7 @@ pub fn parse_definition_as_template(
         non_template_parameters.push(parameter);
     }
 
-    def.prototype
-        .parameters
-        .extend(non_template_parameters.into_iter());
+    def.prototype.parameters.extend(non_template_parameters);
 
     let def = Node::new(def, span);
 
