@@ -315,25 +315,25 @@ jobs:
           artifact_name: ${{ needs.version.outputs.artifact_name }}
 
       - name: Download build artifacts (x86_64-unknown-linux-gnu)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-x86_64-unknown-linux-gnu
           path: dist/
 
       - name: Download build artifacts (x86_64-pc-windows-msvc)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-x86_64-pc-windows-msvc
           path: dist/
 
       - name: Download wheels artifacts (x86_64-unknown-linux-gnu)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: wheels-x86_64-unknown-linux-gnu
           path: wheels/
 
       - name: Download wheels artifacts (x86_64-pc-windows-msvc)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: wheels-x86_64-pc-windows-msvc
           path: wheels/
