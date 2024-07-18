@@ -1,6 +1,6 @@
-# [glslt](https://github.com/vtavernier/glslt)
+# [glslt](https://github.com/alixinne/glslt)
 
-[![Run tests](https://github.com/vtavernier/glslt/workflows/Run%20tests/badge.svg?branch=master)](https://github.com/vtavernier/glslt/actions) [![GitHub release](https://img.shields.io/github/v/release/vtavernier/glslt)](https://github.com/vtavernier/glslt/releases) [![PyPI](https://img.shields.io/pypi/v/glslt)](https://pypi.org/project/glslt/) [![License](https://img.shields.io/github/license/vtavernier/glslt)](LICENSE)
+[![Run tests](https://github.com/alixinne/glslt/workflows/Run%20tests/badge.svg?branch=master)](https://github.com/alixinne/glslt/actions) [![GitHub release](https://img.shields.io/github/v/release/alixinne/glslt)](https://github.com/alixinne/glslt/releases) [![PyPI](https://img.shields.io/pypi/v/glslt)](https://pypi.org/project/glslt/) [![License](https://img.shields.io/github/license/alixinne/glslt)](LICENSE)
 
 `glslt` is a prototype language for adding template functions to the GLSL
 language.
@@ -32,7 +32,7 @@ common interfaces, as function pointers (or callbacks) would provide.
 
 ## Installation
 
-Check out the [releases](https://github.com/vtavernier/glslt/releases) for
+Check out the [releases](https://github.com/alixinne/glslt/releases) for
 pre-compiled binaries for stable versions. Installing the Python module (see
 below) also installs the corresponding `glsltc` binary.
 
@@ -45,7 +45,7 @@ cargo install --force glslt_cli
 
 # From the repository
 ## Fetch the source
-git clone https://github.com/vtavernier/glslt.git
+git clone https://github.com/alixinne/glslt.git
 cd glslt
 
 ## Run the program directly
@@ -352,7 +352,7 @@ an example.
 
 ## Limitations
 
-This program is based on the [glsl-lang](https://github.com/vtavernier/glsl-lang)
+This program is based on the [glsl-lang](https://github.com/alixinne/glsl-lang)
 crate for parsing and manipulating the GLSL AST in Rust. However, since it's
 only an AST and not a full parse tree, we have currently no way of preserving
 original formatting. Comments are still parsed and are available to library
@@ -360,4 +360,4 @@ users, but they are not currently included in the output.
 
 ## Author
 
-Vincent Tavernier <v.tavernier@pm.me>
+Alixinne <alixinne@pm.me>

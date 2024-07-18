@@ -1,11 +1,11 @@
 //! glsltc is the default compiler front-end for the GLSLT language. To use the GLSLT transforms
 //! from Rust or Python code, see the documentation for the
-//! [glslt](https://vtavernier.github.io/glslt/doc/glslt/) crate.
+//! [glslt](https://alixinne.github.io/glslt/doc/glslt/) crate.
 //!
 //! # Installation
 //!
 //! Extract the pre-built binary for your platform from the
-//! [releases](https://github.com/vtavernier/glslt/releases/) somewhere in your `$PATH`.
+//! [releases](https://github.com/alixinne/glslt/releases/) somewhere in your `$PATH`.
 //!
 //! Alternatively, you may compile GLSLT from source and install it using `cargo install --force .`
 //!

@@ -6,20 +6,20 @@ All notable changes to this project will be documented in this file. See [conven
 #### Bug Fixes
 - **(deps)** update rust crate indexmap to v2 - (23dd1d7) - renovate[bot]
 #### Continuous Integration
-- handle PRs which don't trigger a release - (3ee56df) - vtavernier
+- handle PRs which don't trigger a release - (3ee56df) - alixinne
 #### Miscellaneous Chores
 - **(deps)** update actions/checkout action to v4 - (c4c2153) - renovate[bot]
 - **(deps)** update actions/cache action to v3 - (6b96395) - renovate[bot]
 - **(deps)** update addnab/docker-run-action action to v3 - (ea7b9bc) - renovate[bot]
 - **(deps)** update all non-major dependencies - (ef0168c) - renovate[bot]
 - **(deps)** add renovate.json - (dd82b2b) - renovate[bot]
-- fix clippy warnings - (b999d39) - vtavernier
+- fix clippy warnings - (b999d39) - alixinne
 
 - - -
 
 ## v0.7.1 - 2023-04-04
 #### Bug Fixes
-- fix release process - (b0d6842) - vtavernier
+- fix release process - (b0d6842) - alixinne
 
 - - -
 

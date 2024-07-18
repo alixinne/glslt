@@ -9,7 +9,7 @@ on:
 
 env:
   GIT_USER: glslt
-  GIT_USER_EMAIL: glslt@vtavernier.github.io
+  GIT_USER_EMAIL: glslt@alixinne.github.io
 
 jobs:
   version:

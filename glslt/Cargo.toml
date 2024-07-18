@@ -1,13 +1,13 @@
 [package]
 name = "glslt"
 version = "0.7.2"
-authors = ["Vincent Tavernier <v.tavernier@pm.me>"]
+authors = ["Alixinne <alixinne@pm.me>"]
 description = "GLSLT Template compiler library"
 edition = "2018"
 license = "MIT"
-homepage = "https://github.com/vtavernier/glslt"
-documentation = "https://vtavernier.github.io/glslt/glslt/"
-repository = "https://github.com/vtavernier/glslt.git"
+homepage = "https://github.com/alixinne/glslt"
+documentation = "https://alixinne.github.io/glslt/glslt/"
+repository = "https://github.com/alixinne/glslt.git"
 readme = "README.md"
 keywords = ["glslt", "glsl", "language", "parser", "template"]
 categories = ["parser-implementations", "rendering"]

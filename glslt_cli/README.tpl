@@ -4,4 +4,4 @@
 
 ## Author
 
-Vincent Tavernier <v.tavernier@pm.me>
+Alixinne <alixinne@pm.me>
