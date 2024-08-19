@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.7.4 - 2024-08-19
+#### Bug Fixes
+- **(deps)** update glsl-lang to 0.6.0 - (5843a8f) - renovate[bot]
+
+- - -
+
 ## v0.7.3 - 2024-08-19
 #### Bug Fixes
 - **(deps)** update all non-major dependencies - (3ab446e) - renovate[bot]
