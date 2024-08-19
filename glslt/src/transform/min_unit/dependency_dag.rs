@@ -1,63 +1,6 @@
 use glsl_lang::ast::SmolStr;
 use petgraph::graph::NodeIndex;
 
-#[derive(Clone, Copy)]
-enum ExtractIdentState {
-    Init,
-    Ident { start_position: usize },
-}
-
-pub struct ExtractIdents<'i> {
-    input: &'i str,
-    current_position: usize,
-    state: ExtractIdentState,
-}
-
-impl<'i> Iterator for ExtractIdents<'i> {
-    type Item = &'i str;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        // The rest of the string that wasn't parsed yet
-        let remaining = &self.input[self.current_position..];
-
-        let mut last_index = self.current_position;
-
-        for (i, ch) in remaining.char_indices() {
-            self.current_position = i;
-
-            match self.state {
-                ExtractIdentState::Init => {
-                    // Initial state, look for a valid char
-                    if ch == '_' || ch.is_ascii_lowercase() || ch.is_ascii_uppercase() {
-                        self.state = ExtractIdentState::Ident { start_position: i };
-                    }
-                }
-                ExtractIdentState::Ident { start_position } => {
-                    // First char seen, look for following chars
-                    if ch == '_'
-                        || ch.is_ascii_lowercase()
-                        || ch.is_ascii_uppercase()
-                        || ch.is_ascii_digit()
-                    {
-                        // Stay in the current state
-                        self.state = ExtractIdentState::Ident { start_position };
-                    } else {
-                        // Not an ident, reset state
-                        self.state = ExtractIdentState::Init;
-
-                        // Return ident slice
-                        return Some(&self.input[start_position..=last_index]);
-                    }
-                }
-            }
-
-            last_index = i;
-        }
-
-        None
-    }
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum ExternalIdentifier {
     /// Function definition
