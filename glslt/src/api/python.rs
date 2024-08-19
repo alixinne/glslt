@@ -152,7 +152,7 @@ impl PyMinUnit {
 }
 
 #[pymodule]
-fn glslt(_py: Python, m: &PyModule) -> PyResult<()> {
+fn glslt(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     /// Parse a string as GLSL source
     ///
     /// # Parameters
