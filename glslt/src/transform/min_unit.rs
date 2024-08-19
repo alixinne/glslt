@@ -112,7 +112,7 @@ impl MinUnit {
             self.dag
                 .into_dependencies(&wanted)
                 .into_iter()
-                .filter_map(|id| stored_decls.remove(&id)),
+                .filter_map(|id| stored_decls.shift_remove(&id)),
         );
 
         Ok(TranslationUnit(

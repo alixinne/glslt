@@ -35,7 +35,7 @@ fn transform_unit<'a, T: TransformUnit>(
     asts: impl std::iter::Iterator<Item = &'a TranslationUnit>,
     inst: &mut T,
 ) -> Result<()> {
-    for (_id, ast) in asts.enumerate() {
+    for ast in asts {
         // We clone all declarations since they all have somewhere to go
         for extdecl in ast.0.iter().cloned() {
             inst.parse_external_declaration(extdecl)?;
