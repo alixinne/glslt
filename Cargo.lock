@@ -451,7 +451,7 @@ dependencies = [
 
 [[package]]
 name = "glslt"
-version = "0.7.2"
+version = "0.7.3"
 dependencies = [
  "bimap",
  "clap",
@@ -470,7 +470,7 @@ dependencies = [
 
 [[package]]
 name = "glslt_cli"
-version = "0.7.2"
+version = "0.7.3"
 dependencies = [
  "anyhow",
  "glslt",

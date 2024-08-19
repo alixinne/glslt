@@ -2,6 +2,35 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.7.3 - 2024-08-19
+#### Bug Fixes
+- **(deps)** update all non-major dependencies - (3ab446e) - renovate[bot]
+- **(deps)** update rust crate thiserror to v1.0.62 - (d8ae73c) - renovate[bot]
+- **(deps)** update all non-major dependencies - (ae97d36) - renovate[bot]
+- **(deps)** update all non-major dependencies - (cbdd9ed) - renovate[bot]
+- **(deps)** update all non-major dependencies - (98f370a) - renovate[bot]
+- **(deps)** update all non-major dependencies to v1.0.86 - (e17d629) - renovate[bot]
+- **(deps)** update all non-major dependencies - (1b331af) - renovate[bot]
+- **(deps)** update all non-major dependencies - (679c2ca) - renovate[bot]
+- **(python)** fix pyo3 upgrade - (83ed374) - *alixinne*
+- update github profile information - (25e4be7) - Alix Tavernier
+#### Continuous Integration
+- use git bundles instead of patches - (d7843ba) - Vincent Tavernier
+#### Miscellaneous Chores
+- **(deps)** update cocogitto/cocogitto-action action to v3.8 - (7799796) - renovate[bot]
+- **(deps)** update all non-major dependencies - (d784541) - renovate[bot]
+- **(deps)** update peaceiris/actions-gh-pages action to v4 - (10f5361) - renovate[bot]
+- **(deps)** update dependency maturin to v1 - (284e6c9) - renovate[bot]
+- **(deps)** update softprops/action-gh-release action to v2 - (827439f) - renovate[bot]
+- **(deps)** update all non-major dependencies - (214bb2e) - renovate[bot]
+- **(deps)** update actions/cache action to v4 - (0ed7ca1) - renovate[bot]
+- **(deps)** update actions/upload-artifact action to v4 - (d5c475a) - renovate[bot]
+- **(deps)** update actions/download-artifact action to v4 - (f02dd54) - renovate[bot]
+- remove dead code - (8165b04) - alixinne
+- fix warnings - (3d032bc) - alixinne
+
+- - -
+
 ## v0.7.2 - 2023-11-05
 #### Bug Fixes
 - **(deps)** update rust crate indexmap to v2 - (23dd1d7) - renovate[bot]
