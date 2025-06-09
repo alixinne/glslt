@@ -7,8 +7,8 @@ export PATH="$HOME/.cargo/bin:$PATH"
 # Maturin builds with musl
 rustup target add x86_64-unknown-linux-musl
 
-/opt/python/cp37*/bin/pip install -U maturin==0.13.6
-export MATURIN=/opt/_internal/cpython-3.7*/bin/maturin
+/opt/python/cp311*/bin/pip install -U maturin==0.13.6
+export MATURIN=/opt/_internal/cpython-3.11*/bin/maturin
 
 # Switch to source dir
 cd /io/glslt
@@ -23,7 +23,7 @@ build_pybin () {
 }
 
 # Build for previous versions of Python
-for PYBIN in /opt/python/cp{37,38,39,310}*/bin; do
+for PYBIN in /opt/python/cp{310,311,312,313}*/bin; do
     build_pybin
 done
 

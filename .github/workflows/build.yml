@@ -349,7 +349,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Install twine
-        run: pip install twine==4.0.2
+        run: pip install twine==5.1.1
 
       - name: Check PyPI distribution
         run: twine check wheels/*
