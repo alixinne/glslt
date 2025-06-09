@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.7.6 - 2025-06-09
+#### Bug Fixes
+- **(deps)** update all non-major dependencies (#40) - (b76e0e0) - renovate[bot]
+
+- - -
+
 ## v0.7.5 - 2025-06-09
 #### Bug Fixes
 - **(deps)** update rust crate thiserror to v2 - (9207e89) - renovate[bot]
