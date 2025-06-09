@@ -5,7 +5,7 @@ name = "glslt"
 glsltc = "glslt:main"
 
 [build-system]
-requires = ["maturin>=1.7,<1.8"]
+requires = ["maturin>=1.8,<1.9"]
 build-backend = "maturin"
 
 [tools.maturin]
