@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.7.5 - 2025-06-09
+#### Bug Fixes
+- **(deps)** update rust crate thiserror to v2 - (9207e89) - renovate[bot]
+- **(deps)** update all non-major dependencies - (a6095f7) - renovate[bot]
+#### Miscellaneous Chores
+- fix python wheel build - (d609982) - alixinne
+- fix update issues - (b2cee37) - alixinne
+
+- - -
+
 ## v0.7.4 - 2024-08-19
 #### Bug Fixes
 - **(deps)** update glsl-lang to 0.6.0 - (5843a8f) - renovate[bot]

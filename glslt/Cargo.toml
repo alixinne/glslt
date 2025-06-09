@@ -1,6 +1,6 @@
 [package]
 name = "glslt"
-version = "0.7.4"
+version = "0.7.5"
 authors = ["Alixinne <alixinne@pm.me>"]
 description = "GLSLT Template compiler library"
 edition = "2018"
