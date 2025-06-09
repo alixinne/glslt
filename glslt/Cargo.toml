@@ -45,7 +45,7 @@ optional = true
 [features]
 python = ["pyo3", "cli"]
 cli = ["clap", "env_logger", "parse"]
-parse = ["glsl-lang-pp/full", "glsl-lang/lexer-v2-full"]
+parse = ["glsl-lang-pp/full", "glsl-lang/lexer-full"]
 
 [dev-dependencies]
 env_logger = "0.11"
