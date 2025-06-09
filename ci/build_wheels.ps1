@@ -43,7 +43,7 @@ $PyVersionSuffix = ""
 & $PyEnv install --list
 
 # List of Python versions to build for
-$PyVersions = "3.7.9", "3.8.9", "3.9.12", "3.10.4"
+$PyVersions = "3.10.11", "3.11.9", "3.12.10", "3.13.4"
 ForEach ($PyVersion in $PyVersions) {
 	# Compute short version name
 	$ShortPyVersion = $PyVersion.Split(".")
