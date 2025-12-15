@@ -113,7 +113,7 @@ jobs:
           bundle_file: ${{ needs.version.outputs.bundle_file }}
           artifact_name: ${{ needs.version.outputs.artifact_name }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           key: ${{ runner.os }}
           path: |
