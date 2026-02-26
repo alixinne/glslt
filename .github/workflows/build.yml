@@ -88,7 +88,7 @@ jobs:
           fi
 
       - name: Upload commit artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.outputs.outputs.artifact_name }}
           path: |
@@ -220,7 +220,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
 
       - name: Upload wheel artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.target }}
           path: |
@@ -283,7 +283,7 @@ jobs:
         if: matrix.os == 'windows-latest'
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-${{ matrix.target }}
           path: |
@@ -315,25 +315,25 @@ jobs:
           artifact_name: ${{ needs.version.outputs.artifact_name }}
 
       - name: Download build artifacts (x86_64-unknown-linux-gnu)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-x86_64-unknown-linux-gnu
           path: dist/
 
       - name: Download build artifacts (x86_64-pc-windows-msvc)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-x86_64-pc-windows-msvc
           path: dist/
 
       - name: Download wheels artifacts (x86_64-unknown-linux-gnu)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: wheels-x86_64-unknown-linux-gnu
           path: wheels/
 
       - name: Download wheels artifacts (x86_64-pc-windows-msvc)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: wheels-x86_64-pc-windows-msvc
           path: wheels/
